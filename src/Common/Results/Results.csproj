@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <PackageId>Musdis.Packages.Results</PackageId>
+    <Version>1.0.5</Version>
+    <Authors>Eldar T.</Authors>
+    <Product>Results</Product>
+    <Company> </Company>
+    <Description>
+      This package is a tool for developers working with C# who want to
+      harness the full potential of result patterns in their code.
+    </Description>
+  </PropertyGroup>
+
+</Project>
