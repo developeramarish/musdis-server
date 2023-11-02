@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Musdis.Packages.Results</id>
+    <version>1.0.5</version>
+    <authors>Eldar T.</authors>
+    <description>This package is a tool for developers working with C# who want to
+      harness the full potential of result patterns in their code.</description>
+    <dependencies>
+      <group targetFramework="net7.0" />
+    </dependencies>
+  </metadata>
+</package>
