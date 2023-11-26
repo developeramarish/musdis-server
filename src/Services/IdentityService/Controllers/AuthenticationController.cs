@@ -27,9 +27,9 @@ public class AuthenticationController : ControllerBase
     /// </summary>
     /// <param name="request"></param>
     /// <returns>
-    ///     An HTTP response with the user object and JWT if sign-in is successful; 
-    ///     otherwise, returns an appropriate HTTP status code and error details.
-    ///     </returns>    
+    /// An HTTP response with the user object and JWT if sign-in is successful; 
+    /// otherwise, returns an appropriate HTTP status code and error details.
+    /// </returns>    
     [Route("sign-in")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthenticatedUserDto))]
@@ -58,8 +58,8 @@ public class AuthenticationController : ControllerBase
     /// </summary>
     /// <param name="request">Sign up request.</param>
     /// <returns>
-    ///     An HTTP response with the user object and JWT if sign-up is successful; 
-    ///     otherwise, returns an appropriate HTTP status code and error details.
+    /// An HTTP response with the user object and JWT if sign-up is successful; 
+    /// otherwise, returns an appropriate HTTP status code and error details.
     /// </returns>
     [Route("sign-up")]
     [HttpPost]
@@ -88,14 +88,6 @@ public class AuthenticationController : ControllerBase
     [Authorize]
     [HttpGet]
     public IActionResult TestAuthorization()
-    {
-        return Ok("successfully authorized");
-    }
-
-    [Route("admin-test")]
-    [Authorize]
-    [HttpGet]
-    public IActionResult TestAdminAuthorization()
     {
         return Ok("successfully authorized");
     }
