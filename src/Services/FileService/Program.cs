@@ -1,10 +1,9 @@
 using FileService.Options;
+using FileService.Services.StorageService;
+
+using Google.Cloud.Storage.V1;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Options
 builder.Services.Configure<FirebaseOptions>(
@@ -20,6 +19,15 @@ Environment.SetEnvironmentVariable(
     firebaseOptions.KeyPath
 );
 
+builder.Services.AddTransient(_ => StorageClient.Create());
+builder.Services.AddTransient<IStorageService, FirebaseStorageService>();
+
+
+// builder.Services.AddAntiforgery();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -28,10 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// app.UseAntiforgery();
 app.UseHttpsRedirection();
 
-app.MapGet("/", () => 
-    Environment.GetEnvironmentVariable(firebaseOptions.KeyEnvironmentVariableName)
-);
+app.MapControllers();
 
 app.Run();
