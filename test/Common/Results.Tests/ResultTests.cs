@@ -1,6 +1,6 @@
 namespace Results.Tests;
 
-public class ResulTests
+public class ResultTests
 {
     [Fact]
     public void Success_ReturnsSuccessResult_Always()
@@ -8,11 +8,11 @@ public class ResulTests
         var result = Result.Success();
 
         var expectedIsSuccess = true;
-        var expextedIsFailure = false;
+        var expectedIsFailure = false;
         Error? expectedError = null;
 
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedError, result.Error);
     }
 
@@ -23,11 +23,11 @@ public class ResulTests
         var result = Result.Failure(error);
 
         var expectedIsSuccess = false;
-        var expextedIsFailure = true;
+        var expectedIsFailure = true;
         var expectedError = error;
 
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedError, result.Error);
     }
 

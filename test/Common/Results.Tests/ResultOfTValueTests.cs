@@ -11,12 +11,12 @@ public class ResultOfTValueTests
         var result = Result<int>.Success(value);
 
         var expectedIsSuccess = true;
-        var expextedIsFailure = false;
+        var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
@@ -28,12 +28,12 @@ public class ResultOfTValueTests
         var result = Result<int?>.Success(value);
 
         var expectedIsSuccess = true;
-        var expextedIsFailure = false;
+        var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
@@ -45,12 +45,12 @@ public class ResultOfTValueTests
         var result = Result<Person>.Success(value);
 
         var expectedIsSuccess = true;
-        var expextedIsFailure = false;
+        var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
@@ -62,12 +62,12 @@ public class ResultOfTValueTests
         var result = Result<Person>.Success(value!);
 
         var expectedIsSuccess = true;
-        var expextedIsFailure = false;
+        var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }

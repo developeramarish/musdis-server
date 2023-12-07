@@ -92,7 +92,7 @@ public class ResultExtensionsTests
     public void ToResult_ReturnsIntFailureResult_WhenErrorPassed()
     {
         var error = new Error(0, "some error");
-        var result = error.ToResult<int>();
+        var result = error.ToValueResult<int>();
 
         var expectedIsSuccess = false;
         var expectedIsFailure = true;
@@ -109,7 +109,7 @@ public class ResultExtensionsTests
     public void ToResult_ReturnsClassFailureResult_WhenErrorPassed()
     {
         var error = new Error(0, "some error");
-        var result = error.ToResult<Person>();
+        var result = error.ToValueResult<Person>();
 
         var expectedIsSuccess = false;
         var expectedIsFailure = true;
