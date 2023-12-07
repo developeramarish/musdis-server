@@ -5,12 +5,12 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md.
-            "name": ".NET Core Launch (web)",
+            "name": ".NET Core Launch (Identity)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build-identity",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Services/IdentityService/bin/Debug/net7.0/IdentityService.dll",
+            "program": "${workspaceFolder}/src/Services/IdentityService/bin/Debug/net8.0/IdentityService.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Services/IdentityService",
             "stopAtEntry": false,
@@ -27,9 +27,29 @@
             }
         },
         {
-            "name": ".NET Core Attach",
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md.
+            "name": ".NET Core Launch (File)",
             "type": "coreclr",
-            "request": "attach"
+            "request": "launch",
+            "preLaunchTask": "build-file",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/src/Services/FileService/bin/Debug/net8.0/FileService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Services/FileService",
+            "stopAtEntry": false,
+            // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
         }
     ]
 }
