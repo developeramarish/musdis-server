@@ -22,8 +22,6 @@ Environment.SetEnvironmentVariable(
 builder.Services.AddTransient(_ => StorageClient.Create());
 builder.Services.AddTransient<IStorageService, FirebaseStorageService>();
 
-
-// builder.Services.AddAntiforgery();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,7 +34,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseAntiforgery();
 app.UseHttpsRedirection();
 
 app.MapControllers();
