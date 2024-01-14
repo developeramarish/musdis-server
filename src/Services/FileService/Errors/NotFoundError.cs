@@ -2,8 +2,5 @@ using Results;
 
 namespace FileService.Errors;
 
-public sealed class NotFoundError : Error
-{
-    public NotFoundError(string description) 
-        : base(404, description) { }
-}
+public sealed class NotFoundError(string description) 
+    : Error(404, description) { }
