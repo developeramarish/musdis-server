@@ -6,12 +6,12 @@ namespace MusicService.Models;
 public class Genre
 {
     /// <summary>
-    /// Unique identifier of the genre.
+    /// The unique identifier of the <see cref="Genre"/>.
     /// </summary>
-    public int Id { get; set; }
+    public required Guid Id { get; set; }
 
     /// <summary>
-    /// Name of the genre.
+    /// The name of the <see cref="Genre"/>.
     /// </summary>
-    public required string Name { get; set; }
+    public required string Name { get; set; } 
 }

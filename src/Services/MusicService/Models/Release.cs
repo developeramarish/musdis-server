@@ -6,32 +6,32 @@ namespace MusicService.Models;
 public class Release
 {
     /// <summary>
-    /// Unique identifier of the release.
+    /// The unique identifier of the release.
     /// </summary>
-    public int Id { get; set; }
+    public required Guid Id { get; set; }
 
     /// <summary>
-    /// Foreign key to Release type table.
+    /// The foreign key to <see cref="ReleaseType"/> table.
     /// </summary>
-    public required int ReleaseTypeId { get; set; }
+    public required Guid ReleaseTypeId { get; set; }
 
     /// <summary>
-    /// Type of the release (e.g. Album or Single).
+    /// The type of the <see cref="Release"/>.
     /// </summary>
     public ReleaseType? Type { get; set; }
 
     /// <summary>
-    /// Name of the release.
+    /// The name of the <see cref="Release"/>.
     /// </summary>
     public required string Name { get; set; }
 
     /// <summary>
-    /// Release date of the release.
+    /// The release date of the <see cref="Release"/>.
     /// </summary>
     public required DateTime ReleaseDate { get; set; }
 
     /// <summary>
-    /// Cover url of the release.
+    /// URL to the cover of the <see cref="Release"/>.
     /// </summary>
     public required string CoverUrl { get; set; }
 }
