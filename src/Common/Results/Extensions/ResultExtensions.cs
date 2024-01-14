@@ -17,6 +17,16 @@ public static class ResultExtensions
     }
 
     /// <summary>
+    /// Converts an error into a failed <see cref="Result"/> with the provided error.
+    /// </summary>
+    /// <param name="error">The error to be associated with the failed result.</param>
+    /// <returns>A new failed <see cref="Result"/> instance with the specified error.</returns>
+    public static Result ToResult(this Error error)
+    {
+        return Result.Failure(error);
+    }
+
+    /// <summary>
     /// Converts an error into a failed <see cref="Result{TValue}"/> with the provided error.
     /// </summary>
     /// <typeparam name="TValue">The type of the associated value.</typeparam>
@@ -25,15 +35,5 @@ public static class ResultExtensions
     public static Result<TValue> ToValueResult<TValue>(this Error error)
     {
         return Result<TValue>.Failure(error);
-    }
-
-    /// <summary>
-    /// Converts an error into a failed <see cref="Result"/> with the provided error.
-    /// </summary>
-    /// <param name="error">The error to be associated with the failed result.</param>
-    /// <returns>A new failed <see cref="Result"/> instance with the specified error.</returns>
-    public static Result ToResult(this Error error)
-    {
-        return Result.Failure(error);
     }
 }
