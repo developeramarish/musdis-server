@@ -77,7 +77,7 @@ public class ResultExtensionsTests
     public void ToResult_ReturnsFailureResult_WhenErrorPassed()
     {
         var error = new Error(0, "some error");
-        var result = error.ToResult<Error>();
+        var result = error.ToResult();
 
         var expectedIsSuccess = false;
         var expectedIsFailure = true;
