@@ -1,17 +1,17 @@
 namespace Results;
 
 /// <summary>
-/// Represents error in Results pattern.
+/// Represents an error in Results pattern.
 /// </summary>
 public class Error
 {
     /// <summary>
-    /// Gets the error code.
+    /// The error code.
     /// </summary>
     public int Code { get; private set; }
 
     /// <summary>
-    /// Gets the description of the error.
+    /// The description of the error.
     /// </summary>
     public string Description { get; private set; }
 
