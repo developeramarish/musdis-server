@@ -6,17 +6,17 @@ namespace Results.Contracts;
 internal interface IResult
 {
     /// <summary>
-    /// Gets a value indicating whether the result represents a successful outcome.
+    /// Is result succeed.
     /// </summary>
     bool IsSuccess { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the result represents a failed outcome.
+    /// Is result failed.
     /// </summary>
     bool IsFailure { get; }
 
     /// <summary>
-    /// Gets the error associated with the result, null if succeed result.
+    /// The error associated with the result, null if succeed result.
     /// </summary>
     Error? Error { get; }
 }
