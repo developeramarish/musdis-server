@@ -31,7 +31,7 @@ builder.Services.Configure<IdentityPasswordOptions>(
 );
 
 // Database
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<IdentityServiceDbContext>(options =>
     options.UseNpgsql(connection)
 );
 
@@ -52,7 +52,7 @@ builder.Services.AddIdentityCore<User>(
         options.Password.RequiredUniqueChars = passwordOptions.RequiredUniqueChars;
     })
     .AddSignInManager<SignInManager<User>>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<IdentityServiceDbContext>();
 
 // Authentication
 builder.Services
