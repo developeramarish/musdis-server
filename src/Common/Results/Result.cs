@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Results.Contracts;
 
 namespace Results;
@@ -6,6 +8,8 @@ namespace Results;
 public class Result : IResult
 {
     public bool IsSuccess { get; }
+
+    [MemberNotNullWhen(true, nameof(Error))]
     public bool IsFailure => !IsSuccess;
 
     public Error? Error { get; }
@@ -45,11 +49,13 @@ public class Result : IResult
 /// <inheritdoc cref="IValueResult{TValue}"/>
 public class Result<TValue> : IValueResult<TValue>
 {
+    [MemberNotNullWhen(true, nameof(Value))]
     public bool IsSuccess { get; }
+
+    [MemberNotNullWhen(true, nameof(Error))]
     public bool IsFailure => !IsSuccess;
     public Error? Error { get; }
     public TValue? Value { get; private set; }
-
     private Result(TValue? value, bool isSuccess, Error? error)
     {
         if (isSuccess && error is not null ||
@@ -71,7 +77,6 @@ public class Result<TValue> : IValueResult<TValue>
     /// </summary>
     /// <param name="value">The associated value for the successful result.</param>
     /// <returns>A new <see cref="Result{TValue}"/> instance indicating success with the provided value.</returns>
-
     public static Result<TValue> Success(TValue value)
     {
         return new(value, true, null);
