@@ -1,3 +1,6 @@
 {
-    "dotnet-test-explorer.testProjectPath": "test/**/*.csproj"
+    "dotnet-test-explorer.testProjectPath": "test/**/*.csproj",
+    "cSpell.words": [
+        "Musdis"
+    ]
 }
