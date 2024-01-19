@@ -1,19 +1,19 @@
 using FluentValidation;
 
-using IdentityService.Errors;
-using IdentityService.Extensions;
-using IdentityService.Models;
-using IdentityService.Models.Dtos;
-using IdentityService.Models.Requests;
-using IdentityService.Services.JwtGenerator;
+using Musdis.IdentityService.Errors;
+using Musdis.IdentityService.Extensions;
+using Musdis.IdentityService.Models;
+using Musdis.IdentityService.Models.Dtos;
+using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Services.JwtGenerator;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-using Results;
-using Results.Extensions;
+using Musdis.Results;
+using Musdis.Results.Extensions;
 
-namespace IdentityService.Services.AuthenticationService;
+namespace Musdis.IdentityService.Services.AuthenticationService;
 
 /// <inheritdoc cref="IAuthenticationService"/>
 public class AuthenticationService : IAuthenticationService
@@ -135,6 +135,6 @@ public class AuthenticationService : IAuthenticationService
             user.Email!,
             token,
             claims.ToKeyValuePairs()
-        ).ToResult();
+        ).ToValueResult();
     }
 }

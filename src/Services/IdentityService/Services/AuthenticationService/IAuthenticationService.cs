@@ -1,9 +1,9 @@
-using IdentityService.Models.Dtos;
-using IdentityService.Models.Requests;
+using Musdis.IdentityService.Models.Dtos;
+using Musdis.IdentityService.Models.Requests;
 
-using Results;
+using Musdis.Results;
 
-namespace IdentityService.Services.AuthenticationService;
+namespace Musdis.IdentityService.Services.AuthenticationService;
 
 /// <summary>
 /// Represents an authentication service that provides user sign-in and sign-up functionality.

@@ -1,8 +1,8 @@
 using System.Security.Claims;
 
-using IdentityService.Models.Dtos;
+using Musdis.IdentityService.Models.Dtos;
 
-namespace IdentityService.Models.Requests;
+namespace Musdis.IdentityService.Models.Requests;
 
 /// <summary>
 /// Represents a request for generating a JSON Web Token (JWT) with optional custom claims.

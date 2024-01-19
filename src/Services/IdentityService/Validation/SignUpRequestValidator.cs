@@ -1,13 +1,13 @@
 using FluentValidation;
 
-using IdentityService.Models;
-using IdentityService.Models.Requests;
-using IdentityService.Options;
+using Musdis.IdentityService.Models;
+using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Options;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
-namespace IdentityService.Validation;
+namespace Musdis.IdentityService.Validation;
 
 /// <summary>
 /// Validates <see cref="SignUpRequest"/>s to ensure they meet certain criteria.

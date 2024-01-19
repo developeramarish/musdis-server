@@ -1,4 +1,4 @@
-namespace MusicService.Models;
+namespace Musdis.MusicService.Models;
 
 /// <summary>
 /// Represents the type of release (e.g. album, single, EP, etc.)

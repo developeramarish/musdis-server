@@ -1,8 +1,8 @@
 using FluentValidation;
 
-using IdentityService.Models.Requests;
+using Musdis.IdentityService.Models.Requests;
 
-namespace IdentityService.Validation;
+namespace Musdis.IdentityService.Validation;
 
 /// <summary>
 /// Validates <see cref="SignInRequest"/>s to ensure they meet certain criteria.

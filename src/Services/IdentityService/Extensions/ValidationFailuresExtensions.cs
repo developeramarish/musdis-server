@@ -2,9 +2,9 @@ using System.Text;
 
 using FluentValidation.Results;
 
-using IdentityService.Errors;
+using Musdis.IdentityService.Errors;
 
-namespace IdentityService.Extensions;
+namespace Musdis.IdentityService.Extensions;
 
 /// <summary>
 /// Provides extension methods for working with FluentValidation library results.
@@ -22,7 +22,7 @@ public static class ValidationFailuresExtensions
     {
         var stringBuilder = new StringBuilder();
 
-        stringBuilder.Append("Validation error occured. Details: ");
+        stringBuilder.Append("Validation error occurred. Details: ");
         foreach (var failure in failures)
         {
             stringBuilder.Append(failure.ErrorMessage);

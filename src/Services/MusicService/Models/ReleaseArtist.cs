@@ -1,4 +1,4 @@
-namespace MusicService.Models;
+namespace Musdis.MusicService.Models;
 
 /// <summary>
 /// Represents many-to-many relationship between <see cref="Models.Artist"/>s and <see cref="Models.Release"/>s. 

@@ -2,27 +2,25 @@
 using System.Security.Claims;
 using System.Text;
 
-using IdentityService.Models.Dtos;
-using IdentityService.Models.Requests;
-using IdentityService.Options;
-using IdentityService.Services.Watch;
+using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Options;
 
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace IdentityService.Services.JwtGenerator;
+namespace Musdis.IdentityService.Services.JwtGenerator;
 
 /// <inheritdoc cref="IJwtGenerator"/>
 public class JwtGenerator : IJwtGenerator
 {
     private readonly JwtOptions _jwtOptions;
-    private readonly IWatch _watch;
+    private readonly TimeProvider _timeProvider;
     private readonly SymmetricSecurityKey _securityKey;
 
-    public JwtGenerator(IOptions<JwtOptions> options, IWatch watch)
+    public JwtGenerator(IOptions<JwtOptions> options, TimeProvider timeProvider)
     {
         _jwtOptions = options.Value;
-        _watch = watch;
+        _timeProvider = timeProvider;
 
         _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
     }
@@ -46,7 +44,7 @@ public class JwtGenerator : IJwtGenerator
         {
             Issuer = _jwtOptions.Issuer,
             Subject = new ClaimsIdentity(claims),
-            Expires = _watch.Now.AddMinutes(_jwtOptions.TokenLifetimeMinutes),
+            Expires = _timeProvider.GetUtcNow().DateTime.AddMinutes(_jwtOptions.TokenLifetimeMinutes),
             SigningCredentials = credentials,
         };
 

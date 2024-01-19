@@ -1,12 +1,12 @@
-using IdentityService.Errors;
-using IdentityService.Models.Dtos;
-using IdentityService.Models.Requests;
-using IdentityService.Services.AuthenticationService;
+using Musdis.IdentityService.Errors;
+using Musdis.IdentityService.Models.Dtos;
+using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Services.AuthenticationService;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace IdentityService.Controllers;
+namespace Musdis.IdentityService.Controllers;
 
 /// <summary>
 /// Controller responsible for user authentication.

@@ -1,6 +1,6 @@
-using Results;
+using Musdis.OperationResults;
 
-namespace FileService.Services.StorageService;
+namespace Musdis.FileService.Services.StorageService;
 
 public interface IStorageService
 {

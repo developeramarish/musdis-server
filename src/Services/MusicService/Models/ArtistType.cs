@@ -1,4 +1,4 @@
-namespace MusicService.Models;
+namespace Musdis.MusicService.Models;
 
 /// <summary>
 /// Represents type of the <see cref="Artist"/> (e.g. band, musician, etc.).

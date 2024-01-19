@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace IdentityService.Extensions;
+namespace Musdis.IdentityService.Extensions;
 
 /// <summary>
 /// Provides extension methods for working with collections of <see cref="Claim"/>.

@@ -1,14 +1,14 @@
-using FileService.Errors;
-using FileService.Options;
+using Musdis.FileService.Errors;
+using Musdis.FileService.Options;
 
 using Google.Cloud.Storage.V1;
 
 using Microsoft.Extensions.Options;
 
-using Results;
-using Results.Extensions;
+using Musdis.OperationResults;
+using Musdis.OperationResults.Extensions;
 
-namespace FileService.Services.StorageService;
+namespace Musdis.FileService.Services.StorageService;
 
 public class FirebaseStorageService : IStorageService
 {
@@ -46,7 +46,7 @@ public class FirebaseStorageService : IStorageService
         );
 
         return new Uri($"{file.MediaLink}&token={file.Metadata["firebaseStorageDownloadTokens"]}")
-            .ToResult();
+            .ToValueResult();
     }
 
     public async Task<Result<Uri>> UploadFileAsync(
@@ -66,6 +66,6 @@ public class FirebaseStorageService : IStorageService
         );
 
         return new Uri($"{uploaded.SelfLink}")
-            .ToResult();
+            .ToValueResult();
     }
 }

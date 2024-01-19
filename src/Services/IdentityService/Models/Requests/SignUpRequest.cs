@@ -1,4 +1,4 @@
-namespace IdentityService.Models.Requests;
+namespace Musdis.IdentityService.Models.Requests;
 
 /// <summary>
 /// Represents a request for user sign-up, containing user registration information.
@@ -15,7 +15,7 @@ public record SignUpRequest(
     /// <summary>
     /// Maps <see cref="SignUpRequest"/> to <see cref="User"/> object.
     /// </summary>
-    /// <returns>Сorresponding user.</returns>
+    /// <returns>Corresponding user.</returns>
     internal User ToUser()
     {
         return new User

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace IdentityService.Controllers;
+namespace Musdis.IdentityService.Controllers;
 
 /// <summary>
 /// Error handling controller.

@@ -2,14 +2,13 @@ using System.Text;
 
 using FluentValidation;
 
-using IdentityService.Data;
-using IdentityService.Models;
-using IdentityService.Models.Requests;
-using IdentityService.Options;
-using IdentityService.Services.AuthenticationService;
-using IdentityService.Services.JwtGenerator;
-using IdentityService.Services.Watch;
-using IdentityService.Validation;
+using Musdis.IdentityService.Data;
+using Musdis.IdentityService.Models;
+using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Options;
+using Musdis.IdentityService.Services.AuthenticationService;
+using Musdis.IdentityService.Services.JwtGenerator;
+using Musdis.IdentityService.Validation;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -88,7 +87,7 @@ builder.Services.AddTransient<IValidator<SignUpRequest>>(sp =>
 );
 
 // Utils
-builder.Services.AddTransient<IWatch, Watch>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<IJwtGenerator, JwtGenerator>();
 builder.Services.AddTransient<IAuthenticationService, AuthenticationService>();
 

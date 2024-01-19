@@ -1,9 +1,9 @@
-﻿using IdentityService.Models;
+﻿using Musdis.IdentityService.Models;
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace IdentityService.Data;
+namespace Musdis.IdentityService.Data;
 public class IdentityServiceDbContext(
     DbContextOptions<IdentityServiceDbContext> options
 ) : IdentityDbContext<User>(options)

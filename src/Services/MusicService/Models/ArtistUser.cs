@@ -1,4 +1,4 @@
-namespace MusicService.Models;
+namespace Musdis.MusicService.Models;
 
 /// <summary>
 /// Represents model that contains info about <see cref="Models.Artist"/> and associated Users 

@@ -1,5 +1,5 @@
-using FileService.Options;
-using FileService.Services.StorageService;
+using Musdis.FileService.Options;
+using Musdis.FileService.Services.StorageService;
 
 using Google.Cloud.Storage.V1;
 

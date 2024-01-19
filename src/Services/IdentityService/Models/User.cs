@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace IdentityService.Models;
+namespace Musdis.IdentityService.Models;
 
 /// <summary>
 /// User of the application.

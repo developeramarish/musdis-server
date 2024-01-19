@@ -1,4 +1,4 @@
-namespace MusicService.Models;
+namespace Musdis.MusicService.Models;
 
 /// <summary>
 /// Represents music track.

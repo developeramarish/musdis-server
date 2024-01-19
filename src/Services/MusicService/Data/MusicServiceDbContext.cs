@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 
-using MusicService.Models;
+using Musdis.MusicService.Models;
 
-namespace MusicService.Data;
+namespace Musdis.MusicService.Data;
 
 public class MusicServiceDbContext(
     DbContextOptions<MusicServiceDbContext> options

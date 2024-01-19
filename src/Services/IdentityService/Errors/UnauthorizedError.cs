@@ -1,6 +1,6 @@
-using Results;
+using Musdis.Results;
 
-namespace IdentityService.Errors;
+namespace Musdis.IdentityService.Errors;
 
 /// <summary>
 /// Represents an unauthorized error, associated with an HTTP status code 401.

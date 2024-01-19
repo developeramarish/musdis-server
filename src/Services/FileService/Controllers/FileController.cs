@@ -1,8 +1,8 @@
-using FileService.Services.StorageService;
+using Musdis.FileService.Services.StorageService;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace FileService.Controllers;
+namespace Musdis.FileService.Controllers;
 
 [Route("api/file")]
 [ApiController]
@@ -25,8 +25,8 @@ public class FileController : ControllerBase
 
         return result switch
         {
-            { IsFailure: true } => NotFound(result.Error!.Description),
-            { IsFailure: false } => Ok(result.Value!.ToString())
+            { IsFailure: true } => NotFound(result.Error.Description),
+            { IsFailure: false } => Ok(result.Value.ToString())
         };
     }
 
@@ -38,8 +38,8 @@ public class FileController : ControllerBase
 
         return result switch
         {
-            { IsFailure: true } => NotFound(result.Error!.Description),
-            { IsFailure: false } => Ok(result.Value!.ToString())
+            { IsFailure: true } => NotFound(result.Error.Description),
+            { IsFailure: false } => Ok(result.Value.ToString())
         };
     }
 }

@@ -1,4 +1,4 @@
-namespace FileService.Options;
+namespace Musdis.FileService.Options;
 
 /// <summary>
 /// Represents options for Google Firebase.

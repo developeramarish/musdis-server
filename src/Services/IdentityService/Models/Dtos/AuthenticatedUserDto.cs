@@ -1,6 +1,4 @@
-using System.Security.Claims;
-
-namespace IdentityService.Models.Dtos;
+namespace Musdis.IdentityService.Models.Dtos;
 
 /// <summary>
 /// Represents a DTO for an authenticated user with JWT and additional claims.

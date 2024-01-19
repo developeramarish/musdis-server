@@ -1,4 +1,4 @@
-namespace IdentityService.Options;
+namespace Musdis.IdentityService.Options;
 
 public class JwtOptions
 {
