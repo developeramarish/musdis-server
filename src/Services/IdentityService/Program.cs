@@ -3,12 +3,14 @@ using System.Text;
 using FluentValidation;
 
 using Musdis.IdentityService.Data;
-using Musdis.IdentityService.Models;
 using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Models.Entities;
 using Musdis.IdentityService.Options;
+using Musdis.IdentityService.Services;
 using Musdis.IdentityService.Services.AuthenticationService;
 using Musdis.IdentityService.Services.JwtGenerator;
 using Musdis.IdentityService.Validation;
+using Musdis.IdentityService.Endpoints;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -16,10 +18,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
 var connection = configuration.GetConnectionString("IdentityDbConnection");
+
+// Exception handler
+builder.Services.AddExceptionHandler<ExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Options
 builder.Services.Configure<JwtOptions>(
@@ -30,13 +37,13 @@ builder.Services.Configure<IdentityPasswordOptions>(
 );
 
 // Database
-builder.Services.AddDbContext<IdentityServiceDbContext>(options =>
-    options.UseNpgsql(connection)
+builder.Services.AddDbContext<IdentityServiceDbContext>(
+    options => options.UseNpgsql(connection)
 );
 
 // Identity
-builder.Services.AddIdentityCore<User>(
-    options =>
+builder.Services
+    .AddIdentityCore<User>(options =>
     {
         var passwordOptions = builder.Configuration
             .GetSection(IdentityPasswordOptions.Password)
@@ -79,29 +86,25 @@ builder.Services.AddAuthorization();
 
 // Validation
 builder.Services.AddTransient<IValidator<SignInRequest>, SignInRequestValidator>();
-builder.Services.AddTransient<IValidator<SignUpRequest>>(sp =>
-    new SignUpRequestValidator(
-        sp.GetRequiredService<UserManager<User>>(),
-        sp.GetRequiredService<IOptions<IdentityPasswordOptions>>()
-    )
-);
+builder.Services.AddTransient<IValidator<SignUpRequest>>(sp => new SignUpRequestValidator(
+    sp.GetRequiredService<UserManager<User>>(),
+    sp.GetRequiredService<IOptions<IdentityPasswordOptions>>()
+));
 
 // Utils
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<IJwtGenerator, JwtGenerator>();
 builder.Services.AddTransient<IAuthenticationService, AuthenticationService>();
 
-builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
-    {
-        var filePath = Path.Combine(
-            AppContext.BaseDirectory,
-            $"{typeof(Program).Assembly.GetName().Name}.xml");
-        options.IncludeXmlComments(filePath);
+{
+    var filePath = Path.Combine(
+        AppContext.BaseDirectory,
+        $"{typeof(Program).Assembly.GetName().Name}.xml");
+    options.IncludeXmlComments(filePath);
+});
 
-    });
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -112,9 +115,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseExceptionHandler();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapGroup("/api/authentication")
+    .MapAuthentication();
 
 app.Run();

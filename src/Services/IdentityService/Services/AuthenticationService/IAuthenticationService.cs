@@ -1,7 +1,7 @@
 using Musdis.IdentityService.Models.Dtos;
 using Musdis.IdentityService.Models.Requests;
 
-using Musdis.Results;
+using Musdis.OperationResults;
 
 namespace Musdis.IdentityService.Services.AuthenticationService;
 
@@ -17,8 +17,8 @@ public interface IAuthenticationService
     /// <param name="request">The sign-in request containing user credentials.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>
-    ///     A <see cref="Task"/> representing the asynchronous operation, which returns 
-    ///     a <see cref="Result{AuthenticatedUserDto}"/> containing the outcome of the sign-in attempt.
+    /// A <see cref="Task"/> representing the asynchronous operation, which returns 
+    /// a <see cref="Result{AuthenticatedUserDto}"/> containing the outcome of the sign-in attempt.
     /// </returns>
     Task<Result<AuthenticatedUserDto>> SignInAsync(
         SignInRequest request,
@@ -31,8 +31,8 @@ public interface IAuthenticationService
     /// <param name="request">The sign-up request containing user information.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>
-    ///     A <see cref="Task"/> representing the asynchronous operation, which returns 
-    ///     a <see cref="Result{AuthenticatedUserDto}"/> containing the outcome of the sign-up attempt.
+    /// A <see cref="Task"/> representing the asynchronous operation, which returns 
+    /// a <see cref="Result{AuthenticatedUserDto}"/> containing the outcome of the sign-up attempt.
     /// </returns>
     Task<Result<AuthenticatedUserDto>> SignUpAsync(
         SignUpRequest request,

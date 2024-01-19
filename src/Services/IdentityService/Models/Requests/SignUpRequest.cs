@@ -1,3 +1,5 @@
+using Musdis.IdentityService.Models.Entities;
+
 namespace Musdis.IdentityService.Models.Requests;
 
 /// <summary>

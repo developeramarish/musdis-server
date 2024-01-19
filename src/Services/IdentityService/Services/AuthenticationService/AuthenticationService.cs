@@ -10,8 +10,9 @@ using Musdis.IdentityService.Services.JwtGenerator;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-using Musdis.Results;
-using Musdis.Results.Extensions;
+using Musdis.OperationResults;
+using Musdis.OperationResults.Extensions;
+using Musdis.IdentityService.Models.Entities;
 
 namespace Musdis.IdentityService.Services.AuthenticationService;
 
@@ -72,9 +73,10 @@ public class AuthenticationService : IAuthenticationService
         var validationResult = await _signUpValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return validationResult.Errors
-                .ToValidationError()
-                .ToValueResult<AuthenticatedUserDto>();
+            return new ValidationError(
+                "Cannot sign user up, incorrect data",
+                validationResult.Errors
+            ).ToValueResult<AuthenticatedUserDto>();
         }
 
         var user = request.ToUser();
@@ -83,7 +85,7 @@ public class AuthenticationService : IAuthenticationService
         if (!result.Succeeded)
         {
             return new InternalError(
-                "Could not create user!"
+                "Could not create user, try again later!"
             ).ToValueResult<AuthenticatedUserDto>();
         }
 

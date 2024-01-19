@@ -1,6 +1,9 @@
-using Musdis.Results;
+using FluentValidation.Results;
+
+using Musdis.OperationResults;
 
 namespace Musdis.IdentityService.Errors;
+
 
 /// <summary>
 /// Represents an error indicating a validation failure, 
@@ -9,5 +12,17 @@ namespace Musdis.IdentityService.Errors;
 public sealed class ValidationError : Error
 {
     public ValidationError(string description)
-        : base(400, description) { }
+        : base(400, description)
+    {
+        Failures = null;
+    }
+
+    public ValidationError(
+        string description,
+        IEnumerable<ValidationFailure> failures
+    ) : base(400, description)
+    {
+        Failures = failures;
+    }
+    public IEnumerable<ValidationFailure>? Failures { get; init; }
 }

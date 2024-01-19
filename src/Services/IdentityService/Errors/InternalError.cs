@@ -1,4 +1,4 @@
-using Musdis.Results;
+using Musdis.OperationResults;
 
 namespace Musdis.IdentityService.Errors;
 

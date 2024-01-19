@@ -4,14 +4,19 @@ Backend for music distribution application built with dotnet microservices
 ## Get started
 ### Simple 
 
-- Add packages to projects
+1. Add nuget source
 
+```shell
+nuget sources add -Name "Musdis" -Source {your-path}/musdis-server/packages
+```
+
+2. Add packages to projects
 
 ```sh
 dotnet add {project-path.csproj} package {package-name} -v {version} -s {your-path}/musdis-server/packages
 ```
 
-### Another way
+### Complicated
 
 1. Pack packages from src/Common directory 
 
@@ -25,4 +30,4 @@ dotnet pack ~/path/to/package/project.csproj
 nuget add {your-path}/musdis-server/bin/Results/Release/{package-name}.nupkg -Source {your-path}/musdis-server/packages
 ```
 
-3. Add packages to projects from [above](#simple)
+3. Add NuGet source and packages to projects from [above](#simple)
