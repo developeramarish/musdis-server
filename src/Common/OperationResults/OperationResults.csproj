@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
 
-    <PackageId>Musdis.Packages.Results</PackageId>
-    <Version>1.0.5</Version>
+    <PackageId>Musdis.Common.OperationResults</PackageId>
+    <Version>1.0.7</Version>
     <Authors>Eldar T.</Authors>
-    <Product>Results</Product>
+    <Product>OperationResults</Product>
     <Company> </Company>
     <Description>
       This package is a tool for developers working with C# who want to

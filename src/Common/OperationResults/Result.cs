@@ -1,12 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 
-using Results.Contracts;
+using Musdis.OperationResults.Contracts;
 
-namespace Results;
+namespace Musdis.OperationResults;
 
 /// <inheritdoc cref="IResult"/>
 public class Result : IResult
 {
+    [MemberNotNullWhen(false, nameof(Error))]
     public bool IsSuccess { get; }
 
     [MemberNotNullWhen(true, nameof(Error))]
@@ -50,9 +51,11 @@ public class Result : IResult
 public class Result<TValue> : IValueResult<TValue>
 {
     [MemberNotNullWhen(true, nameof(Value))]
+    [MemberNotNullWhen(false, nameof(Error))]
     public bool IsSuccess { get; }
 
     [MemberNotNullWhen(true, nameof(Error))]
+    [MemberNotNullWhen(false, nameof(Value))]
     public bool IsFailure => !IsSuccess;
     public Error? Error { get; }
     public TValue? Value { get; private set; }

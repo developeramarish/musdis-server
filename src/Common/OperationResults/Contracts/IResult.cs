@@ -1,4 +1,4 @@
-namespace Results.Contracts;
+namespace Musdis.OperationResults.Contracts;
 
 /// <summary>
 /// Represents the result of an operation, indicating success or failure.

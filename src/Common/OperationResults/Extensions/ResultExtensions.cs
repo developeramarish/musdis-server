@@ -1,4 +1,4 @@
-namespace Results.Extensions;
+namespace Musdis.OperationResults.Extensions;
 
 /// <summary>
 /// Provides extension methods for working with results and errors.
