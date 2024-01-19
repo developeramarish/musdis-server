@@ -1,4 +1,6 @@
-namespace Results.Tests;
+using Musdis.OperationResults;
+
+namespace OperationResults.Tests;
 
 public class ResultTests
 {

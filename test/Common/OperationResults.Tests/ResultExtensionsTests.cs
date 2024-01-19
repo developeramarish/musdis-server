@@ -1,115 +1,126 @@
-using Results.Tests.Models;
+using Musdis.OperationResults;
+using Musdis.OperationResults.Extensions;
 
-namespace Results.Tests;
+using OperationResults.Tests.Models;
 
-public class ResultOfTValueTests
+namespace OperationResults.Tests;
+
+public class ResultExtensionsTests
 {
     [Fact]
-    public void Success_ReturnsIntSuccessResult_WhenIntPassed()
+    public void ToResult_ReturnsSuccessResult_WhenIntValuePassed()
     {
-        var value = 420;
-        var result = Result<int>.Success(value);
+        var value = 12;
+        var result = value.ToValueResult();
 
         var expectedIsSuccess = true;
         var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
-        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
 
     [Fact]
-    public void Success_ReturnsNullIntSuccessResult_WhenNullIntPassed()
+    public void ToResult_ReturnsSuccessResult_WhenNullIntValuePassed()
     {
         int? value = null;
-        var result = Result<int?>.Success(value);
+        var result = value.ToValueResult();
 
         var expectedIsSuccess = true;
         var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
-        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
 
     [Fact]
-    public void Success_ReturnsClassSuccessResult_WhenClassPassed()
+    public void ToResult_ReturnsSuccessResult_WhenClassValuePassed()
     {
-        var value = new Person(69, "Pot");
-        var result = Result<Person>.Success(value);
+        var value = new Person(21, "Hella");
+        var result = value.ToValueResult();
 
         var expectedIsSuccess = true;
         var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
-        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
 
     [Fact]
-    public void Success_ReturnsNullClassSuccessResult_WhenNullClassPassed()
+    public void ToResult_ReturnsSuccessResult_WhenNullClassValuePassed()
     {
         Person? value = null;
-        var result = Result<Person>.Success(value!);
+        var result = value.ToValueResult();
 
         var expectedIsSuccess = true;
         var expectedIsFailure = false;
         var expectedValue = value;
         Error? expectedError = null;
 
-        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsSuccess, result.IsSuccess);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
 
     [Fact]
-    public void Failure_ReturnsIntFailureResult_WhenValidErrorPassed()
+    public void ToResult_ReturnsFailureResult_WhenErrorPassed()
     {
         var error = new Error(0, "some error");
-        var result = Result<int>.Failure(error);
+        var result = error.ToResult();
 
         var expectedIsSuccess = false;
-        var expextedIsFailure = true;
+        var expectedIsFailure = true;
+        var expectedError = error;
+
+        Assert.Equal(expectedIsFailure, result.IsFailure);
+        Assert.Equal(expectedIsSuccess, result.IsSuccess);
+        Assert.Equal(expectedError, result.Error);
+    }
+
+    [Fact]
+    public void ToResult_ReturnsIntFailureResult_WhenErrorPassed()
+    {
+        var error = new Error(0, "some error");
+        var result = error.ToValueResult<int>();
+
+        var expectedIsSuccess = false;
+        var expectedIsFailure = true;
         var expectedValue = default(int);
         var expectedError = error;
 
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
     }
 
     [Fact]
-    public void Failure_ReturnsClassFailureResult_WhenValidErrorPassed()
+    public void ToResult_ReturnsClassFailureResult_WhenErrorPassed()
     {
         var error = new Error(0, "some error");
-        var result = Result<Person>.Failure(error);
+        var result = error.ToValueResult<Person>();
 
         var expectedIsSuccess = false;
-        var expextedIsFailure = true;
+        var expectedIsFailure = true;
         var expectedValue = default(Person);
         var expectedError = error;
 
+        Assert.Equal(expectedIsFailure, result.IsFailure);
         Assert.Equal(expectedIsSuccess, result.IsSuccess);
-        Assert.Equal(expextedIsFailure, result.IsFailure);
         Assert.Equal(expectedValue, result.Value);
         Assert.Equal(expectedError, result.Error);
-    }
-
-    [Fact]
-    public void Failure_ThrowsArgumentException_WhenNullErrorPassed()
-    {
-        var createFailure = () => Result<int>.Failure(null!);
-        Assert.Throws<ArgumentException>(createFailure);
     }
 }

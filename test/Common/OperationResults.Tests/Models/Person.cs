@@ -1,4 +1,4 @@
-namespace Results.Tests.Models;
+namespace OperationResults.Tests.Models;
 
 /// <summary>
 /// Person model for mocking reference type data in tests.
