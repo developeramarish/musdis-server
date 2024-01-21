@@ -34,4 +34,9 @@ public class Release
     /// URL to the cover of the <see cref="Release"/>.
     /// </summary>
     public required string CoverUrl { get; set; }
+
+    /// <summary>
+    /// Collection of <see cref="Artist"/>s participated in creation of this <see cref="Track"/>.
+    /// </summary>
+    public IEnumerable<Artist>? Artists { get; set; }
 }

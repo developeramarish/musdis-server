@@ -24,4 +24,9 @@ public class Artist
     /// The type of the <see cref="Artist"/> (e.g. band or musician).
     /// </summary>
     public ArtistType? ArtistType { get; set; }
+
+    /// <summary>
+    /// Collection of <see cref="Track"/>s of this <see cref="Artist"/>.
+    /// </summary>
+    public IEnumerable<Track>? Tracks { get; set; }
 }
