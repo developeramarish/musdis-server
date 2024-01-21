@@ -2,13 +2,13 @@
 using System.Security.Claims;
 using System.Text;
 
-using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Requests;
 using Musdis.IdentityService.Options;
 
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Musdis.IdentityService.Services.JwtGenerator;
+namespace Musdis.IdentityService.Services.Jwt;
 
 /// <inheritdoc cref="IJwtGenerator"/>
 public class JwtGenerator : IJwtGenerator

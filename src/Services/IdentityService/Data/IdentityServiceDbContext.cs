@@ -2,7 +2,6 @@
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Musdis.IdentityService.Models.Entities;
 
 namespace Musdis.IdentityService.Data;
 public class IdentityServiceDbContext(

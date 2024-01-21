@@ -1,0 +1,23 @@
+@host = https://localhost:7002
+
+### Login
+POST {{host}}/api/authentication/sign-in/
+Accept: application/json
+Content-Type: application/json
+
+{
+    "userNameOrEmail": "",
+    "password": ""
+}
+
+### Register
+POST {{host}}/api/authentication/sign-up/
+Accept: application/json
+Content-Type: application/json
+
+{
+    "userName": "Stringger111",
+    "email": "string12356@",
+    "password": "String1!"
+}
+

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Requests;
 
 namespace Musdis.IdentityService.Validation;
 

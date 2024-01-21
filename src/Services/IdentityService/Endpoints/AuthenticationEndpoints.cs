@@ -1,9 +1,8 @@
-using Musdis.IdentityService.Models.Requests;
-using Musdis.IdentityService.Services.AuthenticationService;
+using Musdis.IdentityService.Requests;
+using Musdis.IdentityService.Services.Authentication;
 using Musdis.IdentityService.Extensions;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Musdis.IdentityService.Endpoints;
 

@@ -3,18 +3,17 @@ using FluentValidation;
 using Musdis.IdentityService.Errors;
 using Musdis.IdentityService.Extensions;
 using Musdis.IdentityService.Models;
-using Musdis.IdentityService.Models.Dtos;
-using Musdis.IdentityService.Models.Requests;
-using Musdis.IdentityService.Services.JwtGenerator;
+using Musdis.IdentityService.Dtos;
+using Musdis.IdentityService.Requests;
+using Musdis.IdentityService.Services.Jwt;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
-using Musdis.IdentityService.Models.Entities;
 
-namespace Musdis.IdentityService.Services.AuthenticationService;
+namespace Musdis.IdentityService.Services.Authentication;
 
 /// <inheritdoc cref="IAuthenticationService"/>
 public class AuthenticationService : IAuthenticationService
@@ -37,13 +36,7 @@ public class AuthenticationService : IAuthenticationService
         _signUpValidator = signUpValidator;
     }
 
-    /// <summary>
-    /// Attempts to sign in a user with the provided credentials.
-    /// </summary>
-    /// <param name="request">The sign-in request containing user credentials.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>A <see cref="Result{AuthenticatedUserDto}"/> representing the outcome of the sign-in attempt.</returns>
-    public async Task<Result<AuthenticatedUserDto>> SignInAsync(
+   public async Task<Result<AuthenticatedUserDto>> SignInAsync(
         SignInRequest request,
         CancellationToken cancellationToken = default
     )
@@ -58,14 +51,8 @@ public class AuthenticationService : IAuthenticationService
 
         return result;
     }
-
-    /// <summary>
-    /// Attempts to sign up a new user with the provided user information.
-    /// </summary>
-    /// <param name="request">The sign-up request containing user information.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>A <see cref="Result{AuthenticatedUserDto}"/> representing the outcome of the sign-up attempt.</returns>
-    public async Task<Result<AuthenticatedUserDto>> SignUpAsync(
+    
+   public async Task<Result<AuthenticatedUserDto>> SignUpAsync(
         SignUpRequest request,
         CancellationToken cancellationToken = default
     )

@@ -3,12 +3,12 @@ using System.Text;
 using FluentValidation;
 
 using Musdis.IdentityService.Data;
-using Musdis.IdentityService.Models.Requests;
-using Musdis.IdentityService.Models.Entities;
+using Musdis.IdentityService.Requests;
+using Musdis.IdentityService.Models;
 using Musdis.IdentityService.Options;
-using Musdis.IdentityService.Services;
-using Musdis.IdentityService.Services.AuthenticationService;
-using Musdis.IdentityService.Services.JwtGenerator;
+using Musdis.IdentityService.Services.Exceptions;
+using Musdis.IdentityService.Services.Authentication;
+using Musdis.IdentityService.Services.Jwt;
 using Musdis.IdentityService.Validation;
 using Musdis.IdentityService.Endpoints;
 
@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +84,7 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // Validation
+ValidatorOptions.Global.LanguageManager.Enabled = false;
 builder.Services.AddTransient<IValidator<SignInRequest>, SignInRequestValidator>();
 builder.Services.AddTransient<IValidator<SignUpRequest>>(sp => new SignUpRequestValidator(
     sp.GetRequiredService<UserManager<User>>(),

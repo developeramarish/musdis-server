@@ -1,4 +1,4 @@
-namespace Musdis.IdentityService.Models.Dtos;
+namespace Musdis.IdentityService.Dtos;
 
 /// <summary>
 /// Represents a DTO for an authenticated user with JWT and additional claims.

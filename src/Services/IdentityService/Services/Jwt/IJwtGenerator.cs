@@ -1,7 +1,7 @@
-﻿using Musdis.IdentityService.Models.Dtos;
-using Musdis.IdentityService.Models.Requests;
+﻿using Musdis.IdentityService.Dtos;
+using Musdis.IdentityService.Requests;
 
-namespace Musdis.IdentityService.Services.JwtGenerator;
+namespace Musdis.IdentityService.Services.Jwt;
 
 /// <summary> 
 /// Service for generating JWTs based on user data.

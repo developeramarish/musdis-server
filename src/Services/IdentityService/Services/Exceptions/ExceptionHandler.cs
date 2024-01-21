@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Musdis.IdentityService.Defaults;
 
-namespace Musdis.IdentityService.Services;
+namespace Musdis.IdentityService.Services.Exceptions;
 
 /// <summary>
 /// Global application exception handler.
@@ -23,7 +23,6 @@ public class ExceptionHandler : IExceptionHandler
     )
     {
         _logger.LogError(exception, "Exception occurred. Details: {Error}", exception.Message);
-
 
         var problemDetails = new ProblemDetails
         {

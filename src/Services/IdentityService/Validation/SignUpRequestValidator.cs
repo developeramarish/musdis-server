@@ -1,7 +1,7 @@
 using FluentValidation;
 
-using Musdis.IdentityService.Models.Entities;
-using Musdis.IdentityService.Models.Requests;
+using Musdis.IdentityService.Models;
+using Musdis.IdentityService.Requests;
 using Musdis.IdentityService.Options;
 
 using Microsoft.AspNetCore.Identity;
@@ -24,9 +24,18 @@ public class SignUpRequestValidator : AbstractValidator<SignUpRequest>
         _userManager = userManager;
         _passwordOptions = options.Value;
 
-        RuleFor(x => x.Password).NotEmpty().Must(BeCorrectPassword);
-        RuleFor(x => x.UserName).NotEmpty().MustAsync(BeUniqueNameAsync);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MustAsync(BeUniqueEmailAsync);
+        RuleFor(x => x.Password)
+            .NotEmpty()
+            .Must(BeCorrectPassword);
+        RuleFor(x => x.UserName)
+            .NotEmpty()
+            .MustAsync(BeUniqueNameAsync)
+            .WithMessage("Username must be unique");
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MustAsync(BeUniqueEmailAsync)
+            .WithMessage("Email must be unique");
     }
 
     private async Task<bool> BeUniqueNameAsync(string name, CancellationToken cancellationToken)

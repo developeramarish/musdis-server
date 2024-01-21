@@ -1,4 +1,4 @@
-namespace Musdis.IdentityService.Models.Requests;
+namespace Musdis.IdentityService.Requests;
 
 /// <summary>
 /// Represents a request for user sign-in, containing user identification and password.

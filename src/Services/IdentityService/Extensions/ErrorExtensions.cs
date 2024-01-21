@@ -22,7 +22,7 @@ public static class ErrorExtensions
         {
             InternalError => ("Internal error!", null),
             ValidationError validationError when !validationError.Failures.IsNullOrEmpty() =>
-                ("Validation error!", new() { { "Failures", validationError.Failures } }),
+                ("Validation error!", new() { { "failures", validationError.Failures } }),
             ValidationError validationError when validationError.Failures.IsNullOrEmpty() =>
                 ("Validation error!", null),
 

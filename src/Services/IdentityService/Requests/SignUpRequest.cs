@@ -1,6 +1,6 @@
-using Musdis.IdentityService.Models.Entities;
+using Musdis.IdentityService.Models;
 
-namespace Musdis.IdentityService.Models.Requests;
+namespace Musdis.IdentityService.Requests;
 
 /// <summary>
 /// Represents a request for user sign-up, containing user registration information.
