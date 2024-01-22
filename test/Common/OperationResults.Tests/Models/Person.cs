@@ -1,4 +1,4 @@
-namespace OperationResults.Tests.Models;
+namespace  Musdis.OperationResults.Tests.Models;
 
 /// <summary>
 /// Person model for mocking reference type data in tests.

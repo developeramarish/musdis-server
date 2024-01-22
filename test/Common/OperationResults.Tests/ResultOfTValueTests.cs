@@ -1,8 +1,8 @@
 using Musdis.OperationResults;
 
-using OperationResults.Tests.Models;
+using  Musdis.OperationResults.Tests.Models;
 
-namespace OperationResults.Tests;
+namespace  Musdis.OperationResults.Tests;
 
 public class ResultOfTValueTests
 {

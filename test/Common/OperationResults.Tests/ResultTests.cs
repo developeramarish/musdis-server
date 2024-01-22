@@ -1,6 +1,6 @@
 using Musdis.OperationResults;
 
-namespace OperationResults.Tests;
+namespace  Musdis.OperationResults.Tests;
 
 public class ResultTests
 {
