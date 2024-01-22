@@ -16,6 +16,11 @@ public class Artist
     public required string Name { get; set; }
 
     /// <summary>
+    /// The human-readable, unique identifier of the <see cref="Artist"/>.
+    /// </summary>
+    public required string Slug { get; set; }
+
+    /// <summary>
     /// The foreign key to <see cref="Models.ArtistType"/> table.
     /// </summary>
     public required int ArtistTypeId { get; set; }

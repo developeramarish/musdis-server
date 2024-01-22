@@ -16,7 +16,7 @@ public class Track
     public required string Title { get; set; }
 
     /// <summary>
-    /// The slug of the track.
+    /// The human-readable, unique identifier of the <see cref="Track"/>.
     /// </summary>
     public required string Slug { get; set; }
 

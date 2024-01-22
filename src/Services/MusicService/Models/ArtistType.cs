@@ -14,4 +14,9 @@ public class ArtistType
     /// The name of the <see cref="ArtistType"/>
     /// </summary>
     public required string Name { get; set; }
+
+        /// <summary>
+    /// The human-readable, unique identifier of the <see cref="ArtistType"/>.
+    /// </summary>
+    public required string Slug { get; set; }
 }

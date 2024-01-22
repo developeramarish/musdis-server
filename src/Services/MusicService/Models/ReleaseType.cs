@@ -14,4 +14,9 @@ public class ReleaseType
     /// The name of the <see cref="ReleaseType"/>
     /// </summary>
     public required string Name { get; set; }
+
+        /// <summary>
+    /// The human-readable, unique identifier of the <see cref="ReleaseType"/>.
+    /// </summary>
+    public required string Slug { get; set; }
 }

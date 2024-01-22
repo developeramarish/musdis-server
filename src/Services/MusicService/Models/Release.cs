@@ -26,6 +26,11 @@ public class Release
     public required string Name { get; set; }
 
     /// <summary>
+    /// The human-readable, unique identifier of the <see cref="Release"/>.
+    /// </summary>
+    public required string Slug { get; set; }
+
+    /// <summary>
     /// The release date of the <see cref="Release"/>.
     /// </summary>
     public required DateTime ReleaseDate { get; set; }
@@ -39,4 +44,9 @@ public class Release
     /// Collection of <see cref="Artist"/>s participated in creation of this <see cref="Track"/>.
     /// </summary>
     public IEnumerable<Artist>? Artists { get; set; }
+
+    /// <summary>
+    /// Collection of <see cref="Track"/>s of this <see cref="Release"/>.
+    /// </summary>
+    public IEnumerable<Track>? Tracks { get; set; }
 }
