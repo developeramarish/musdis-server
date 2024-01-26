@@ -1,6 +1,29 @@
 {
     "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "serviceName",
+            "type": "pickString",
+            "options": [
+                "MusicService",
+                "IdentityService",
+                "FileService"
+            ],
+            "description": "Name of the service"
+        }
+    ],
     "tasks": [
+        {
+            "label": "Add migration",
+            "type": "shell",
+            "command": "dotnet ef migrations add",
+            "args": [
+                "${input:migrationName}",
+                "-p ./src/Services/${input:serviceName}/",
+                "--msbuildprojectextensionspath ./artifacts/obj/${input:serviceName}/"
+            ],
+        },
+        // Identity service
         {
             "label": "build-identity",
             "command": "dotnet",
@@ -37,6 +60,7 @@
             ],
             "problemMatcher": "$msCompile"
         },
+        // File service
         {
             "label": "build-file",
             "command": "dotnet",
@@ -72,6 +96,43 @@
                 "${workspaceFolder}/src/Services/FileService/FileService.csproj"
             ],
             "problemMatcher": "$msCompile"
-        }
+        },
+        // Music service
+        {
+            "label": "build-music",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Services/MusicService/MusicService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-music",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/Services/MusicService/MusicService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watch-music",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/Services/MusicService/MusicService.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
     ]
 }
