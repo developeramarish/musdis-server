@@ -8,8 +8,8 @@ namespace Musdis.IdentityService.Errors;
 public sealed class UnauthorizedError : Error
 {
     public UnauthorizedError(string description)
-        : base(401, description) { }
+        : base(StatusCodes.Status401Unauthorized, description) { }
 
     public UnauthorizedError()
-        : base(401, "User is not authorized") { }
+        : base(StatusCodes.Status401Unauthorized, "User is not authorized") { }
 }

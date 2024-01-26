@@ -9,8 +9,8 @@ namespace Musdis.IdentityService.Errors;
 public sealed class InternalError : Error
 {
     public InternalError(string description)
-        : base(500, description) { }
+        : base(StatusCodes.Status500InternalServerError, description) { }
 
     public InternalError()
-        : base(500, "Internal error!") { }
+        : base(StatusCodes.Status500InternalServerError, "Internal server error occurred!") { }
 }

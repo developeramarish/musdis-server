@@ -12,17 +12,17 @@ namespace Musdis.IdentityService.Errors;
 public sealed class ValidationError : Error
 {
     public ValidationError(string description)
-        : base(400, description)
+        : base(StatusCodes.Status400BadRequest, description)
     {
-        Failures = null;
+        Failures = [];
     }
 
     public ValidationError(
         string description,
         IEnumerable<ValidationFailure> failures
-    ) : base(400, description)
+    ) : base(StatusCodes.Status400BadRequest, description)
     {
         Failures = failures;
     }
-    public IEnumerable<ValidationFailure>? Failures { get; init; }
+    public IEnumerable<ValidationFailure> Failures { get; init; }
 }
