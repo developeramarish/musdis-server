@@ -27,7 +27,8 @@ public class SlugGenerator : ISlugGenerator
 
         try
         {
-            var combined = string.Join(' ', GetCombinedValues());
+            string[] strings = [value, .. additionalValues];
+            var combined = string.Join(' ', strings);
             var slug = _slugHelper.GenerateSlug(combined);
 
             return slug.ToValueResult();
@@ -37,38 +38,5 @@ public class SlugGenerator : ISlugGenerator
             return new Error(500, $"Could not create slug : {ex.Message}")
                 .ToValueResult<string>();
         }
-
-        // Combine value and values to one enumerable. 
-        IEnumerable<string> GetCombinedValues()
-        {
-            yield return value;
-
-            foreach (var v in additionalValues)
-            {
-                yield return v;
-            }
-        }
-
-        // Basic realization.
-        // var stringBuilder = new StringBuilder();
-        // try
-        // {
-        //     foreach (var val in GetValues())
-        //     {
-        //         var part = Regex.Replace(val, "[^A-Za-z0-9]", " ");
-        //         part = Regex.Replace(part, @"\s+", " ").Trim();
-        //         part = part.Replace(" ", "-");
-        //         part = part.ToLowerInvariant();
-
-        //         stringBuilder.Append(part);
-        //     }
-
-        //     return stringBuilder.ToString().ToValueResult();
-        // }
-        // catch (Exception exc)
-        // {
-        //     return new Error(500, $"Could not create : {exc.Message}")
-        //         .ToValueResult<string>();
-        // }
     }
 }
