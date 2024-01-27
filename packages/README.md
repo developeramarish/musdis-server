@@ -3,7 +3,7 @@ Contains NuGet packages for microservices.
 
 ## List of packages 📃
 
-- _OperationResults_ - package for using Operation result pattern in C# code.
+- _[OperationResults](../src/Common/OperationResults/README.md)_ - package for using Operation result pattern in C# code.
 
 ## Get started 
 
