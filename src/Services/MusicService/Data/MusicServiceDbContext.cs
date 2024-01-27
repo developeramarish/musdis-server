@@ -4,7 +4,11 @@ using Musdis.MusicService.Models;
 
 namespace Musdis.MusicService.Data;
 
-public class MusicServiceDbContext(
+/// <summary>
+/// Application database context.
+/// </summary>
+/// <param name="options">Options to configure EF Core.</param>
+public sealed class MusicServiceDbContext(
     DbContextOptions<MusicServiceDbContext> options
 ) : DbContext(options)
 {

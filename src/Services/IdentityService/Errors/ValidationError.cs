@@ -24,5 +24,9 @@ public sealed class ValidationError : Error
     {
         Failures = failures;
     }
+
+    /// <summary>
+    /// Failures caused error.
+    /// </summary>
     public IEnumerable<ValidationFailure> Failures { get; init; }
 }

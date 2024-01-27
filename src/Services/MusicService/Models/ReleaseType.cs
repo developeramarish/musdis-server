@@ -6,17 +6,17 @@ namespace Musdis.MusicService.Models;
 public class ReleaseType
 {
     /// <summary>
-    /// The unique identifier of the <see cref="ReleaseType"/>
+    ///     The unique identifier of the <see cref="ReleaseType"/>
     /// </summary>
     public required Guid Id { get; set; }
 
     /// <summary>
-    /// The name of the <see cref="ReleaseType"/>
+    ///     The name of the <see cref="ReleaseType"/>
     /// </summary>
     public required string Name { get; set; }
 
-        /// <summary>
-    /// The human-readable, unique identifier of the <see cref="ReleaseType"/>.
+    /// <summary>
+    ///     The human-readable, unique identifier of the <see cref="ReleaseType"/>.
     /// </summary>
     public required string Slug { get; set; }
 }

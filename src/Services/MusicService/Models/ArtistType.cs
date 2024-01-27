@@ -6,17 +6,17 @@ namespace Musdis.MusicService.Models;
 public class ArtistType
 {
     /// <summary>
-    /// The unique identifier of the <see cref="ArtistType"/>
+    ///     The unique identifier of the <see cref="ArtistType"/>
     /// </summary>
     public required Guid Id { get; set; }
 
     /// <summary>
-    /// The name of the <see cref="ArtistType"/>
+    ///     The name of the <see cref="ArtistType"/>
     /// </summary>
     public required string Name { get; set; }
 
-        /// <summary>
-    /// The human-readable, unique identifier of the <see cref="ArtistType"/>.
+    /// <summary>
+    ///     The human-readable, unique identifier of the <see cref="ArtistType"/>.
     /// </summary>
     public required string Slug { get; set; }
 }

@@ -35,12 +35,12 @@ public class Artist
     public required Guid ArtistTypeId { get; set; }
 
     /// <summary>
-    ///     The identifier of user from Identity service, who created this <see cref="Artist"/>.
+    ///     The identifier of the user from Identity service, who created this <see cref="Artist"/>.
     /// </summary>
-    public required string CreatorUserId { get; set; }
+    public required string CreatorId { get; set; }
 
     // Related entities.
-    
+
     /// <summary>
     ///     The type of the <see cref="Artist"/> (e.g. band or musician).
     /// </summary>
