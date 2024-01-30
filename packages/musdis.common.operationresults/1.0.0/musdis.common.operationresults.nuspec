@@ -2,11 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Musdis.Common.OperationResults</id>
-    <version>1.0.7</version>
+    <version>1.0.0</version>
     <authors>Eldar T.</authors>
     <description>This package is a tool for developers working with C# who want to
       harness the full potential of result patterns in their code.</description>
-    <repository type="git" commit="19bab2aebaa89ca1801ded26eb56aace2ec23a27" />
+    <repository type="git" commit="beec5b2925e46e085b63ff46f1be6de1cdd0961c" />
     <dependencies>
       <group targetFramework="net8.0" />
     </dependencies>

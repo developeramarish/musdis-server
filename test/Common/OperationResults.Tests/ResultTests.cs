@@ -2,7 +2,7 @@ using Musdis.OperationResults;
 
 namespace  Musdis.OperationResults.Tests;
 
-public class ResultTests
+public sealed class ResultTests
 {
     [Fact]
     public void Success_ReturnsSuccessResult_Always()
@@ -21,7 +21,7 @@ public class ResultTests
     [Fact]
     public void Failure_ReturnsFailureResult_WhenValidErrorPassed()
     {
-        var error = new Error(0, "some error");
+        var error = new Error("some error");
         var result = Result.Failure(error);
 
         var expectedIsSuccess = false;
@@ -36,7 +36,7 @@ public class ResultTests
     [Fact]
     public void Failure_ThrowsArgumentException_WhenNullErrorPassed()
     {
-        var createFailure = () => Result.Failure(null!);
+        var createFailure = () => Result.Failure((Error)null!);
         Assert.Throws<ArgumentException>(createFailure);
     }
 }
