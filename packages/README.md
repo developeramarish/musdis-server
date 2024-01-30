@@ -34,7 +34,7 @@ dotnet pack ~/path/to/package/project.csproj
 
 2. Add packages to NuGet source
 ```sh
-nuget add {your-path}/musdis-server/bin/Results/Release/{package-name}.nupkg -Source {your-path}/musdis-server/packages
+nuget add {your-path}/musdis-server/artifacts/package/OperationResults/release/{package-name}.nupkg -Source {your-path}/musdis-server/packages
 ```
 
 3. Add NuGet source and packages to projects following instructions [above](#simple).
