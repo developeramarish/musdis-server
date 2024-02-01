@@ -18,14 +18,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Musdis.Common.OperationResults" Version="1.0.7" />
+    <PackageReference Include="Musdis.Common.OperationResults" Version="1.0.0" />
+    <PackageReference Include="Musdis.Common.ResponseHelpers" Version="1.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Data\DatabaseContext\" />
   </ItemGroup>
 
 </Project>
