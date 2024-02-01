@@ -1,5 +1,6 @@
 
 # Musdis.OperationResults
+
 The Musdis.OperationResults package is a tool for developers working with C# who want to harness the full potential of result patterns in their code.
 
 ## Key Features:
