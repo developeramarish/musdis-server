@@ -11,7 +11,8 @@
     <PackageReference Include="FluentValidation" Version="11.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Include="Musdis.Common.OperationResults" Version="1.0.7" />
+    <PackageReference Include="Musdis.Common.OperationResults" Version="1.0.0" />
+    <PackageReference Include="Musdis.Common.ResponseHelpers" Version="1.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Slugify.Core" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
