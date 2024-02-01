@@ -39,7 +39,7 @@ public sealed class ValidationError : HttpError
     }
     public ValidationError() : this(ErrorTitle) { }
 
-    public override IResult ToProblemDetails(string instance)
+    public override IResult ToProblemHttpResult(string instance)
     {
         return Results.Problem(
             type: ErrorType,

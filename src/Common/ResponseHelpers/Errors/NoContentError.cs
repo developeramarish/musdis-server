@@ -5,7 +5,7 @@ using Musdis.OperationResults;
 namespace Musdis.ResponseHelpers.Errors;
 
 /// <summary>
-///     Represents no content error, associated with status code 204.
+///     Represents a no content error, associated with status code 204.
 /// </summary>
 /// <remarks>
 ///     Technically it is not HTTP error, but should be used as invalid result of deletion operation.

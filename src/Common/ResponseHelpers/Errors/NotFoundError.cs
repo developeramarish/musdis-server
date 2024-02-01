@@ -5,7 +5,7 @@ using Musdis.OperationResults;
 namespace Musdis.ResponseHelpers.Errors;
 
 /// <summary>
-///     Represents a content not found error, associated with an HTTP status code 404.
+///     Represents a resource not found error, associated with an HTTP status code 404.
 /// </summary>
 public sealed class NotFoundError : HttpError
 {

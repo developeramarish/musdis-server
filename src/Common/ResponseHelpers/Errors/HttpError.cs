@@ -51,7 +51,7 @@ public class HttpError : Error
     /// <returns>
     ///     <see cref="IResult"/> as problem details.
     /// </returns>
-    public virtual IResult ToProblemDetails(string instance)
+    public virtual IResult ToProblemHttpResult(string instance)
     {
         return Results.Problem(
             type: ErrorType,
