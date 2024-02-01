@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Musdis.IdentityService.Validation;
 
 /// <summary>
-/// Validates <see cref="SignUpRequest"/>s to ensure they meet certain criteria.
+///     Validates <see cref="SignUpRequest"/>s to ensure they meet certain criteria.
 /// </summary>
 public class SignUpRequestValidator : AbstractValidator<SignUpRequest>
 {
