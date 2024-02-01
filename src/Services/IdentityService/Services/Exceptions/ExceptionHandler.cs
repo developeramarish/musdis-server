@@ -6,7 +6,7 @@ using Musdis.IdentityService.Defaults;
 namespace Musdis.IdentityService.Services.Exceptions;
 
 /// <summary>
-/// Global application exception handler.
+///     The global application exception handler.
 /// </summary>
 public class ExceptionHandler : IExceptionHandler
 {
@@ -37,6 +37,5 @@ public class ExceptionHandler : IExceptionHandler
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;
-
     }
 }

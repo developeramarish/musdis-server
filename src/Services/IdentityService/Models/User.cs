@@ -3,6 +3,6 @@
 namespace Musdis.IdentityService.Models;
 
 /// <summary>
-/// User of the application.
+///     The user of the application.
 /// </summary>
 public class User : IdentityUser { }
