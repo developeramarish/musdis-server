@@ -3,29 +3,32 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
-using Musdis.MusicService.Errors;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
+using Musdis.ResponseHelpers.Errors;
 
 namespace Musdis.MusicService.Services.Data;
 
 /// <inheritdoc cref="IArtistService"/>
 public sealed class ArtistService : IArtistService
 {
-    private readonly MusicServiceDbContext _dbContext;
+    private readonly IMusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateArtistRequest> _createRequestValidator;
+    private readonly IValidator<UpdateArtistRequest> _updateRequestValidator;
     public ArtistService(
-        MusicServiceDbContext dbContext,
+        IMusicServiceDbContext dbContext,
         ISlugGenerator slugGenerator,
-        IValidator<CreateArtistRequest> createRequestValidator
+        IValidator<CreateArtistRequest> createRequestValidator,
+        IValidator<UpdateArtistRequest> updateRequestValidator
     )
     {
         _dbContext = dbContext;
         _slugGenerator = slugGenerator;
         _createRequestValidator = createRequestValidator;
+        _updateRequestValidator = updateRequestValidator;
     }
 
     public async Task<Result<Artist>> CreateAsync(
@@ -33,14 +36,23 @@ public sealed class ArtistService : IArtistService
         CancellationToken cancellationToken = default
     )
     {
-        // TODO add main user info to db
-        var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
+        var existingArtist = await _dbContext.Artists
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Name == request.Name, cancellationToken);
+        if (existingArtist is not null)
+        {
+            return new ConflictError(
+                $"Artist with name = {request.Name} exists"
+            ).ToValueResult<Artist>();
+        }
 
+        // TODO add main user info to db 
+        var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
                 "Could not create an Artist, incorrect data!",
-                validationResult.Errors
+                validationResult.Errors.Select(f => f.ErrorMessage)
             ).ToValueResult<Artist>();
         }
 
@@ -49,12 +61,15 @@ public sealed class ArtistService : IArtistService
             .FirstOrDefaultAsync(at => at.Slug == request.ArtistTypeSlug, cancellationToken);
         if (artistType is null)
         {
-            return new InternalError(
+            return new InternalServerError(
                 "Could not create an Artist"
             ).ToValueResult<Artist>();
         }
 
-        var slugResult = await GenerateSlugAsync(request.Name, cancellationToken);
+        var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Artist>(
+            request.Name,
+            cancellationToken
+        );
         if (slugResult.IsFailure)
         {
             return slugResult.Error.ToValueResult<Artist>();
@@ -67,7 +82,7 @@ public sealed class ArtistService : IArtistService
             ArtistTypeId = artistType.Id,
             Slug = slugResult.Value,
             CoverUrl = request.CoverUrl,
-            CreatorUserId = "NOT IMPLEMENTED", // TODO add implementation
+            CreatorId = "NOT IMPLEMENTED", // TODO add implementation
         };
         artist.ArtistUsers = request.UserIds.Select(userId => new ArtistUser
         {
@@ -75,9 +90,12 @@ public sealed class ArtistService : IArtistService
             UserId = userId
         }).ToList();
 
-        await _dbContext.AddAsync(artist, cancellationToken);
+        await _dbContext.Artists.AddAsync(artist, cancellationToken);
 
-        return artist.ToValueResult();
+        var savingResult = await SaveChangesAsync(cancellationToken);
+        return savingResult.IsSuccess
+            ? artist.ToValueResult()
+            : savingResult.Error.ToValueResult<Artist>();
     }
 
     public async Task<Result> DeleteAsync(Guid artistId, CancellationToken cancellationToken = default)
@@ -87,29 +105,40 @@ public sealed class ArtistService : IArtistService
         if (artist is null)
         {
             return new NoContentError(
-                "Could not able to delete artist, content not found."
+                $"Could not able to delete artist, content with Id={artistId} not found."
             ).ToResult();
         }
 
         _dbContext.Artists.Remove(artist);
 
-        return Result.Success();
+        var savingResult = await SaveChangesAsync(cancellationToken);
+        return savingResult.IsSuccess
+            ? Result.Success()
+            : savingResult.Error.ToResult();
     }
 
     public async Task<Result<Artist>> UpdateAsync(
+        Guid id,
         UpdateArtistRequest request,
         CancellationToken cancellationToken = default
     )
     {
-        // TODO add validator
-
         var artist = await _dbContext.Artists
             .Include(a => a.ArtistUsers)
-            .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
         if (artist is null)
         {
-            return new NotFoundError($"Artist with Id = {request.Id} not found")
+            return new NotFoundError($"Artist with Id = {id} not found")
                 .ToValueResult<Artist>();
+        }
+
+        var validationResult = await _updateRequestValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Could not create an Artist, incorrect data!",
+                validationResult.Errors.Select(f => f.ErrorMessage)
+            ).ToValueResult<Artist>();
         }
 
         var artistType = await _dbContext.ArtistTypes
@@ -117,7 +146,7 @@ public sealed class ArtistService : IArtistService
             .FirstOrDefaultAsync(at => at.Slug == request.ArtistTypeSlug, cancellationToken);
         if (artistType is null)
         {
-            return new InternalError(
+            return new InternalServerError(
                 "Could not update an Artist"
             ).ToValueResult<Artist>();
         }
@@ -129,7 +158,10 @@ public sealed class ArtistService : IArtistService
         {
             artist.Name = request.Name;
 
-            var slugResult = await GenerateSlugAsync(request.Name, cancellationToken);
+            var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Artist>(
+                request.Name,
+                cancellationToken
+            );
             if (slugResult.IsFailure)
             {
                 return slugResult.Error.ToValueResult<Artist>();
@@ -146,22 +178,10 @@ public sealed class ArtistService : IArtistService
             }
         }
 
-        return artist.ToValueResult();
-    }
-
-    public async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            return Result.Success();
-        }
-        catch (Exception ex)
-        {
-            return new InternalError(
-                $"Cannot save changes to database: {ex.Message}"
-            ).ToResult();
-        }
+        var savingResult = await SaveChangesAsync(cancellationToken);
+        return savingResult.IsSuccess
+            ? artist.ToValueResult()
+            : savingResult.Error.ToValueResult<Artist>();
     }
 
     public IQueryable<Artist> GetQueryable()
@@ -173,8 +193,7 @@ public sealed class ArtistService : IArtistService
     ///     Updates <see cref="Artist.ArtistUsers"/> of passed user.
     /// </summary>
     /// <remarks>
-    ///     Pass tracking entity, or changes would not apply. <br/>
-    ///     Use <see cref="SaveChangesAsync"/> to save changes.
+    ///     Pass tracking entity, or changes would not apply. 
     /// </remarks>
     /// 
     /// <param name="artist">
@@ -183,12 +202,15 @@ public sealed class ArtistService : IArtistService
     /// <param name="userIds">
     ///     Updated collection of user identifiers.
     /// </param>
-    /// <returns></returns>
+    /// 
+    /// <returns>
+    ///     The result of an operation.
+    /// </returns>
     private Result UpdateArtistUsers(Artist artist, IEnumerable<string> userIds)
     {
         if (artist is null || userIds is null)
         {
-            return new InternalError(
+            return new InternalServerError(
                 "Couldn't update artist users"
             ).ToResult();
         }
@@ -220,7 +242,7 @@ public sealed class ArtistService : IArtistService
         }
         catch (Exception ex)
         {
-            return new InternalError(
+            return new InternalServerError(
                 $"Couldn't update artist users: {ex.Message}"
             ).ToResult();
         }
@@ -260,57 +282,18 @@ public sealed class ArtistService : IArtistService
         );
     }
 
-
-    /// <summary>
-    ///     Generates slug from <see cref="CreateArtistRequest"/>.
-    ///     Tries generate unique slug.
-    /// </summary>
-    /// 
-    /// <param name="value">
-    ///     The string to generate the slug for.
-    /// </param>
-    /// <param name="cancellationToken">
-    ///     Token for cancellation.
-    /// </param>
-    /// <returns>
-    ///     The result object that contains a string value which is a generated slug.
-    /// </returns>
-    private async Task<Result<string>> GenerateSlugAsync(
-        string value,
-        CancellationToken cancellationToken
-    )
+    private async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var slugResult = _slugGenerator.Generate(value);
-
-        if (slugResult.IsFailure)
-        {
-            return slugResult.Error.ToValueResult<string>();
-        }
-
         try
         {
-            var slug = slugResult.Value;
-            var artistsWithSimilarSlug = await _dbContext.Artists
-                .AsNoTracking()
-                .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToArrayAsync(cancellationToken);
-
-            var suffixedSlug = slug;
-            // Add number suffix until it is unique
-            for (var i = 1; artistsWithSimilarSlug.Contains(suffixedSlug); i++)
-            {
-                suffixedSlug = slug + '-' + i;
-            }
-
-            return suffixedSlug.ToValueResult();
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return new InternalError(
-                $"Could not generate slug!: {ex.Message}"
-            ).ToValueResult<string>();
+            return new InternalServerError(
+                $"Cannot save changes to database: {ex.Message}"
+            ).ToResult();
         }
     }
-
 }
