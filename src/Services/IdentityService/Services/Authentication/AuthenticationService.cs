@@ -1,6 +1,5 @@
 using FluentValidation;
 
-using Musdis.IdentityService.Errors;
 using Musdis.IdentityService.Extensions;
 using Musdis.IdentityService.Models;
 using Musdis.IdentityService.Dtos;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
 using Musdis.OperationResults;
+using Musdis.ResponseHelpers.Errors;
 using Musdis.OperationResults.Extensions;
 
 namespace Musdis.IdentityService.Services.Authentication;
@@ -36,7 +36,7 @@ public class AuthenticationService : IAuthenticationService
         _signUpValidator = signUpValidator;
     }
 
-   public async Task<Result<AuthenticatedUserDto>> SignInAsync(
+    public async Task<Result<AuthenticatedUserDto>> SignInAsync(
         SignInRequest request,
         CancellationToken cancellationToken = default
     )
@@ -51,8 +51,8 @@ public class AuthenticationService : IAuthenticationService
 
         return result;
     }
-    
-   public async Task<Result<AuthenticatedUserDto>> SignUpAsync(
+
+    public async Task<Result<AuthenticatedUserDto>> SignUpAsync(
         SignUpRequest request,
         CancellationToken cancellationToken = default
     )
@@ -62,7 +62,7 @@ public class AuthenticationService : IAuthenticationService
         {
             return new ValidationError(
                 "Cannot sign user up, incorrect data",
-                validationResult.Errors
+                validationResult.Errors.Select(f => f.ErrorMessage)
             ).ToValueResult<AuthenticatedUserDto>();
         }
 
@@ -71,7 +71,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (!result.Succeeded)
         {
-            return new InternalError(
+            return new InternalServerError(
                 "Could not create user, try again later!"
             ).ToValueResult<AuthenticatedUserDto>();
         }
@@ -81,13 +81,29 @@ public class AuthenticationService : IAuthenticationService
         return signInResult;
     }
 
+    /// <summary>
+    ///     Gets the user's authentication info.
+    /// </summary>
+    /// 
+    /// <param name="user">
+    ///     The user to get info of.
+    /// </param>
+    /// <param name="password">
+    ///     The password that came from request.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     The token to cancel the operation.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     User's info, JWT and their claims wrapped in <see cref="AuthenticatedUserDto"/>.
+    /// </returns>
     private async Task<Result<AuthenticatedUserDto>> GetAuthenticatedUserDtoAsync(
         User user,
         string password,
         CancellationToken cancellationToken = default
     )
     {
-
         if (user is null || password.IsNullOrEmpty())
         {
             return new UnauthorizedError()
@@ -113,7 +129,7 @@ public class AuthenticationService : IAuthenticationService
 
         if (cancellationToken.IsCancellationRequested)
         {
-            return new InternalError(
+            return new InternalServerError(
                 "Request cancelled"
             ).ToValueResult<AuthenticatedUserDto>();
         }
