@@ -18,20 +18,13 @@ public class CreateArtistRequestValidator : AbstractValidator<CreateArtistReques
     {
         _dbContext = dbContext;
 
-        RuleFor(x => x.ArtistTypeSlug).NotEmpty().MustAsync(BeArtistTypeSlugExistingInDbAsync);
-        RuleFor(x => x.Name).NotEmpty().MustAsync(BeUniqueNameAsync);
+        RuleFor(x => x.Name).NotEmpty();
+        RuleFor(x => x.ArtistTypeSlug)
+            .NotEmpty()
+            .MustAsync(BeExistingArtistTypeSlugAsync);
     }
 
-    private async Task<bool> BeUniqueNameAsync(string name, CancellationToken cancellationToken)
-    {
-        var artist = await _dbContext.Artists
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Name == name, cancellationToken);
-
-        return artist is null;
-    }
-
-    private async Task<bool> BeArtistTypeSlugExistingInDbAsync(
+    private async Task<bool> BeExistingArtistTypeSlugAsync(
         string artistTypeSlug, 
         CancellationToken cancellationToken
     )
