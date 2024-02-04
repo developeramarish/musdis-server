@@ -5,13 +5,16 @@ using Musdis.MusicService.Models;
 namespace Musdis.MusicService.Data;
 
 /// <summary>
-/// Application database context.
+///     Application database context.
 /// </summary>
-/// <param name="options">Options to configure EF Core.</param>
-public sealed class MusicServiceDbContext(
-    DbContextOptions<MusicServiceDbContext> options
-) : DbContext(options)
+public sealed class MusicServiceDbContext : DbContext, IMusicServiceDbContext
 {
+    public MusicServiceDbContext(DbContextOptions<MusicServiceDbContext> options)
+        : base(options)
+    {
+        Database.EnsureCreated();
+    }
+
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<ArtistUser> ArtistUsers => Set<ArtistUser>();
     public DbSet<ArtistType> ArtistTypes => Set<ArtistType>();
@@ -21,4 +24,30 @@ public sealed class MusicServiceDbContext(
     public DbSet<ReleaseType> ReleaseTypes => Set<ReleaseType>();
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<TagTrack> TagTracks => Set<TagTrack>();
+    public DbSet<TrackArtist> TrackArtists => Set<TrackArtist>();
+
+    public IQueryable<T> SqlQuery<T>(FormattableString query)
+    {
+        return Database.SqlQuery<T>(query);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        var assembly = GetType().Assembly;
+        modelBuilder.ApplyConfigurationsFromAssembly(assembly);
+
+        SeedData(modelBuilder);
+    }
+
+    private void SeedData(ModelBuilder modelBuilder)
+    {
+        if (!ArtistTypes.Any())
+        {
+            DataSeeder.SeedArtistTypes(modelBuilder);
+        }
+        if (!ReleaseTypes.Any())
+        {
+            DataSeeder.SeedReleaseTypes(modelBuilder);
+        }
+    }
 }

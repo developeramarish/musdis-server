@@ -31,14 +31,9 @@ public class Track
     public Release? Release { get; set; }
 
     /// <summary>
-    ///     The foreign key to <see cref="Models.Artist"/> table.
+    ///     A collection of artists (author(s)) of this track.
     /// </summary>
-    public required Guid ArtistId { get; set; }
-
-    /// <summary>
-    ///     The artist (author(s)) of the track.
-    /// </summary>
-    public Artist? Artist { get; set; }
+    public IEnumerable<Artist>? Artists { get; set; }
 
     /// <summary>
     ///     A collection of <see cref="Tag"/>s associated with this <see cref="Track"/>.

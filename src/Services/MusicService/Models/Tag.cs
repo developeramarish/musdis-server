@@ -1,7 +1,7 @@
 namespace Musdis.MusicService.Models;
 
 /// <summary>
-/// Represents tag for tracks.
+///     Represents the tag for tracks.
 /// </summary>
 public class Tag
 {

@@ -19,4 +19,9 @@ public class ArtistType
     ///     The human-readable, unique identifier of the <see cref="ArtistType"/>.
     /// </summary>
     public required string Slug { get; set; }
+
+    /// <summary>
+    ///     A collection of <see cref="Artist"/>s with this <see cref="ArtistType"/>.
+    /// </summary>
+    public IEnumerable<Artist>? Artists { get; set; }
 }

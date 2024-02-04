@@ -19,4 +19,9 @@ public class ReleaseType
     ///     The human-readable, unique identifier of the <see cref="ReleaseType"/>.
     /// </summary>
     public required string Slug { get; set; }
+
+    /// <summary>
+    ///     A collection of <see cref="Release"/>s with this <see cref="ReleaseType"/>.
+    /// </summary>
+    public IEnumerable<Release>? Releases { get; set; }
 }

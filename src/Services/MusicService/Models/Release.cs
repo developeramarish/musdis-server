@@ -11,14 +11,14 @@ public class Release
     public required Guid Id { get; set; }
 
     /// <summary>
-    ///     The foreign key to <see cref="ReleaseType"/> table.
+    ///     The foreign key to <see cref="Models.ReleaseType"/> table.
     /// </summary>
     public required Guid ReleaseTypeId { get; set; }
 
     /// <summary>
     ///     The type of the <see cref="Release"/>.
     /// </summary>
-    public ReleaseType? Type { get; set; }
+    public ReleaseType? ReleaseType { get; set; }
 
     /// <summary>
     ///     The name of the <see cref="Release"/>.
