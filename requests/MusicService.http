@@ -1,6 +1,13 @@
 @host = http://localhost:5276
 
-GET {{host}}/weatherforecast/
+POST {{host}}/artist/
 Accept: application/json
 
+{
+    "name": "Artist one",
+    "artistTypeSlug": "band",
+    "coverUrl": "s",
+    "userIds": []
+}
 ###
+
