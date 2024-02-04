@@ -16,7 +16,7 @@ namespace Musdis.MusicService.Requests;
 /// <param name="UserIds">
 ///     Identifiers of users who are participants of an artist (e.g. members of band).
 /// </param>
-public record CreateArtistRequest(
+public sealed record CreateArtistRequest(
     string Name,
     string ArtistTypeSlug,
     string CoverUrl,
