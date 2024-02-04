@@ -1,6 +1,10 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
+using Microsoft.EntityFrameworkCore;
+
+using Musdis.MusicService.Data;
+using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
 
@@ -12,10 +16,15 @@ namespace Musdis.MusicService.Services;
 public class SlugGenerator : ISlugGenerator
 {
     private readonly ISlugHelper _slugHelper;
+    private readonly IMusicServiceDbContext _dbContext;
 
-    public SlugGenerator(ISlugHelper slugHelper)
+    public SlugGenerator(
+        ISlugHelper slugHelper,
+        IMusicServiceDbContext dbContext
+    )
     {
         _slugHelper = slugHelper;
+        _dbContext = dbContext;
     }
 
     public Result<string> Generate(string value, params string[] additionalValues)
@@ -35,8 +44,48 @@ public class SlugGenerator : ISlugGenerator
         }
         catch (Exception ex)
         {
-            return new Error(500, $"Could not create slug : {ex.Message}")
+            return new Error($"Could not create slug : {ex.Message}")
                 .ToValueResult<string>();
+        }
+    }
+    
+    public async Task<Result<string>> GenerateUniqueSlugAsync<TModel>(
+        string value,
+        CancellationToken cancellationToken = default
+    ) where TModel : class
+    {
+        var slugResult = Generate(value);
+
+        if (slugResult.IsFailure)
+        {
+            return slugResult.Error.ToValueResult<string>();
+        }
+
+        var slug = slugResult.Value;
+
+        try
+        {
+            var tableName = $"{typeof(TModel).Name}s";
+            var similarSlugs = await _dbContext
+                .SqlQuery<string>($"SELECT [Slug] FROM [{tableName}]")
+                .Where(s => s.StartsWith(slug))
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            var suffixedSlug = slug;
+            // Adding number suffix until it is unique
+            for (var i = 1; similarSlugs.Contains(suffixedSlug); i++)
+            {
+                suffixedSlug = slug + '-' + i;
+            }
+
+            return suffixedSlug.ToValueResult();
+        }
+        catch (Exception ex)
+        {
+            return new Error(
+                $"Could not generate slug!: {ex.Message}"
+            ).ToValueResult<string>();
         }
     }
 }

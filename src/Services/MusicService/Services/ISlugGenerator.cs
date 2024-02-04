@@ -22,4 +22,24 @@ public interface ISlugGenerator
     ///     The <see cref="Result{TValue}"/> of operation, which contains generated slug.
     /// </returns>
     Result<string> Generate(string value, params string[] additionalValues);
+
+    /// <summary>
+    ///     Generates unique slug for the <typeparamref name="TModel"/> model.
+    /// </summary>
+    /// 
+    /// <param name="value">
+    ///     The string to generate the slug for.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     The token for the cancellation.
+    /// </param>
+    /// <typeparam name="TModel">The model type.</typeparam>
+    /// 
+    /// <returns>
+    ///     The result object that contains a string value which is a generated slug.
+    /// </returns>
+    Task<Result<string>> GenerateUniqueSlugAsync<TModel>(
+        string value,
+        CancellationToken cancellationToken = default
+    ) where TModel : class;
 }
