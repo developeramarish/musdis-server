@@ -1,6 +1,7 @@
 namespace Musdis.IdentityService.Options;
 
-public class IdentityPasswordOptions
+// TODO add docs
+public sealed class IdentityPasswordOptions
 {
     public const string Password = "Identity:Password";
 

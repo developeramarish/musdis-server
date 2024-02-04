@@ -1,6 +1,7 @@
 namespace Musdis.IdentityService.Options;
 
-public class JwtOptions
+// TODO add docs
+public sealed class JwtOptions
 {
     public const string Jwt = "JwtSettings";
 
