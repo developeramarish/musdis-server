@@ -1,26 +1,32 @@
 using Musdis.IdentityService.Requests;
 using Musdis.IdentityService.Services.Authentication;
-using Musdis.IdentityService.Extensions;
 
 using Microsoft.AspNetCore.Mvc;
+using Musdis.ResponseHelpers.Errors;
 
 namespace Musdis.IdentityService.Endpoints;
 
 /// <summary>
-/// Endpoints for authentication.
+///     Endpoints for authentication.
 /// </summary>
 public static class AuthenticationEndpoints
 {
     /// <summary>
-    /// Maps authentication endpoints.
+    ///     Maps authentication endpoints.
     /// </summary>
-    /// <param name="group">Route group.</param>
-    /// <returns>Route group with mapped authentication.</returns>
+    /// 
+    /// <param name="groupBuilder">
+    ///     The route group to be mapped.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     Route group with mapped authentication.
+    /// </returns>
     public static RouteGroupBuilder MapAuthentication(
-        this RouteGroupBuilder group
+        this RouteGroupBuilder groupBuilder
     )
     {
-        group.MapPost("/sign-in", async (
+        groupBuilder.MapPost("/sign-in", async (
             [FromBody] SignInRequest request,
             [FromServices] IAuthenticationService authenticationService,
             HttpContext context,
@@ -29,15 +35,23 @@ public static class AuthenticationEndpoints
         {
             var result = await authenticationService.SignInAsync(request, cancellationToken);
 
-            return result switch
+            if (result.IsSuccess)
             {
-                { IsSuccess: true } => Results.Ok(result.Value),
-                { IsSuccess: false } => result.Error.ToProblemResult(context.Request.Path),
+                return Results.Ok(result.Value);
+            }
+
+            return result.Error switch
+            {
+                HttpError httpError => httpError.ToProblemHttpResult(context.Request.Path),
+
+                _ => new InternalServerError(
+                    result.Error.Description
+                ).ToProblemHttpResult(context.Request.Path),
             };
 
         });
 
-        group.MapPost("/sign-up", async (
+        groupBuilder.MapPost("/sign-up", async (
             [FromBody] SignUpRequest request,
             [FromServices] IAuthenticationService authenticationService,
             HttpContext context,
@@ -46,14 +60,22 @@ public static class AuthenticationEndpoints
         {
             var result = await authenticationService.SignUpAsync(request, cancellationToken);
 
-            return result switch
+            if (result.IsSuccess)
             {
-                { IsSuccess: true } => Results.Ok(result.Value),
-                { IsSuccess: false } => result.Error.ToProblemResult(context.Request.Path),
+                return Results.Ok(result.Value);
+            }
+
+            return result.Error switch
+            {
+                HttpError httpError => httpError.ToProblemHttpResult(context.Request.Path),
+
+                _ => new InternalServerError(
+                    result.Error.Description
+                ).ToProblemHttpResult(context.Request.Path),
             };
         });
-        
-        return group;
+
+        return groupBuilder;
     }
 }
 
