@@ -4,9 +4,6 @@ namespace Musdis.MusicService.Requests;
 ///     The request to update <see cref="Models.Artist"/> entity.
 /// </summary>
 /// 
-/// <param name="Id">
-///     The identifier of an <see cref="Models.Artist"/>.
-/// </param>
 /// <param name="Name">
 ///     A new name.
 /// </param>
@@ -19,8 +16,7 @@ namespace Musdis.MusicService.Requests;
 /// <param name="UserIds">
 ///     A new collection of user identifiers related with this <see cref="Models.Artist"/>.
 /// </param>
-public record UpdateArtistRequest(
-    Guid Id,
+public sealed record UpdateArtistRequest(
     string? Name,
     string? ArtistTypeSlug,
     string? CoverUrl,
