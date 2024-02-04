@@ -375,4 +375,3 @@ dotnet_naming_style.pascalcaseasync.required_prefix =
 dotnet_naming_style.pascalcaseasync.required_suffix = Async
 dotnet_naming_style.pascalcaseasync.word_separator =
 dotnet_naming_style.pascalcaseasync.capitalization = pascal_case
-
