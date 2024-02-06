@@ -8,13 +8,13 @@ using Musdis.MusicService.Requests;
 namespace Musdis.MusicService.Validation;
 
 /// <summary>
-///     Validator for <see cref="CreateArtistRequest"/> objects.
+///     The validator for <see cref="CreateArtistRequest"/> objects.
 /// </summary>
 public class CreateArtistRequestValidator : AbstractValidator<CreateArtistRequest>
 {
     // TODO add user ids check.
-    private readonly MusicServiceDbContext _dbContext;
-    public CreateArtistRequestValidator(MusicServiceDbContext dbContext)
+    private readonly IMusicServiceDbContext _dbContext;
+    public CreateArtistRequestValidator(IMusicServiceDbContext dbContext)
     {
         _dbContext = dbContext;
 
