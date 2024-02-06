@@ -27,18 +27,16 @@ public class SlugGenerator : ISlugGenerator
         _dbContext = dbContext;
     }
 
-    public Result<string> Generate(string value, params string[] additionalValues)
+    public Result<string> Generate(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) && additionalValues.Length == 0)
+        if (string.IsNullOrWhiteSpace(value))
         {
             return string.Empty.ToValueResult();
         }
 
         try
         {
-            string[] strings = [value, .. additionalValues];
-            var combined = string.Join(' ', strings);
-            var slug = _slugHelper.GenerateSlug(combined);
+            var slug = _slugHelper.GenerateSlug(value);
 
             return slug.ToValueResult();
         }
@@ -48,7 +46,7 @@ public class SlugGenerator : ISlugGenerator
                 .ToValueResult<string>();
         }
     }
-    
+
     public async Task<Result<string>> GenerateUniqueSlugAsync<TModel>(
         string value,
         CancellationToken cancellationToken = default

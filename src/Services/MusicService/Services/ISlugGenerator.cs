@@ -14,14 +14,11 @@ public interface ISlugGenerator
     /// <param name="value">
     ///     First value from which to generate a slug.
     /// </param>
-    /// <param name="additionalValues">
-    ///     Additional values to generate a slug.
-    /// </param>
     /// 
     /// <returns>
     ///     The <see cref="Result{TValue}"/> of operation, which contains generated slug.
     /// </returns>
-    Result<string> Generate(string value, params string[] additionalValues);
+    Result<string> Generate(string value);
 
     /// <summary>
     ///     Generates unique slug for the <typeparamref name="TModel"/> model.
