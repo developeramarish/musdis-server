@@ -1,3 +1,5 @@
+using FluentValidation;
+
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
@@ -14,22 +16,46 @@ public sealed class ArtistTypeService : IArtistTypeService
 {
     private readonly IMusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
+    private readonly IValidator<CreateArtistTypeRequest> _createRequestValidator;
+    private readonly IValidator<UpdateArtistTypeRequest> _updateRequestValidator;
 
     public ArtistTypeService(
         IMusicServiceDbContext dbContext,
-        ISlugGenerator slugGenerator
+        ISlugGenerator slugGenerator,
+        IValidator<CreateArtistTypeRequest> createRequestValidator,
+        IValidator<UpdateArtistTypeRequest> updateRequestValidator
     )
     {
         _dbContext = dbContext;
         _slugGenerator = slugGenerator;
+        _createRequestValidator = createRequestValidator;
+        _updateRequestValidator = updateRequestValidator;
     }
 
-    // TODO add validator
     public async Task<Result<ArtistType>> CreateAsync(
         CreateArtistTypeRequest request,
         CancellationToken cancellationToken = default
     )
     {
+        var existingArtistType = await _dbContext.Artists
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Name == request.Name, cancellationToken);
+        if (existingArtistType is not null)
+        {
+            return new ConflictError(
+                $"Artist type with name = {request.Name} exists"
+            ).ToValueResult<ArtistType>();
+        }
+
+        var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Could not create an ArtistType, incorrect data!",
+                validationResult.Errors.Select(f => f.ErrorMessage)
+            ).ToValueResult<ArtistType>();
+        }
+
         var slugResult = _slugGenerator.Generate(request.Name);
 
         if (slugResult.IsFailure)
@@ -46,10 +72,7 @@ public sealed class ArtistTypeService : IArtistTypeService
 
         await _dbContext.ArtistTypes.AddAsync(artistType, cancellationToken);
 
-        var savingResult = await SaveChangesAsync(cancellationToken);
-        return savingResult.IsSuccess
-            ? artistType.ToValueResult()
-            : savingResult.Error.ToValueResult<ArtistType>();
+        return artistType.ToValueResult();
     }
 
     public async Task<Result> DeleteAsync(Guid artistTypeId, CancellationToken cancellationToken = default)
@@ -66,13 +89,9 @@ public sealed class ArtistTypeService : IArtistTypeService
 
         _dbContext.ArtistTypes.Remove(artistType);
 
-        var savingResult = await SaveChangesAsync(cancellationToken);
-        return savingResult.IsSuccess
-            ? Result.Success()
-            : savingResult.Error.ToResult();
+        return Result.Success();
     }
 
-    // TODO: add validator
     public async Task<Result<ArtistType>> UpdateAsync(
         Guid id,
         UpdateArtistTypeRequest request,
@@ -85,11 +104,19 @@ public sealed class ArtistTypeService : IArtistTypeService
         if (artistType is null)
         {
             return new NotFoundError(
-                $"Cannot update artist type, content with Id={id} not found."
+                $"Cannot update ArtistType, content with Id={id} not found."
             ).ToValueResult<ArtistType>();
         }
 
-        artistType.Name = request.Name;
+        var validationResult = await _updateRequestValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Could not update an ArtistType, incorrect data!",
+                validationResult.Errors.Select(f => f.ErrorMessage)
+            ).ToValueResult<ArtistType>();
+        }
+
 
         var slugResult = _slugGenerator.Generate(request.Name);
         if (slugResult.IsFailure)
@@ -97,20 +124,18 @@ public sealed class ArtistTypeService : IArtistTypeService
             return slugResult.Error.ToValueResult<ArtistType>();
         }
 
+        artistType.Name = request.Name;
         artistType.Slug = slugResult.Value;
 
-        var savingResult = await SaveChangesAsync(cancellationToken);
-        return savingResult.IsSuccess
-            ? artistType.ToValueResult()
-            : savingResult.Error.ToValueResult<ArtistType>();
+        return artistType.ToValueResult();
     }
 
     public IQueryable<ArtistType> GetQueryable()
     {
-        return _dbContext.ArtistTypes.AsNoTracking().AsQueryable();
+        return _dbContext.ArtistTypes.AsNoTracking();
     }
 
-    private async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {

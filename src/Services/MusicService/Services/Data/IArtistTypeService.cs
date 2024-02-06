@@ -5,13 +5,16 @@ using Musdis.OperationResults;
 namespace Musdis.MusicService.Services.Data;
 
 /// <summary>
-///     Manages <see cref="ArtistType"/>s data.
+///     A service for managing <see cref="ArtistType"/>s data.
 /// </summary>
 public interface IArtistTypeService
 {
     /// <summary>
     ///     Creates a new <see cref="ArtistType"/> object in the database.
     /// </summary>
+    /// <remarks>
+    ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
+    /// </remarks>
     /// 
     /// <param name="request">
     ///     A request to create an <see cref="ArtistType"/>.
@@ -32,6 +35,9 @@ public interface IArtistTypeService
     /// <summary>
     ///     Updates an <see cref="ArtistType"/> entity in the database.
     /// </summary>
+    /// <remarks>
+    ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
+    /// </remarks>
     /// 
     /// <param name="id">
     ///     The identifier of the <see cref="ArtistType"/>.
@@ -57,6 +63,9 @@ public interface IArtistTypeService
     /// <summary>
     ///     Deletes the <see cref="ArtistType"/> from the database.
     /// </summary>
+    /// <remarks>
+    ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
+    /// </remarks>
     /// 
     /// <param name="artistTypeId">
     ///     The identifier of the <see cref="ArtistType"/>
@@ -81,7 +90,21 @@ public interface IArtistTypeService
     /// </remarks>
     /// 
     /// <returns>
-    ///     A no tracking <see cref="Artist"/>s queryable.
+    ///     A no tracking <see cref="ArtistType"/>s queryable.
     /// </returns>
     IQueryable<ArtistType> GetQueryable();
+
+    /// <summary>
+    ///     Saves changes to the database.
+    /// </summary>
+    /// 
+    /// <param name="cancellationToken">
+    ///     A token to cancel operation.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     A task representing asynchronous operation. 
+    ///     The task result contains <see cref="Result"/> of the saving.
+    /// </returns>
+    Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

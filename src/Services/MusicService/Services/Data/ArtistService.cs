@@ -92,10 +92,7 @@ public sealed class ArtistService : IArtistService
 
         await _dbContext.Artists.AddAsync(artist, cancellationToken);
 
-        var savingResult = await SaveChangesAsync(cancellationToken);
-        return savingResult.IsSuccess
-            ? artist.ToValueResult()
-            : savingResult.Error.ToValueResult<Artist>();
+        return artist.ToValueResult();
     }
 
     public async Task<Result> DeleteAsync(Guid artistId, CancellationToken cancellationToken = default)
@@ -111,10 +108,7 @@ public sealed class ArtistService : IArtistService
 
         _dbContext.Artists.Remove(artist);
 
-        var savingResult = await SaveChangesAsync(cancellationToken);
-        return savingResult.IsSuccess
-            ? Result.Success()
-            : savingResult.Error.ToResult();
+        return Result.Success();
     }
 
     public async Task<Result<Artist>> UpdateAsync(
@@ -136,7 +130,7 @@ public sealed class ArtistService : IArtistService
         if (!validationResult.IsValid)
         {
             return new ValidationError(
-                "Could not create an Artist, incorrect data!",
+                "Could not update an Artist, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
             ).ToValueResult<Artist>();
         }
@@ -156,8 +150,6 @@ public sealed class ArtistService : IArtistService
 
         if (request.Name is not null)
         {
-            artist.Name = request.Name;
-
             var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Artist>(
                 request.Name,
                 cancellationToken
@@ -166,6 +158,7 @@ public sealed class ArtistService : IArtistService
             {
                 return slugResult.Error.ToValueResult<Artist>();
             }
+            artist.Name = request.Name;
             artist.Slug = slugResult.Value;
         }
 
@@ -178,15 +171,12 @@ public sealed class ArtistService : IArtistService
             }
         }
 
-        var savingResult = await SaveChangesAsync(cancellationToken);
-        return savingResult.IsSuccess
-            ? artist.ToValueResult()
-            : savingResult.Error.ToValueResult<Artist>();
+        return artist.ToValueResult();
     }
 
     public IQueryable<Artist> GetQueryable()
     {
-        return _dbContext.Artists.AsNoTracking().AsQueryable();
+        return _dbContext.Artists.AsNoTracking();
     }
 
     /// <summary>
@@ -208,7 +198,7 @@ public sealed class ArtistService : IArtistService
     /// </returns>
     private Result UpdateArtistUsers(Artist artist, IEnumerable<string> userIds)
     {
-        if (artist is null || userIds is null)
+        if (artist?.ArtistUsers is null || userIds is null)
         {
             return new InternalServerError(
                 "Couldn't update artist users"
@@ -218,10 +208,10 @@ public sealed class ArtistService : IArtistService
         try
         {
             var userIdsToAdd = userIds
-                .Where(id => artist.ArtistUsers!.FirstOrDefault(au => au.UserId == id) is null)
+                .Where(id => artist.ArtistUsers.FirstOrDefault(au => au.UserId == id) is null)
                 .ToArray();
 
-            var artistUsersToDelete = artist.ArtistUsers!
+            var artistUsersToDelete = artist.ArtistUsers
                 .Where(au => !userIds.Contains(au.UserId))
                 .ToArray();
             foreach (var artistUser in artistUsersToDelete)
@@ -231,7 +221,7 @@ public sealed class ArtistService : IArtistService
             }
             foreach (var userId in userIdsToAdd)
             {
-                artist.ArtistUsers!.Add(new()
+                artist.ArtistUsers.Add(new()
                 {
                     UserId = userId,
                     ArtistId = artist.Id
@@ -282,7 +272,7 @@ public sealed class ArtistService : IArtistService
         );
     }
 
-    private async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {

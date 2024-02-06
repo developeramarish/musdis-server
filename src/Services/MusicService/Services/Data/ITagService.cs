@@ -5,13 +5,16 @@ using Musdis.OperationResults;
 namespace Musdis.MusicService.Services.Data;
 
 /// <summary>
-///     The service for managing <see cref="Tag"/>s data.
+///     A service for managing <see cref="Tag"/>s data.
 /// </summary>
 public interface ITagService
 {
     /// <summary>
     ///     Creates <see cref="Tag"/> entity in database.
     /// </summary>
+    /// <remarks>
+    ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
+    /// </remarks>
     /// 
     /// <param name="request">
     ///     The request to create an <see cref="Tag"/>.
@@ -32,6 +35,9 @@ public interface ITagService
     /// <summary>
     ///     Updates <see cref="Tag"/> entity in the database.
     /// </summary>
+    /// <remarks>
+    ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
+    /// </remarks>
     /// 
     /// <param name="id">
     ///     The identifier of the <see cref="Tag"/>.
@@ -54,8 +60,11 @@ public interface ITagService
     );
 
     /// <summary>
-    ///     Deletes the <see cref="Tag"/> from the database.
+    ///     Removes the <see cref="Tag"/> from the database.
     /// </summary>
+    /// <remarks>
+    ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
+    /// </remarks>
     /// 
     /// <param name="tagId">
     ///     The identifier of the <see cref="Tag"/>
@@ -81,4 +90,18 @@ public interface ITagService
     ///     A no tracking <see cref="Tag"/>s queryable.
     /// </returns>
     IQueryable<Tag> GetQueryable();
+
+    /// <summary>
+    ///     Saves changes to the database.
+    /// </summary>
+    /// 
+    /// <param name="cancellationToken">
+    ///     A token to cancel operation.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     A task representing asynchronous operation. 
+    ///     The task result contains <see cref="Result"/> of the saving.
+    /// </returns>
+    Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
