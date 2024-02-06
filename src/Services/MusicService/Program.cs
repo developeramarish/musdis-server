@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services;
 using Musdis.MusicService.Services.Data;
@@ -20,7 +21,7 @@ builder.Services.AddDbContext<MusicServiceDbContext>(options =>
 builder.Services.AddTransient<ISlugHelper, SlugHelper>();
 builder.Services.AddTransient<ISlugGenerator, SlugGenerator>();
 
-builder.Services.AddTransient<IArtistService, ArtistService>();
+builder.Services.AddDataServices();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -33,7 +34,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 
 app.UseHttpsRedirection();
 
