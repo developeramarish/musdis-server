@@ -85,7 +85,6 @@ builder.Services.AddAuthorization();
 
 // Validation
 ValidatorOptions.Global.LanguageManager.Enabled = false;
-builder.Services.AddTransient<IValidator<SignInRequest>, SignInRequestValidator>();
 builder.Services.AddTransient<IValidator<SignUpRequest>>(sp => new SignUpRequestValidator(
     sp.GetRequiredService<UserManager<User>>(),
     sp.GetRequiredService<IOptions<IdentityPasswordOptions>>()
