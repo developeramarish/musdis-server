@@ -33,10 +33,10 @@ public class Track
     /// <summary>
     ///     A collection of artists (author(s)) of this track.
     /// </summary>
-    public IEnumerable<Artist>? Artists { get; set; }
+    public ICollection<Artist>? Artists { get; set; }
 
     /// <summary>
     ///     A collection of <see cref="Tag"/>s associated with this <see cref="Track"/>.
     /// </summary>
-    public IEnumerable<Tag>? Tags { get; set; }
+    public ICollection<Tag>? Tags { get; set; }
 }

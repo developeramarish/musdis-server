@@ -13,6 +13,9 @@ public class ArtistType
     /// <summary>
     ///     The name of the <see cref="ArtistType"/>
     /// </summary>
+    /// <remarks>
+    ///     It is unique for each <see cref="ArtistType"/>.
+    /// </remarks>
     public required string Name { get; set; }
 
     /// <summary>

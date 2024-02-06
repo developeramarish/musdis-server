@@ -17,6 +17,9 @@ public class Artist
     /// <summary>
     ///     The name of the <see cref="Artist"/>.
     /// </summary>
+    /// <remarks>
+    ///     It is unique for each <see cref="Artist"/>.
+    /// </remarks>
     public required string Name { get; set; }
 
     /// <summary>

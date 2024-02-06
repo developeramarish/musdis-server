@@ -13,6 +13,9 @@ public class Tag
     /// <summary>
     ///     The name of the <see cref="Tag"/>.
     /// </summary>
+    /// <remarks> 
+    ///     It is unique for each <see cref="Tag"/>.
+    /// </remarks>
     public required string Name { get; set; } 
 
     /// <summary>

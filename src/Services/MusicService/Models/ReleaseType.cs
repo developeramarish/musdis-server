@@ -1,7 +1,9 @@
+using Musdis.OperationResults;
+
 namespace Musdis.MusicService.Models;
 
 /// <summary>
-/// Represents the type of release (e.g. album, single, EP, etc.)
+/// Represents the type of release (e.g. album, single, EP, etc.).
 /// </summary>
 public class ReleaseType
 {
