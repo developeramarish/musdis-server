@@ -7,6 +7,4 @@ namespace Musdis.MusicService.Requests;
 /// <param name="Name">
 ///     The name of the <see cref="Models.ArtistType"/>.
 /// </param>
-public sealed record CreateArtistTypeRequest(
-    string Name
-);
+public sealed record CreateArtistTypeRequest(string Name);
