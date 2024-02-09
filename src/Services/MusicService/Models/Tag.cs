@@ -26,5 +26,5 @@ public class Tag
     /// <summary>
     ///     A collection of <see cref="Track"/>s associated with this <see cref="Tag"/>.
     /// </summary>
-    public IEnumerable<Track>? Tracks { get; set; }
+    public ICollection<Track>? Tracks { get; set; }
 }

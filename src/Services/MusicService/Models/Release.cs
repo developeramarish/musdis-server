@@ -43,10 +43,10 @@ public class Release
     /// <summary>
     ///     A collection of <see cref="Artist"/>s participated in creation of this <see cref="Track"/>.
     /// </summary>
-    public IEnumerable<Artist>? Artists { get; set; }
+    public ICollection<Artist>? Artists { get; set; }
 
     /// <summary>
     ///     A collection of <see cref="Track"/>s of this <see cref="Release"/>.
     /// </summary>
-    public IEnumerable<Track>? Tracks { get; set; }
+    public ICollection<Track>? Tracks { get; set; }
 }

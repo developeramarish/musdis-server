@@ -26,5 +26,5 @@ public class ArtistType
     /// <summary>
     ///     A collection of <see cref="Artist"/>s with this <see cref="ArtistType"/>.
     /// </summary>
-    public IEnumerable<Artist>? Artists { get; set; }
+    public ICollection<Artist>? Artists { get; set; }
 }
