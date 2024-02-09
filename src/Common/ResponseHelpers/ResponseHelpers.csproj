@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <PackageId>Musdis.Common.ResponseHelpers</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Eldar T.</Authors>
     <Product>ResponseHelpers</Product>
     <Company> </Company>
