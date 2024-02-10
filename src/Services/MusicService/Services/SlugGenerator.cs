@@ -16,11 +16,11 @@ namespace Musdis.MusicService.Services;
 public class SlugGenerator : ISlugGenerator
 {
     private readonly ISlugHelper _slugHelper;
-    private readonly IMusicServiceDbContext _dbContext;
+    private readonly MusicServiceDbContext _dbContext;
 
     public SlugGenerator(
         ISlugHelper slugHelper,
-        IMusicServiceDbContext dbContext
+        MusicServiceDbContext dbContext
     )
     {
         _slugHelper = slugHelper;
@@ -42,15 +42,15 @@ public class SlugGenerator : ISlugGenerator
         }
         catch (Exception ex)
         {
-            return new Error($"Could not create slug : {ex.Message}")
+            return new Error($"Cannot create a slug: {ex.Message}")
                 .ToValueResult<string>();
         }
     }
 
-    public async Task<Result<string>> GenerateUniqueSlugAsync<TModel>(
+    public async Task<Result<string>> GenerateUniqueSlugAsync<TEntity>(
         string value,
         CancellationToken cancellationToken = default
-    ) where TModel : class
+    ) where TEntity : class
     {
         var slugResult = Generate(value);
 
@@ -61,29 +61,104 @@ public class SlugGenerator : ISlugGenerator
 
         var slug = slugResult.Value;
 
-        try
+        var similarSlugsResult = await GetSimilarSlugAsync<TEntity>(slug, cancellationToken);
+        if (similarSlugsResult.IsFailure)
         {
-            var tableName = $"{typeof(TModel).Name}s";
-            var similarSlugs = await _dbContext
-                .SqlQuery<string>($"SELECT [Slug] FROM [{tableName}]")
-                .Where(s => s.StartsWith(slug))
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
-
-            var suffixedSlug = slug;
-            // Adding number suffix until it is unique
-            for (var i = 1; similarSlugs.Contains(suffixedSlug); i++)
-            {
-                suffixedSlug = slug + '-' + i;
-            }
-
-            return suffixedSlug.ToValueResult();
+            return similarSlugsResult.Error.ToValueResult<string>();
         }
-        catch (Exception ex)
+
+        var suffixedSlug = slug;
+        // Adding number suffix until it is unique
+        for (var i = 1; similarSlugsResult.Value.Contains(suffixedSlug); i++)
+        {
+            suffixedSlug = slug + '-' + i;
+        }
+
+        return suffixedSlug.ToValueResult();
+    }
+
+    /// <summary>
+    ///     Gets slugs that starts with <paramref name="slug"/> 
+    ///     for <typeparamref name="TEntity"/> by type checking 
+    ///     and mapping to related <see cref="IMusicServiceDbContext"/> DbSet.
+    /// </summary>
+    /// <remarks>
+    ///     Supported types: <see cref="Artist"/>, <see cref="ArtistType"/>, 
+    ///     <see cref="Release"/>, <see cref="ReleaseType"/>, <see cref="Tag"/>, <see cref="Track"/>.
+    /// </remarks>
+    /// 
+    /// <typeparam name="TEntity">
+    ///     Type of the entity to get similar slugs for.
+    /// </typeparam>
+    /// <param name="slug">
+    ///     Slug to compare.
+    /// </param>
+    /// <returns>
+    ///     A task representing asynchronous operation which contains
+    ///     the result of operation with collection of similar slugs.
+    /// </returns>
+    private async Task<Result<List<string>>> GetSimilarSlugAsync<TEntity>(
+        string slug,
+        CancellationToken cancellationToken
+    )
+    {
+        List<string> result = [];
+        var type = typeof(TEntity);
+        if (type == typeof(Artist))
+        {
+            result = await _dbContext.Artists
+                .AsNoTracking()
+                .Where(a => a.Slug.StartsWith(slug))
+                .Select(a => a.Slug)
+                .ToListAsync(cancellationToken);
+        }
+        else if (type == typeof(ArtistType))
+        {
+            result = await _dbContext.ArtistTypes
+                .AsNoTracking()
+                .Where(a => a.Slug.StartsWith(slug))
+                .Select(a => a.Slug)
+                .ToListAsync(cancellationToken);
+        }
+        else if (type == typeof(Release))
+        {
+            result = await _dbContext.Releases
+                .AsNoTracking()
+                .Where(a => a.Slug.StartsWith(slug))
+                .Select(a => a.Slug)
+                .ToListAsync(cancellationToken);
+        }
+        else if (type == typeof(ReleaseType))
+        {
+            result = await _dbContext.ReleaseTypes
+                .AsNoTracking()
+                .Where(a => a.Slug.StartsWith(slug))
+                .Select(a => a.Slug)
+                .ToListAsync(cancellationToken);
+        }
+        else if (type == typeof(Tag))
+        {
+            result = await _dbContext.Tags
+                .AsNoTracking()
+                .Where(a => a.Slug.StartsWith(slug))
+                .Select(a => a.Slug)
+                .ToListAsync(cancellationToken);
+        }
+        else if (type == typeof(Track))
+        {
+            result = await _dbContext.Tracks
+                .AsNoTracking()
+                .Where(a => a.Slug.StartsWith(slug))
+                .Select(a => a.Slug)
+                .ToListAsync(cancellationToken);
+        }
+        else
         {
             return new Error(
-                $"Could not generate slug!: {ex.Message}"
-            ).ToValueResult<string>();
+                $"Cannot generate unique slug for type {type.Name}"
+            ).ToValueResult<List<string>>();
         }
+
+        return result.ToValueResult();
     }
 }
