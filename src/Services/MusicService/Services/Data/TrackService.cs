@@ -1,3 +1,5 @@
+using FluentValidation;
+
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
@@ -13,16 +15,16 @@ namespace Musdis.MusicService.Services.Data;
 /// <inheritdoc cref="ITrackService"/>
 public sealed class TrackService : ITrackService
 {
-    private readonly IMusicServiceDbContext _dbContext;
+    private readonly MusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
-    private readonly CreateTrackRequestValidator _createRequestValidator;
-    private readonly UpdateTrackRequestValidator _updateRequestValidator;
+    private readonly IValidator<CreateTrackRequest> _createRequestValidator;
+    private readonly IValidator<UpdateTrackRequest> _updateRequestValidator;
 
     public TrackService(
-        IMusicServiceDbContext dbContext,
+        MusicServiceDbContext dbContext,
         ISlugGenerator slugGenerator,
-        CreateTrackRequestValidator createRequestValidator,
-        UpdateTrackRequestValidator updateRequestValidator
+        IValidator<CreateTrackRequest> createRequestValidator,
+        IValidator<UpdateTrackRequest> updateRequestValidator
     )
     {
         _dbContext = dbContext;

@@ -12,8 +12,8 @@ namespace Musdis.MusicService.Validation;
 /// </summary>
 public class UpdateTrackRequestValidator : AbstractValidator<UpdateTrackRequest>
 {
-    private readonly IMusicServiceDbContext _dbContext;
-    public UpdateTrackRequestValidator(IMusicServiceDbContext dbContext)
+    private readonly MusicServiceDbContext _dbContext;
+    public UpdateTrackRequestValidator(MusicServiceDbContext dbContext)
     {
         _dbContext = dbContext;
 

@@ -14,13 +14,13 @@ namespace Musdis.MusicService.Services.Data;
 /// <inheritdoc cref="IArtistTypeService"/>.
 public sealed class ArtistTypeService : IArtistTypeService
 {
-    private readonly IMusicServiceDbContext _dbContext;
+    private readonly MusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateArtistTypeRequest> _createRequestValidator;
     private readonly IValidator<UpdateArtistTypeRequest> _updateRequestValidator;
 
     public ArtistTypeService(
-        IMusicServiceDbContext dbContext,
+        MusicServiceDbContext dbContext,
         ISlugGenerator slugGenerator,
         IValidator<CreateArtistTypeRequest> createRequestValidator,
         IValidator<UpdateArtistTypeRequest> updateRequestValidator

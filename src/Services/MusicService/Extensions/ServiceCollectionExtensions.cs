@@ -48,6 +48,13 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddValidators(this IServiceCollection services)
     {
         ValidatorOptions.Global.LanguageManager.Enabled = false;
+        
+        services.AddScoped<IValidator<CreateTrackRequest>>(sp =>
+            new CreateTrackRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
+        services.AddScoped<IValidator<UpdateTrackRequest>>(sp =>
+            new UpdateTrackRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
 
         services.AddScoped<IValidator<CreateArtistTypeRequest>, CreateArtistTypeRequestValidator>();
         services.AddScoped<IValidator<UpdateArtistTypeRequest>, UpdateArtistTypeRequestValidator>();
@@ -59,18 +66,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IValidator<UpdateTagRequest>, UpdateTagRequestValidator>();
 
         services.AddScoped<IValidator<CreateArtistRequest>>(sp =>
-            new CreateArtistRequestValidator(sp.GetRequiredService<IMusicServiceDbContext>())
+            new CreateArtistRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
         );
         services.AddScoped<IValidator<UpdateArtistRequest>>(sp =>
-            new UpdateArtistRequestValidator(sp.GetRequiredService<IMusicServiceDbContext>())
+            new UpdateArtistRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
         );
 
-        services.AddScoped<IValidator<CreateTrackRequest>>(sp =>
-            new CreateTrackRequestValidator(sp.GetRequiredService<IMusicServiceDbContext>())
-        );
-        services.AddScoped<IValidator<UpdateTrackRequest>>(sp =>
-            new UpdateTrackRequestValidator(sp.GetRequiredService<IMusicServiceDbContext>())
-        );
 
         return services;
     }

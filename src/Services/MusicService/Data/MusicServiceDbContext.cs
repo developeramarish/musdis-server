@@ -7,7 +7,7 @@ namespace Musdis.MusicService.Data;
 /// <summary>
 ///     Application database context.
 /// </summary>
-public sealed class MusicServiceDbContext : DbContext, IMusicServiceDbContext
+public sealed class MusicServiceDbContext : DbContext
 {
     public MusicServiceDbContext(DbContextOptions<MusicServiceDbContext> options)
         : base(options)
@@ -26,11 +26,6 @@ public sealed class MusicServiceDbContext : DbContext, IMusicServiceDbContext
     public DbSet<TagTrack> TagTracks => Set<TagTrack>();
     public DbSet<TrackArtist> TrackArtists => Set<TrackArtist>();
 
-    public IQueryable<T> SqlQuery<T>(FormattableString query)
-    {
-        return Database.SqlQuery<T>(query);
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = GetType().Assembly;
@@ -39,15 +34,10 @@ public sealed class MusicServiceDbContext : DbContext, IMusicServiceDbContext
         SeedData(modelBuilder);
     }
 
-    private void SeedData(ModelBuilder modelBuilder)
+    private static void SeedData(ModelBuilder modelBuilder)
     {
-        if (!ArtistTypes.Any())
-        {
-            DataSeeder.SeedArtistTypes(modelBuilder);
-        }
-        if (!ReleaseTypes.Any())
-        {
-            DataSeeder.SeedReleaseTypes(modelBuilder);
-        }
+        DataSeeder.SeedArtistTypes(modelBuilder);
+        DataSeeder.SeedReleaseTypes(modelBuilder);
+        DataSeeder.SeedTags(modelBuilder);
     }
 }

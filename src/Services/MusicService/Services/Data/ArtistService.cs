@@ -14,12 +14,12 @@ namespace Musdis.MusicService.Services.Data;
 /// <inheritdoc cref="IArtistService"/>
 public sealed class ArtistService : IArtistService
 {
-    private readonly IMusicServiceDbContext _dbContext;
+    private readonly MusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateArtistRequest> _createRequestValidator;
     private readonly IValidator<UpdateArtistRequest> _updateRequestValidator;
     public ArtistService(
-        IMusicServiceDbContext dbContext,
+        MusicServiceDbContext dbContext,
         ISlugGenerator slugGenerator,
         IValidator<CreateArtistRequest> createRequestValidator,
         IValidator<UpdateArtistRequest> updateRequestValidator
@@ -91,6 +91,7 @@ public sealed class ArtistService : IArtistService
         }).ToList();
 
         await _dbContext.Artists.AddAsync(artist, cancellationToken);
+        await _dbContext.Entry(artist).Reference(a => a.ArtistType).LoadAsync(cancellationToken);
 
         return artist.ToValueResult();
     }
@@ -135,19 +136,22 @@ public sealed class ArtistService : IArtistService
             ).ToValueResult<Artist>();
         }
 
-        var artistType = await _dbContext.ArtistTypes
-            .AsNoTracking()
-            .FirstOrDefaultAsync(at => at.Slug == request.ArtistTypeSlug, cancellationToken);
-        if (artistType is null)
+        if (request.ArtistTypeSlug is not null)
         {
-            return new InternalServerError(
-                "Could not update an Artist"
-            ).ToValueResult<Artist>();
+            var artistType = await _dbContext.ArtistTypes
+                .AsNoTracking()
+                .FirstOrDefaultAsync(at => at.Slug == request.ArtistTypeSlug, cancellationToken);
+            if (artistType is null)
+            {
+                return new InternalServerError(
+                    "Could not update an Artist"
+                ).ToValueResult<Artist>();
+            }
+
+            artist.ArtistTypeId = artistType.Id;
         }
-
-        artist.ArtistTypeId = artistType.Id;
+        
         artist.CoverUrl = request.CoverUrl ?? artist.CoverUrl;
-
         if (request.Name is not null)
         {
             var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Artist>(

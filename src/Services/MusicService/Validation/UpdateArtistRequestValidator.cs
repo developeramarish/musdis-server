@@ -13,8 +13,8 @@ namespace Musdis.MusicService.Validation;
 public class UpdateArtistRequestValidator : AbstractValidator<UpdateArtistRequest>
 {
     // TODO add user ids check.
-    private readonly IMusicServiceDbContext _dbContext;
-    public UpdateArtistRequestValidator(IMusicServiceDbContext dbContext)
+    private readonly MusicServiceDbContext _dbContext;
+    public UpdateArtistRequestValidator(MusicServiceDbContext dbContext)
     {
         _dbContext = dbContext;
 

@@ -14,12 +14,12 @@ namespace Musdis.MusicService.Services.Data;
 /// <inheritdoc cref="ITagService"/>
 public sealed class TagService : ITagService
 {
-    private readonly IMusicServiceDbContext _dbContext;
+    private readonly MusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateTagRequest> _createRequestValidator;
     private readonly IValidator<UpdateTagRequest> _updateRequestValidator;
     public TagService(
-        IMusicServiceDbContext dbContext,
+        MusicServiceDbContext dbContext,
         IValidator<CreateTagRequest> createRequestValidator,
         IValidator<UpdateTagRequest> updateRequestValidator,
         ISlugGenerator slugGenerator
