@@ -41,34 +41,6 @@ public class DatabaseFixture : IDisposable
             Slug = "band"
         });
 
-        DbContext.Artists.Add(new Artist
-        {
-            Id = Guid.NewGuid(),
-            Name = "Artist One",
-            Slug = "artist-one",
-            CoverUrl = "some-url",
-            ArtistTypeId = artistTypeId,
-            CreatorId = "someId"
-        });
-        DbContext.Artists.Add(new Artist
-        {
-            Id = Guid.NewGuid(),
-            Name = "Artist Two",
-            Slug = "artist-two",
-            CoverUrl = "some-url",
-            ArtistTypeId = artistTypeId,
-            CreatorId = "someId"
-        });
-        DbContext.Artists.Add(new Artist
-        {
-            Id = Guid.NewGuid(),
-            Name = "Artist one!",
-            Slug = "artist-one-1",
-            CoverUrl = "some-url",
-            ArtistTypeId = artistTypeId,
-            CreatorId = "someId"
-        });
-
         DbContext.SaveChanges();
     }
 

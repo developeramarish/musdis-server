@@ -6,6 +6,7 @@ using MockQueryable.NSubstitute;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Services;
+using Musdis.MusicService.Tests.Fixtures;
 
 using NSubstitute;
 
@@ -13,9 +14,14 @@ using Slugify;
 
 namespace Musdis.MusicService.Tests;
 
-
-public sealed class SlugGeneratorTests
+// TODO change tests
+public sealed class SlugGeneratorTests : IClassFixture<DatabaseFixture>
 {
+    private readonly DatabaseFixture _databaseFixture;
+    public SlugGeneratorTests(DatabaseFixture databaseFixture)
+    {
+        _databaseFixture = databaseFixture;
+    }
 
     [Theory]
     [InlineData("Hello world!", "hello-world")]
@@ -39,10 +45,15 @@ public sealed class SlugGeneratorTests
     }
 
     [Theory]
-    [MemberData(nameof(MultipleStringData))]
+    [InlineData("hello world", "hello-world")]
+    [InlineData("  hello world  ", "hello-world")]
+    [InlineData("    t       ", "t")]
+    [InlineData(" ", "")]
+    [InlineData("           ", "")]
+    [InlineData("\n", "")]
+    [InlineData("\t", "")]
     public void Generate_ReturnsCorrectSuccessResult_WhenMultipleStringPassed(
         string first,
-        string[] rest,
         string expected
     )
     {
@@ -50,22 +61,12 @@ public sealed class SlugGeneratorTests
         var sut = new SlugGenerator(new SlugHelper(), null!); // no need of db context here
 
         // Act
-        var generated = sut.Generate(first, rest);
+        var generated = sut.Generate(first);
 
         // Assert
         Assert.True(generated.IsSuccess);
         Assert.False(generated.IsFailure);
         Assert.Equal(expected, generated.Value);
-    }
-
-    public static IEnumerable<object[]> MultipleStringData()
-    {
-        return [
-            ["hello", new string[] { "world" }, "hello-world"],
-            ["  ", new string[] { "hello ", "world!" }, "hello-world"],
-            ["+", new string[] { " ", "hello   ", "world!", "  " }, "-hello-world"],
-            ["+hello", new string[] { " ", "hello   ", "world!", "  " }, "hello-hello-world"],
-        ];
     }
 
     [Fact]
@@ -75,7 +76,7 @@ public sealed class SlugGeneratorTests
         var sut = new SlugGenerator(new SlugHelper(), null!); // no need of db context here
 
         // Act
-        var generated = sut.Generate("some string", null!);
+        var generated = sut.Generate(null!);
 
         // Assert
         Assert.False(generated.IsSuccess);
@@ -86,16 +87,41 @@ public sealed class SlugGeneratorTests
     public async Task GenerateUniqueSlugAsync_ReturnCorrect_WhenNotUniqueValuePassedAsync()
     {
         // Arrange
-        var dbContext = Substitute.For<IMusicServiceDbContext>();
+        var artistType = await _databaseFixture.DbContext.ArtistTypes
+            .AsNoTracking()
+            .FirstAsync();
 
-        string[] slugs = ["artist-one", "artist-one-1", "artist-two", "artist-three"];
-        var slugsMock = slugs.BuildMock();
+        _databaseFixture.DbContext.Artists.Add(new Artist
+        {
+            Id = Guid.NewGuid(),
+            Name = "Artist One",
+            Slug = "artist-one",
+            CoverUrl = "some-url",
+            ArtistTypeId = artistType.Id,
+            CreatorId = "someId"
+        });
+        _databaseFixture.DbContext.Artists.Add(new Artist
+        {
+            Id = Guid.NewGuid(),
+            Name = "Artist Two",
+            Slug = "artist-two",
+            CoverUrl = "some-url",
+            ArtistTypeId = artistType.Id,
+            CreatorId = "someId"
+        });
+        _databaseFixture.DbContext.Artists.Add(new Artist
+        {
+            Id = Guid.NewGuid(),
+            Name = "Artist one!",
+            Slug = "artist-one-1",
+            CoverUrl = "some-url",
+            ArtistTypeId = artistType.Id,
+            CreatorId = "someId"
+        });
 
-        dbContext
-            .SqlQuery<string>(Arg.Any<FormattableString>())
-            .ReturnsForAnyArgs(slugsMock);
+        _databaseFixture.DbContext.SaveChanges();
 
-        var sut = new SlugGenerator(new SlugHelper(), dbContext);
+        var sut = new SlugGenerator(new SlugHelper(), _databaseFixture.DbContext);
 
         // Act
         var slugResult = await sut.GenerateUniqueSlugAsync<Artist>("Artist One");
