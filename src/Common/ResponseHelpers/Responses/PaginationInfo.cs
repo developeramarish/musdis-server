@@ -40,7 +40,7 @@ public class PaginationInfo
     /// <summary>
     ///     Is there a previous page of data items.
     /// </summary>
-    public bool HasPrevious => CurrentPage > 0;
+    public bool HasPrevious => CurrentPage > 1;
 
     /// <summary>
     ///     Is there a next page of data items.
