@@ -7,7 +7,7 @@ namespace Musdis.MusicService.Tests.Fixtures;
 
 public class DatabaseFixture : IDisposable
 {
-    public IMusicServiceDbContext DbContext { get; set; }
+    public MusicServiceDbContext DbContext { get; set; }
     public DatabaseFixture()
     {
         var options = new DbContextOptionsBuilder<MusicServiceDbContext>()
