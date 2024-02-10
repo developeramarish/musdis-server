@@ -29,11 +29,6 @@ public class SlugGenerator : ISlugGenerator
 
     public Result<string> Generate(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty.ToValueResult();
-        }
-
         try
         {
             var slug = _slugHelper.GenerateSlug(value);
