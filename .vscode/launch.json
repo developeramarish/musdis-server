@@ -5,12 +5,12 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md.
-            "name": ".NET Core Launch (Identity)",
+            "name": ".NET Launch (Identity)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build-identity",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/artifacts/bin/IdentityService/Debug/net8.0/IdentityService.dll",
+            "program": "${workspaceFolder}/artifacts/bin/IdentityService/debug/IdentityService.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Services/IdentityService",
             "stopAtEntry": false,
@@ -30,12 +30,12 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md.
-            "name": ".NET Core Launch (File)",
+            "name": ".NET Launch (File)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build-file",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/artifacts/bin/FileService//Debug/net8.0/FileService.dll",
+            "program": "${workspaceFolder}/artifacts/bin/FileService/debug/FileService.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Services/FileService",
             "stopAtEntry": false,
@@ -55,12 +55,12 @@
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md.
-            "name": ".NET Core Launch (Music)",
+            "name": ".NET Launch (Music)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build-music",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/artifacts/bin/MusicService//Debug/net8.0/MusicService.dll",
+            "program": "${workspaceFolder}/artifacts/bin/MusicService/debug/MusicService.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Services/MusicService",
             "stopAtEntry": false,
