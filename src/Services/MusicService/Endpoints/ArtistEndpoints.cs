@@ -92,8 +92,7 @@ public static class ArtistEndpoints
             }
 
             return Results.Ok(dtoResult.Value);
-        })
-            .Produces<ArtistDto>()
+        }).Produces<ArtistDto>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         groupBuilder.MapPost("/", async (
@@ -118,8 +117,7 @@ public static class ArtistEndpoints
             var artistDto = ArtistDto.FromArtist(artist);
 
             return Results.Created($"{context.Request.Path}/{artist.Id}", artistDto.Value);
-        })
-            .Produces(StatusCodes.Status201Created)
+        }).Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
@@ -143,8 +141,7 @@ public static class ArtistEndpoints
             }
 
             return Results.NoContent();
-        })
-            .Produces(StatusCodes.Status204NoContent)
+        }).Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return groupBuilder;
