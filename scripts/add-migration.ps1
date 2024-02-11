@@ -1,4 +1,4 @@
-# Scriprt for adding migraations 
+# Script for adding migrations 
 
 [CmdletBinding()]
 param (
