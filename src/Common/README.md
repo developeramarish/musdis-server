@@ -3,9 +3,11 @@ Contains NuGet packages for microservices.
 
 ## 📃 List of packages 
 
-- _[OperationResults](../src/Common/OperationResults/README.md)_ - package for using Operation result pattern in C# code.
+- _[OperationResults](./OperationResults/README.md)_ - package for using Operation result pattern in C# code.
 
-- _[ResponseHelpers](../src/Common/ResponseHelpers/README.md)_ - package that contains useful response models.
+- _[ResponseHelpers](./ResponseHelpers/README.md)_ - package that contains useful response models.
+
+- _[GrpcProtos](./GrpcProtos/README.md)_ - package that contains shared `.proto` files.
 
 ## 📝 Get started 
 

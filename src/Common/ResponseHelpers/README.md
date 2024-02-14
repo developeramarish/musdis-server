@@ -1,6 +1,6 @@
-# Musdis.ResponseHelpers
+# ResponseHelpers
 
-The Musdis.ResponseHelpers package contains useful response models.
+The ResponseHelpers package contains useful response models.
 
 ## ⚠️ HTTP errors
 

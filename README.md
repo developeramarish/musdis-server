@@ -3,7 +3,7 @@ A backend server for music distribution application built with dotnet and micros
 
 ## 📦 Custom packages 
 
-This project uses custom NuGet [packages](/packages/README.md) for loose microservice coupling.
+This project uses custom NuGet [packages](/src/Common/README.md) for loose microservice coupling.
 
 ## ⚙️ Microservices
 
