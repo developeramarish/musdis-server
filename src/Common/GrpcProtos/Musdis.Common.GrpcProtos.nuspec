@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>Musdis.Common.GrpcProtos</id>
+    <version>1.0.0</version>
+    <authors>Eldar T.</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <description>Musdis common proto files for gRPC integration.</description>
+    <copyright>$copyright$</copyright>
+    <contentFiles>
+      <files include="any/any/Protos/**/*.proto" buildAction="None" copyToOutput="false" />
+    </contentFiles>
+  </metadata>
+    <files>
+      <file src="**\*.proto" target="contentFiles\any\any\Protos" />
+      <file src="build\*.props" target="build" />
+    </files>
+</package>
