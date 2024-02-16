@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-using Musdis.IdentityService.Defaults;
+using Musdis.ResponseHelpers.Errors;
 
 namespace Musdis.IdentityService.Services.Exceptions;
 
@@ -29,7 +29,7 @@ public class ExceptionHandler : IExceptionHandler
             Status = StatusCodes.Status500InternalServerError,
             Title = "Internal server error",
             Instance = httpContext.Request.Path,
-            Type = ProblemDetailsErrorTypes.InternalError,
+            Type = InternalServerError.ProblemDetailsType,
         };
 
         httpContext.Response.StatusCode = problemDetails.Status.Value;
