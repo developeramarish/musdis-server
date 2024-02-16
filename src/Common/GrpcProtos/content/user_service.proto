@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package musdis.common.grpc_protos;
+
+service UserService {
+  rpc GetUserInfo(GetUserInfoRequest) returns (UserInfo); 
+}
+
+message UserInfo {
+  string id = 1;
+  string user_name = 2;
+}
+
+message GetUserInfoRequest {
+  string id = 1;
+}
