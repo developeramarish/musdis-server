@@ -17,6 +17,15 @@ public sealed class NoContentError : Error
     /// </summary>
     public int StatusCode => StatusCodes.Status204NoContent;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="NoContentError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
     public NoContentError(string description) : base(description) { }
+
+    /// <inheritdoc cref="NoContentError.NoContentError(string)"/>
     public NoContentError() : this("No additional content to send.") { }
 }

@@ -10,6 +10,13 @@ namespace Musdis.ResponseHelpers.Errors;
 /// </summary>
 public sealed class ConflictError : HttpError
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ConflictError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
     public ConflictError(string description) : base(
         StatusCodes.Status409Conflict,
         description,
@@ -17,6 +24,7 @@ public sealed class ConflictError : HttpError
         ErrorTitle
     ) { }
 
+    /// <inheritdoc cref="ConflictError.ConflictError(string)"/>
     public ConflictError() : this(ErrorTitle) { }
 
     /// <inheritdoc cref="HttpError.ErrorType"/>

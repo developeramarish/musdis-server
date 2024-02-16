@@ -23,6 +23,9 @@ public static class ErrorExtensions
     /// <param name="error">
     ///     An <see cref="Error"/> to convert.
     /// </param>
+     /// <param name="instance">
+    ///     A URI reference that identifies the specific occurrence of the problem.
+    /// </param>
     /// 
     /// <returns>
     ///     <see cref="IResult"/> as problem details.

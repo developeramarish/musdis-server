@@ -10,7 +10,13 @@ namespace Musdis.ResponseHelpers.Errors;
 /// </summary>
 public sealed class ForbiddenError : HttpError
 {
-
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ForbiddenError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
     public ForbiddenError(string description) : base(
         StatusCodes.Status403Forbidden,
         description,
@@ -18,6 +24,7 @@ public sealed class ForbiddenError : HttpError
         ErrorTitle
     ) { }
 
+    /// <inheritdoc cref="ForbiddenError.ForbiddenError(string)"/>
     public ForbiddenError() : this(ErrorTitle) { }
 
     /// <inheritdoc cref="HttpError.ErrorType"/>

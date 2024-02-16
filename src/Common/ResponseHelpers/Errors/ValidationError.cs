@@ -20,6 +20,13 @@ public sealed class ValidationError : HttpError
     /// </summary>
     public IEnumerable<string> FailureMessages { get; init; }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ValidationError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
     public ValidationError(string description) : base(
         StatusCodes.Status400BadRequest,
         description,
@@ -30,6 +37,16 @@ public sealed class ValidationError : HttpError
         FailureMessages = [];
     }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ValidationError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
+    /// <param name="failureMessages">
+    ///     A collection of failure messages. This collection will be added to Problem Details extension.
+    /// </param>
     public ValidationError(
         string description,
         IEnumerable<string> failureMessages
@@ -37,8 +54,11 @@ public sealed class ValidationError : HttpError
     {
         FailureMessages = failureMessages;
     }
+
+    /// <inheritdoc cref="ValidationError.ValidationError(string)"/>
     public ValidationError() : this(ErrorTitle) { }
 
+    /// <inheritdoc cref="HttpError.ToProblemHttpResult(string)"/>
     public override IResult ToProblemHttpResult(string instance)
     {
         return Results.Problem(

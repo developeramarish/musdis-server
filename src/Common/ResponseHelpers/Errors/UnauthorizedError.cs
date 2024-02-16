@@ -9,6 +9,13 @@ namespace Musdis.ResponseHelpers.Errors;
 /// </summary>
 public sealed class UnauthorizedError : HttpError
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="UnauthorizedError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
     public UnauthorizedError(string description) : base(
         StatusCodes.Status401Unauthorized,
         description,
@@ -16,6 +23,7 @@ public sealed class UnauthorizedError : HttpError
         ErrorTitle
     ) { }
 
+    /// <inheritdoc cref="UnauthorizedError.UnauthorizedError(string)"/>
     public UnauthorizedError() : this("User is not authorized") { }
     
         

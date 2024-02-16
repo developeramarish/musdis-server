@@ -5,14 +5,31 @@ using Musdis.OperationResults;
 namespace Musdis.ResponseHelpers.Errors;
 
 /// <summary>
-///     Represents contract for HTTP errors, that could be converted 
-///     into <see cref="ProblemDetailsInfo"/> object.
+///     Represents contract for HTTP errors, that contain info for Problem Details response.
 /// </summary>
+/// 
 /// <remarks>
-///    More info in <seealso cref="https://datatracker.ietf.org/doc/html/rfc7807"/>
+///    More info in <seealso href="https://datatracker.ietf.org/doc/html/rfc7807"/>
 /// </remarks>
 public class HttpError : Error
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="UnauthorizedError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="code">
+    ///     The associated HTTP status code of the error.
+    /// </param>
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
+    /// <param name="errorType">
+    ///     The type of an error in problem details specification.
+    /// </param>
+    /// <param name="title">
+    ///     A short, human-readable summary of the problem type. <br/>
+    ///     Should be same for each error with same type.
+    /// </param>
     protected HttpError(
         int code,
         string description,

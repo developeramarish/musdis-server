@@ -7,8 +7,24 @@ namespace Musdis.ResponseHelpers.Responses;
 /// </summary>
 public class PaginationInfo
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="PaginationInfo"/> class.
+    /// </summary>
     public PaginationInfo() { }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="PaginationInfo"/> class.
+    /// </summary>
+    /// 
+    /// <param name="currentPage">
+    ///     The current page number.
+    /// </param>
+    /// <param name="pageSize">
+    ///     The number of items per page.
+    /// </param>
+    /// <param name="totalCount">
+    ///     The total number of items in the entire dataset.
+    /// </param>
     [SetsRequiredMembers]
     public PaginationInfo(int currentPage, int pageSize, int totalCount)
     {

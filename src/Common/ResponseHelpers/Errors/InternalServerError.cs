@@ -10,6 +10,13 @@ namespace Musdis.ResponseHelpers.Errors;
 /// </summary>
 public sealed class InternalServerError : HttpError
 {
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="InternalServerError"/> class.
+    /// </summary>
+    /// 
+    /// <param name="description">
+    ///     A description providing additional information about the error.
+    /// </param>
     public InternalServerError(string description) : base(
         StatusCodes.Status500InternalServerError,
         description,
@@ -17,6 +24,7 @@ public sealed class InternalServerError : HttpError
         ErrorTitle
     ) { }
 
+    /// <inheritdoc cref="InternalServerError.InternalServerError(string)"/>
     public InternalServerError() : this(ErrorTitle) { }
 
     /// <inheritdoc cref="HttpError.ErrorType"/>
