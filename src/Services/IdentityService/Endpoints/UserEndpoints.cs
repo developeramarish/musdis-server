@@ -3,11 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.IdentityService.Data;
+using Musdis.IdentityService.Dtos;
+using Musdis.IdentityService.Models;
 using Musdis.ResponseHelpers.Errors;
+using Musdis.ResponseHelpers.Extensions;
+using Musdis.ResponseHelpers.Responses;
 
 namespace Musdis.IdentityService.Endpoints;
 
-// TODO add paged response
+/// <summary>
+///     User related endpoints.
+/// </summary>
 public static class UserEndpoints
 {
     public static RouteGroupBuilder MapUsers(
@@ -16,21 +22,41 @@ public static class UserEndpoints
     {
         groupBuilder.MapGet("/", async (
             CancellationToken cancellationToken,
+            HttpContext context,
             [FromServices] IdentityServiceDbContext dbContext,
             [FromQuery] int limit = 0,
-            [FromQuery] int offset = 0
+            [FromQuery] int page = 1
         ) =>
         {
-            var users = await dbContext.Users
-                .AsNoTracking()
+            var offset = (page - 1) * limit;
+            var queryable = dbContext.Users.AsNoTracking();
+            var totalCount = await queryable.CountAsync(cancellationToken);
+            var users = await queryable
                 .Skip(offset)
                 .Take(limit)
                 .ToListAsync(cancellationToken);
 
-            return Results.Ok(users);
+            var dataResult = UserReadDto.FromUsers(users);
+            if (dataResult.IsFailure)
+            {
+                return dataResult.Error.ToHttpResult(context.Request.Path);
+            }
+
+            var pagedResponse = new PagedDataResponse<UserReadDto>
+            {
+                Data = dataResult.Value,
+                PaginationInfo = new PaginationInfo
+                {
+                    PageSize = limit,
+                    CurrentPage = page,
+                    TotalCount = totalCount
+                }
+            };
+
+            return Results.Ok(pagedResponse);
         });
 
-        groupBuilder.MapGet("/{idOrUsername:string}", async (
+        groupBuilder.MapGet("/{idOrUsername}", async (
             [FromRoute] string idOrUserName,
             [FromServices] IdentityServiceDbContext dbContext,
             CancellationToken cancellationToken,
@@ -55,7 +81,7 @@ public static class UserEndpoints
 
             return new NotFoundError(
                 $"User with Id or UserName = {idOrUserName}"
-            ).ToProblemHttpResult(context.Request.Path);
+            ).ToHttpResult(context.Request.Path);
         });
 
         return groupBuilder;
