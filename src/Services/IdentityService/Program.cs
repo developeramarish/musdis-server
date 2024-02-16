@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Musdis.IdentityService.Services.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +84,9 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// Other
+builder.Services.AddGrpc();
+
 // Validation
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 builder.Services.AddTransient<IValidator<SignUpRequest>>(sp => new SignUpRequestValidator(
@@ -119,7 +123,11 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGrpcService<UserGrpcService>();
+
 app.MapGroup("/api/authentication")
     .MapAuthentication();
+app.MapGroup("/api/users")
+    .MapUsers();
 
 app.Run();
