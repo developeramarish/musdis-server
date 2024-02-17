@@ -38,8 +38,8 @@ public sealed record CreateReleaseRequest(
     ///     Provide <paramref name="ArtistIds"/> only if it differ from <see cref="CreateReleaseRequest.ArtistIds"/>.
     /// </remarks>
     /// 
-    /// <param name="Name">
-    ///     The name of the track.
+    /// <param name="Title">
+    ///     The title of the track.
     /// </param>
     /// <param name="TagSlugs">
     ///     A collection of slugs of this track.
@@ -48,7 +48,7 @@ public sealed record CreateReleaseRequest(
     ///     A collection of artists participated in creation of this track.
     /// </param>
     public sealed record TrackInfo(
-        string Name,
+        string Title,
         IEnumerable<string> TagSlugs,
         IEnumerable<Guid>? ArtistIds = null
     );
