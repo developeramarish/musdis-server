@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
+using Musdis.MusicService.Services.Utils;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
 using Musdis.ResponseHelpers.Errors;

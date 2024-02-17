@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
+using Musdis.MusicService.Services.Utils;
 using Musdis.OperationResults;
 using Musdis.ResponseHelpers.Errors;
 
@@ -71,7 +72,7 @@ public sealed class ReleaseService : IReleaseService
         throw new NotImplementedException();
     }
 
-    private async Task<Result> AddReleaseArtists(
+    private Task<Result> AddReleaseArtists(
         Release release,
         IEnumerable<Guid> artistIds
     )

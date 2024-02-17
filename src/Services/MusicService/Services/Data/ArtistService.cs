@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
+using Musdis.MusicService.Services.Utils;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
 using Musdis.ResponseHelpers.Errors;
@@ -87,7 +88,8 @@ public sealed class ArtistService : IArtistService
         artist.ArtistUsers = request.UserIds.Select(userId => new ArtistUser
         {
             ArtistId = artist.Id,
-            UserId = userId
+            UserId = userId,
+            UserName = "" // TODO implement
         }).ToList();
 
         await _dbContext.Artists.AddAsync(artist, cancellationToken);
@@ -228,7 +230,8 @@ public sealed class ArtistService : IArtistService
                 artist.ArtistUsers.Add(new()
                 {
                     UserId = userId,
-                    ArtistId = artist.Id
+                    ArtistId = artist.Id,
+                    UserName = "", // TODO implement
                 });
             }
 
@@ -270,7 +273,8 @@ public sealed class ArtistService : IArtistService
             userIds.Select(i => new ArtistUser
             {
                 ArtistId = artistId,
-                UserId = i
+                UserId = i,
+                UserName = "", // TODO implement
             }),
             cancellationToken
         );
