@@ -33,7 +33,6 @@ public sealed class TrackService : ITrackService
         _createRequestValidator = createRequestValidator;
         _updateRequestValidator = updateRequestValidator;
     }
-
     public async Task<Result<Track>> CreateAsync(
         CreateTrackRequest request,
         CancellationToken cancellationToken = default
@@ -66,9 +65,73 @@ public sealed class TrackService : ITrackService
             ReleaseId = request.ReleaseId
         };
 
+        var addArtistsResult = await AddTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
+        if (addArtistsResult.IsFailure)
+        {
+            return addArtistsResult.Error.ToValueResult<Track>();
+        }
+
+        var addTagsResult = await AddTrackTagsAsync(track, request.TagSlugs, cancellationToken);
+        if (addTagsResult.IsFailure)
+        {
+            return addTagsResult.Error.ToValueResult<Track>();
+        }
+
         await _dbContext.Tracks.AddAsync(track, cancellationToken);
 
         return track.ToValueResult();
+    }
+
+    private async Task<Result> AddTrackTagsAsync(
+        Track track,
+        IEnumerable<string> tagSlugs,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            var tags = await _dbContext.Tags
+                .Where(t => tagSlugs.Contains(t.Slug))
+                .ToListAsync(cancellationToken);
+
+            track.Tags = [];
+            foreach(var tag in tags)
+            {
+                track.Tags.Add(tag);
+            }
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure(ex.Message);
+        }
+    }
+
+    private async Task<Result> AddTrackArtistsAsync(
+        Track track,
+        IEnumerable<Guid> artistIds,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            var artists = await _dbContext.Artists
+                .Where(a => artistIds.Contains(a.Id))
+                .ToListAsync(cancellationToken);
+
+            track.Artists = [];
+            foreach (var artist in artists)
+            {
+                track.Artists.Add(artist);
+            }
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure(ex.Message);
+        }
     }
 
     public async Task<Result> DeleteAsync(Guid trackId, CancellationToken cancellationToken = default)
@@ -128,14 +191,23 @@ public sealed class TrackService : ITrackService
 
             track.Title = request.Title;
             track.Slug = slugResult.Value;
+        }
 
-            if (request.ArtistIds is not null)
+        if (request.ArtistIds is not null)
+        {
+            var result = await UpdateTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
+            if (result.IsFailure)
             {
-                await UpdateTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
+                return result.Error.ToValueResult<Track>();
             }
-            if (request.TagSlugs is not null)
+        }
+
+        if (request.TagSlugs is not null)
+        {
+            var result = await UpdateTrackTagsAsync(track, request.TagSlugs, cancellationToken);
+            if (result.IsFailure)
             {
-                await UpdateTrackTagsAsync(track, request.TagSlugs, cancellationToken);
+                return result.Error.ToValueResult<Track>();
             }
         }
 
