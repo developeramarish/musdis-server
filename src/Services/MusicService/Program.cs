@@ -1,29 +1,34 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.Common.GrpcProtos;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Endpoints;
 using Musdis.MusicService.Extensions;
-using Musdis.MusicService.Requests;
-using Musdis.MusicService.Services;
-using Musdis.MusicService.Services.Data;
+using Musdis.MusicService.Services.Utils;
 
 using Slugify;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var configuration = builder.Configuration;
-var connection = configuration.GetConnectionString("MusicDbConnection");
-
 builder.Services.AddDbContext<MusicServiceDbContext>(options =>
-    options.UseNpgsql(connection)
-);
+{
+    var connection = builder.Configuration.GetConnectionString("MusicDbConnection")
+        ?? throw new InvalidOperationException("Database connection is missing.");
+    options.UseNpgsql(connection);
+});
 
 builder.Services.AddTransient<ISlugHelper, SlugHelper>();
 builder.Services.AddTransient<ISlugGenerator, SlugGenerator>();
 
 builder.Services.AddValidators();
 builder.Services.AddDataServices();
+
+builder.Services.AddGrpcClient<UserService.UserServiceClient>(options =>
+{
+    var addressString = builder.Configuration["Services:IdentityService:Address"]
+        ?? throw new InvalidOperationException("Configuration section is missing: \"Services:IdentityService:Address\".");
+    options.Address = new Uri(addressString);
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
