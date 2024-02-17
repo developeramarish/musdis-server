@@ -51,7 +51,9 @@ public class PaginationInfo
     /// <summary>
     ///     The total count of pages.
     /// </summary>
-    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+    public int TotalPages => PageSize <= 0
+        ? 0
+        : (int)Math.Ceiling(TotalCount / (double)PageSize);
 
     /// <summary>
     ///     Is there a previous page of data items.
