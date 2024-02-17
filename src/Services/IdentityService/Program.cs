@@ -47,7 +47,8 @@ builder.Services
     {
         var passwordOptions = builder.Configuration
             .GetSection(IdentityPasswordOptions.Password)
-            .Get<IdentityPasswordOptions>()!;
+            .Get<IdentityPasswordOptions>()
+            ?? throw new InvalidOperationException("An Identity configuration section is missing.");
 
         options.User.RequireUniqueEmail = true;
         options.Password.RequireDigit = passwordOptions.RequireDigit;
@@ -67,7 +68,8 @@ builder.Services
     {
         var jwtOptions = builder.Configuration
             .GetSection(JwtOptions.Jwt)
-            .Get<JwtOptions>()!;
+            .Get<JwtOptions>()
+            ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidIssuer = jwtOptions.Issuer,
