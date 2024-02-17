@@ -47,5 +47,3 @@ app.UseHttpsRedirection();
 app.MapGroup("/artists").MapArtists();
 
 app.Run();
-
-return;
