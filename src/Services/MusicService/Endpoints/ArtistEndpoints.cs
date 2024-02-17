@@ -50,7 +50,7 @@ public static class ArtistEndpoints
                 return dataResult.Error.ToHttpResult(context.Request.Path);
             }
 
-            var totalCount = queryable.Count();
+            var totalCount = await queryable.CountAsync(cancellationToken);
             var result = new PagedDataResponse<ArtistDto>
             {
                 Data = dataResult.Value,
