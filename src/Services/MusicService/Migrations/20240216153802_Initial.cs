@@ -101,7 +101,8 @@ namespace MusicService.Migrations
                 columns: table => new
                 {
                     ArtistId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -211,8 +212,8 @@ namespace MusicService.Migrations
                 columns: new[] { "Id", "Name", "Slug" },
                 values: new object[,]
                 {
-                    { new Guid("ad2b0436-9220-4d21-bb4c-1a85a916c566"), "Musician", "musician" },
-                    { new Guid("d7dbf634-cb38-4340-a19e-e8eec6a4bc45"), "Band", "band" }
+                    { new Guid("70315ea2-bfd2-4ec0-9d85-40bdf1f3e479"), "Band", "band" },
+                    { new Guid("eb766fe1-9427-4529-8c0a-5a279be33e18"), "Musician", "musician" }
                 });
 
             migrationBuilder.InsertData(
@@ -220,11 +221,11 @@ namespace MusicService.Migrations
                 columns: new[] { "Id", "Name", "Slug" },
                 values: new object[,]
                 {
-                    { new Guid("03c75592-843b-4a8c-9927-6559eca8b5d3"), "Album", "album" },
-                    { new Guid("120c9c3d-ce2a-4b87-92bf-026971464ac3"), "Other", "other" },
-                    { new Guid("4eaf9b6c-89d4-4de8-aee2-bc29fca07a1e"), "Single", "single" },
-                    { new Guid("6660865f-f695-4161-b296-1ad2c022b5dd"), "EP", "ep" },
-                    { new Guid("8f057213-54ef-4536-a318-2676d6a4fd8e"), "Soundtrack", "soundtrack" }
+                    { new Guid("16221383-b247-4d2f-95e4-37611643c065"), "EP", "ep" },
+                    { new Guid("7599fb24-50fa-453a-a108-fa54d88ee81f"), "Other", "other" },
+                    { new Guid("892b4a33-55f4-4f47-bfc2-c725e69bfa30"), "Single", "single" },
+                    { new Guid("a614b442-15d1-41f8-9993-a10f9734aaca"), "Soundtrack", "soundtrack" },
+                    { new Guid("fb6b8bc3-0cf4-4ffa-abb7-4ce4326aa7fe"), "Album", "album" }
                 });
 
             migrationBuilder.InsertData(
@@ -232,11 +233,11 @@ namespace MusicService.Migrations
                 columns: new[] { "Id", "Name", "Slug" },
                 values: new object[,]
                 {
-                    { new Guid("1df62086-0fb8-48d0-bd66-076733f17051"), "Electronic", "Electronic" },
-                    { new Guid("2304cc02-9d55-49dc-8b97-109a24cff6d2"), "Shoegaze", "shoegaze" },
-                    { new Guid("2d1c3b37-cf4a-4b14-b5cb-68bb4bb73419"), "Pop", "pop" },
-                    { new Guid("73439cec-c616-4b57-bf93-ce6bca127d48"), "Rock", "rock" },
-                    { new Guid("d7a8ea12-ae85-461b-bdcb-317e971a6518"), "Lo-Fi", "lo-fi" }
+                    { new Guid("1e4b990e-a333-420e-af22-cf95c5d0c943"), "Electronic", "Electronic" },
+                    { new Guid("296e7fa9-8e0e-42ee-a23a-caaf2c58be9a"), "Rock", "rock" },
+                    { new Guid("9f8ecec2-4160-44d7-ba46-8d89673460a4"), "Shoegaze", "shoegaze" },
+                    { new Guid("ab7f6adc-0318-470b-801f-f0872ed27886"), "Lo-Fi", "lo-fi" },
+                    { new Guid("b74c187b-fdd9-4113-96fa-b62afeb325a3"), "Pop", "pop" }
                 });
 
             migrationBuilder.CreateIndex(
