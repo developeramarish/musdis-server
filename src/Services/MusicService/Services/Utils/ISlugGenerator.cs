@@ -1,6 +1,6 @@
 using Musdis.OperationResults;
 
-namespace Musdis.MusicService.Services;
+namespace Musdis.MusicService.Services.Utils;
 
 /// <summary>
 ///     Utility service for generating human-readable identifiers.

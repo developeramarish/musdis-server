@@ -10,7 +10,7 @@ using Musdis.OperationResults.Extensions;
 
 using Slugify;
 
-namespace Musdis.MusicService.Services;
+namespace Musdis.MusicService.Services.Utils;
 
 /// <inheritdoc cref="ISlugGenerator"/>
 public class SlugGenerator : ISlugGenerator
