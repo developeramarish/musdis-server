@@ -24,7 +24,7 @@
     </PackageReference>
     <PackageReference Include="Musdis.Common.GrpcProtos" Version="0.0.1" />
     <PackageReference Include="Musdis.Common.OperationResults" Version="1.0.0" />
-    <PackageReference Include="Musdis.Common.ResponseHelpers" Version="1.0.2" />
+    <PackageReference Include="Musdis.Common.ResponseHelpers" Version="1.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Slugify.Core" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
