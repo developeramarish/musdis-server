@@ -6,7 +6,7 @@ using Musdis.ResponseHelpers.Errors;
 namespace Musdis.MusicService.Dtos;
 
 /// <summary>
-///     Represents a DTO for <see cref="Artist"/> reading.
+///     Represents a DTO for <see cref="Artist"/>.
 /// </summary>
 /// 
 /// <param name="Id">
@@ -41,32 +41,31 @@ public sealed record ArtistDto(
 )
 {
     /// <summary>
-    ///     Creates <see cref="ArtistDto"/> from <see cref="Artist"/>.
+    ///     Maps an <see cref="Artist"/> to an <see cref="ArtistDto"/>.
     /// </summary>
     /// 
     /// <param name="artist">
-    ///     An <see cref="Artist"/> to convert.
+    ///     The <see cref="Artist"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     The result object that contains a <see cref="ArtistDto"/> value 
-    ///     which is a converted <see cref="Artist"/>.
+    ///     A <see cref="Result"/> containing the mapped <see cref="ArtistDto"/>.
     /// </returns>
     public static Result<ArtistDto> FromArtist(Artist artist)
     {
         if (artist?.ArtistType is null || artist?.ArtistUsers is null)
         {
-            return new InternalServerError(
+            return Result<ArtistDto>.Failure(
                 "Cannot convert Artist to ArtistDto, incorrect data passed."
-            ).ToValueResult<ArtistDto>();
+            );
         }
     
         var artistTypeDtosResult = ArtistTypeDto.FromArtistType(artist.ArtistType);
         if (artistTypeDtosResult.IsFailure)
         {
-            return new InternalServerError(
+            return Result<ArtistDto>.Failure(
                 "Cannot convert Artist to ArtistDto, incorrect data passed."
-            ).ToValueResult<ArtistDto>();
+            );
         }
 
         return new ArtistDto(
@@ -81,16 +80,14 @@ public sealed record ArtistDto(
     }
 
     /// <summary>
-    ///     Converts <see cref="Artist"/> collection into <see cref="ArtistDto"/> collection.
+    ///     Maps a collection of <see cref="Artist"/> to a collection of <see cref="ArtistDto"/>.
     /// </summary>
-    /// 
     /// <param name="artists">
-    ///     A collection to convert.
+    ///     The collection of <see cref="Artist"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     The result object that contains an <see cref="IEnumerable{T}"/> 
-    ///     of <see cref="ArtistDto"/> value which is a converted <see cref="Artist"/>s.
+    ///     A <see cref="Result"/> containing the mapped collection of <see cref="ArtistDto"/>.
     /// </returns>
     public static Result<IEnumerable<ArtistDto>> FromArtists(IEnumerable<Artist> artists)
     {
@@ -101,9 +98,9 @@ public sealed record ArtistDto(
             var result = FromArtist(artist);
             if (result.IsFailure)
             {
-                return new InternalServerError(
-                    "Cannot convert artists collection into artist DTOs"
-                ).ToValueResult<IEnumerable<ArtistDto>>();
+                return Result<IEnumerable<ArtistDto>>.Failure(
+                    $"Cannot convert artists collection into artist DTOs: {result.Error.Description}"
+                );
             }
 
             dtos.Add(result.Value);
