@@ -13,6 +13,8 @@ public sealed class ArtistUserConfiguration : IEntityTypeConfiguration<ArtistUse
 
         builder.Property(au => au.ArtistId).IsRequired();
 
+        builder.Property(au => au.UserName).IsRequired();
+
         builder.HasKey(au => new { au.ArtistId, au.UserId });
     }
 }
