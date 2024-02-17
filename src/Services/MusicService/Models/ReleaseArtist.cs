@@ -16,7 +16,7 @@ public class ReleaseArtist
     public Release? Release { get; set; }
 
     /// <summary>
-    ///     The identifier of the user.
+    ///     The identifier of the artist.
     /// </summary>
     public required Guid ArtistId { get; set; }
 
