@@ -13,28 +13,15 @@ namespace Musdis.MusicService.Validation;
 public class UpdateArtistRequestValidator : AbstractValidator<UpdateArtistRequest>
 {
     // TODO add user ids check.
-    private readonly MusicServiceDbContext _dbContext;
     public UpdateArtistRequestValidator(MusicServiceDbContext dbContext)
     {
-        _dbContext = dbContext;
-
         RuleFor(x => x.Name).NotEmpty().When(x => x.Name is not null);
 
         RuleFor(x => x.ArtistTypeSlug!)
             .NotEmpty()
-            .MustAsync(BeExistingArtistTypeSlugAsync)
+            .MustAsync((slug, cancel) => 
+                RuleHelpers.BeExistingArtistTypeSlugAsync(slug, dbContext, cancel)
+            )
             .When(x => x.ArtistTypeSlug is not null);
-    }
-
-    private async Task<bool> BeExistingArtistTypeSlugAsync(
-        string artistTypeSlug,
-        CancellationToken cancellationToken
-    )
-    {
-        var artist = await _dbContext.ArtistTypes
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Slug == artistTypeSlug, cancellationToken);
-
-        return artist is not null;
     }
 }

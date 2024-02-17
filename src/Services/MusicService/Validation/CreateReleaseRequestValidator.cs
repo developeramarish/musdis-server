@@ -14,102 +14,42 @@ namespace Musdis.MusicService.Validation;
 /// </summary>
 public class CreateReleaseRequestValidator : AbstractValidator<CreateReleaseRequest>
 {
-    private readonly MusicServiceDbContext _dbContext;
     public CreateReleaseRequestValidator(MusicServiceDbContext dbContext)
     {
-        _dbContext = dbContext;
 
         RuleFor(x => x.Name).NotEmpty();
 
         RuleFor(x => x.ReleaseTypeSlug)
             .NotEmpty()
-            .MustAsync(BeExistingReleaseTypeSlugAsync);
+            .MustAsync((slug, cancel) =>
+                RuleHelpers.BeExistingReleaseTypeSlugAsync(slug, dbContext, cancel)
+            );
 
         RuleFor(x => x.ReleaseDate)
             .NotEmpty()
-            .Must(BeDateString);
+            .Must(RuleHelpers.BeDateString);
 
         RuleFor(x => x.CoverUrl).NotEmpty();
 
-        RuleFor(x => x.ArtistIds).MustAsync(BeExistingArtistIdsAsync);
+        RuleFor(x => x.ArtistIds)
+            .MustAsync((ids, cancel) =>
+                RuleHelpers.BeExistingArtistIdsAsync(ids, dbContext, cancel)
+            );
 
         RuleFor(x => x.Tracks).NotEmpty();
-        RuleForEach(x => x.Tracks).SetValidator(x => new TrackInfoValidator(_dbContext, x));
-    }
-
-    public class TrackInfoValidator : AbstractValidator<CreateReleaseRequest.TrackInfo>
-    {
-        private readonly MusicServiceDbContext _dbContext;
-        public TrackInfoValidator(
-            MusicServiceDbContext dbContext,
-            CreateReleaseRequest createReleaseRequest
-        )
+        RuleForEach(x => x.Tracks).ChildRules(v =>
         {
-            _dbContext = dbContext;
-
-            RuleFor(x => x.Name).NotEmpty();
-            RuleFor(x => x.TagSlugs).MustAsync(BeExistingTagSlugsAsync);
-            RuleFor(x => x.ArtistIds)
-                .Must((ids) => BeInArtistsOfRelease(ids!, createReleaseRequest))
+            v.RuleFor(x => x.TagSlugs)
+                .MustAsync((slug, cancel) =>
+                    RuleHelpers.BeExistingTagSlugsAsync(slug, dbContext, cancel)
+                )
+                .WithMessage("Tags with provided identifiers must exist in the database.");
+            v.RuleFor(x => x.ArtistIds)
+                .MustAsync((ids, cancel) =>
+                    RuleHelpers.BeExistingArtistIdsAsync(ids!, dbContext, cancel)
+                )
                 .When(x => x.ArtistIds is not null)
-                .WithMessage("Artist ids should be in the list of Release artists");
-        }
-
-        private bool BeInArtistsOfRelease(
-            IEnumerable<Guid> artistIds,
-            CreateReleaseRequest createReleaseRequest
-        )
-        {
-            foreach (var artistId in artistIds)
-            {
-                if (!createReleaseRequest.ArtistIds.Contains(artistId))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        private async Task<bool> BeExistingTagSlugsAsync(
-            IEnumerable<string> tagSlugs,
-            CancellationToken cancellationToken = default
-        )
-        {
-            var existingCount = await _dbContext.Tags
-                .AsNoTracking()
-                .Where(t => tagSlugs.Contains(t.Slug))
-                .CountAsync(cancellationToken);
-
-            return existingCount == tagSlugs.Count();
-        }
-    }
-
-
-    private async Task<bool> BeExistingArtistIdsAsync(
-        IEnumerable<Guid> artistIds,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var existingCount = await _dbContext.Artists
-            .AsNoTracking()
-            .Where(a => artistIds.Contains(a.Id))
-            .CountAsync(cancellationToken);
-
-        return existingCount == artistIds.Count();
-    }
-
-    private bool BeDateString(string value)
-    {
-        return DateTime.TryParse(value, out var _);
-    }
-    private async Task<bool> BeExistingReleaseTypeSlugAsync(
-        string releaseTypeSlug,
-        CancellationToken cancellationToken
-    )
-    {
-        var release = await _dbContext.ReleaseTypes
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Slug == releaseTypeSlug, cancellationToken);
-
-        return release is not null;
+                .WithMessage("Artists with provided identifiers must exist in the database.");
+        });
     }
 }
