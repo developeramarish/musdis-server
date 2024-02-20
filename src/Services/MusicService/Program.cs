@@ -31,7 +31,10 @@ builder.Services.AddGrpcClient<UserService.UserServiceClient>(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.ToString());
+});
 
 
 var app = builder.Build();
@@ -45,5 +48,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapGroup("/artists").MapArtists();
+app.MapGroup("/artist-types").MapArtistTypes();
+app.MapGroup("/releases").MapReleases();
+app.MapGroup("/release-types").MapReleaseTypes();
+app.MapGroup("/tags").MapTags();
+app.MapGroup("/tracks").MapTracks();
 
 app.Run();
