@@ -78,6 +78,10 @@ public sealed class TrackService : ITrackService
 
         await _dbContext.Tracks.AddAsync(track, cancellationToken);
 
+        await _dbContext.Entry(track).Reference(t => t.Release).LoadAsync(cancellationToken);
+        await _dbContext.Entry(track).Collection(t => t.Artists!).LoadAsync(cancellationToken);
+        await _dbContext.Entry(track).Collection(t => t.Tags!).LoadAsync(cancellationToken);
+
         return track.ToValueResult();
     }
 
@@ -142,7 +146,7 @@ public sealed class TrackService : ITrackService
         if (track is null)
         {
             return new NoContentError(
-                $"Cannot delete, track with id = {trackId} not found"
+                $"Cannot delete, track with Id = {{{trackId}}} not found"
             ).ToResult();
         }
 
@@ -173,7 +177,7 @@ public sealed class TrackService : ITrackService
         if (track is null)
         {
             return new NotFoundError(
-                $"Cannot update track with id = {id}, it is not found."
+                $"Cannot update track with Id = {{{id}}}, it is not found."
             ).ToValueResult<Track>();
         }
 
