@@ -1,13 +1,26 @@
 @host = http://localhost:5276
 
-POST {{host}}/artist/
+POST {{host}}/releases/
 Accept: application/json
 
 {
-    "name": "Artist one",
-    "artistTypeSlug": "band",
-    "coverUrl": "s",
-    "userIds": []
+  "name": "My first release",
+  "releaseTypeSlug": "single",
+  "releaseDate": "2024-02-20T11:59:42+0000",
+  "coverUrl": "cover1",
+  "artistIds": [
+    "8983a68c-8401-4fea-8158-567e6d4334a4"
+  ],
+  "tracks": [
+    {
+      "title": "first release song1",
+      "tagSlugs": ["shoegaze"]
+    },
+    {
+      "title": "first release song2",
+      "tagSlugs": ["rock"],
+      "artists": ["d6cbd1a0-1dd8-461f-bf8f-151a20f1660e"]
+    }
+  ]
 }
-###
 
