@@ -97,55 +97,50 @@ public class SlugGenerator : ISlugGenerator
         CancellationToken cancellationToken
     )
     {
-        List<string> result = [];
+        IQueryable<string> queryable;
         var type = typeof(TEntity);
+
         if (type == typeof(Artist))
         {
-            result = await _dbContext.Artists
+            queryable = _dbContext.Artists
                 .AsNoTracking()
                 .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToListAsync(cancellationToken);
+                .Select(a => a.Slug);
         }
         else if (type == typeof(ArtistType))
         {
-            result = await _dbContext.ArtistTypes
+            queryable = _dbContext.ArtistTypes
                 .AsNoTracking()
                 .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToListAsync(cancellationToken);
+                .Select(a => a.Slug);
         }
         else if (type == typeof(Release))
         {
-            result = await _dbContext.Releases
+            queryable = _dbContext.Releases
                 .AsNoTracking()
                 .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToListAsync(cancellationToken);
+                .Select(a => a.Slug);
         }
         else if (type == typeof(ReleaseType))
         {
-            result = await _dbContext.ReleaseTypes
+            queryable = _dbContext.ReleaseTypes
                 .AsNoTracking()
                 .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToListAsync(cancellationToken);
+                .Select(a => a.Slug);
         }
         else if (type == typeof(Tag))
         {
-            result = await _dbContext.Tags
+            queryable = _dbContext.Tags
                 .AsNoTracking()
                 .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToListAsync(cancellationToken);
+                .Select(a => a.Slug);
         }
         else if (type == typeof(Track))
         {
-            result = await _dbContext.Tracks
+            queryable = _dbContext.Tracks
                 .AsNoTracking()
                 .Where(a => a.Slug.StartsWith(slug))
-                .Select(a => a.Slug)
-                .ToListAsync(cancellationToken);
+                .Select(a => a.Slug);
         }
         else
         {
@@ -153,6 +148,8 @@ public class SlugGenerator : ISlugGenerator
                 $"Cannot generate unique slug for type {type.Name}"
             ).ToValueResult<List<string>>();
         }
+
+        var result = await queryable.ToListAsync(cancellationToken);
 
         return result.ToValueResult();
     }
