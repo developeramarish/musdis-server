@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IReleaseTypeService, ReleaseTypeService>();
         services.AddTransient<ITagService, TagService>();
         services.AddTransient<ITrackService, TrackService>();
+        services.AddTransient<IReleaseService, ReleaseService>();
 
         return services;
     }
@@ -48,13 +49,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddValidators(this IServiceCollection services)
     {
         ValidatorOptions.Global.LanguageManager.Enabled = false;
-        
-        services.AddScoped<IValidator<CreateTrackRequest>>(sp =>
-            new CreateTrackRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
-        );
-        services.AddScoped<IValidator<UpdateTrackRequest>>(sp =>
-            new UpdateTrackRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
-        );
 
         services.AddScoped<IValidator<CreateArtistTypeRequest>, CreateArtistTypeRequestValidator>();
         services.AddScoped<IValidator<UpdateArtistTypeRequest>, UpdateArtistTypeRequestValidator>();
@@ -65,11 +59,25 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IValidator<CreateTagRequest>, CreateTagRequestValidator>();
         services.AddScoped<IValidator<UpdateTagRequest>, UpdateTagRequestValidator>();
 
+        services.AddScoped<IValidator<CreateTrackRequest>>(sp =>
+            new CreateTrackRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
+        services.AddScoped<IValidator<UpdateTrackRequest>>(sp =>
+            new UpdateTrackRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
+
         services.AddScoped<IValidator<CreateArtistRequest>>(sp =>
             new CreateArtistRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
         );
         services.AddScoped<IValidator<UpdateArtistRequest>>(sp =>
             new UpdateArtistRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
+
+        services.AddScoped<IValidator<CreateReleaseRequest>>(sp =>
+            new CreateReleaseRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
+        services.AddScoped<IValidator<UpdateReleaseRequest>>(sp =>
+            new UpdateReleaseRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
         );
 
 
