@@ -28,7 +28,7 @@ public class UpdateTrackRequestValidator : AbstractValidator<UpdateTrackRequest>
             )
             .When(x => x.ReleaseId is not null)
             .WithMessage(
-                x => $"Cannot create Track with ReleaseId = {x.ReleaseId}, Release it is not found."
+                x => $"Cannot create Track with ReleaseId = {{{x.ReleaseId}}}, Release it is not found."
             );
 
         RuleFor(x => x.ArtistIds)

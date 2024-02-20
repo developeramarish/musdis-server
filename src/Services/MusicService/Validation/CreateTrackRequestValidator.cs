@@ -22,7 +22,7 @@ public class CreateTrackRequestValidator : AbstractValidator<CreateTrackRequest>
                 RuleHelpers.BeExistingReleaseIdAsync(id, dbContext, cancel)
             )
             .WithMessage(
-                x => $"Cannot create Track with ReleaseId = {x.ReleaseId}, Release it is not found."
+                x => $"Cannot create Track with ReleaseId = {{{x.ReleaseId}}}, Release it is not found."
             );
 
         RuleFor(x => x.ArtistIds)

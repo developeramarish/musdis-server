@@ -43,7 +43,7 @@ public sealed class ArtistService : IArtistService
         if (existingArtist is not null)
         {
             return new ConflictError(
-                $"Artist with name = {request.Name} exists"
+                $"Artist with Name = {{{request.Name}}} exists"
             ).ToValueResult<Artist>();
         }
 
@@ -94,6 +94,7 @@ public sealed class ArtistService : IArtistService
 
         await _dbContext.Artists.AddAsync(artist, cancellationToken);
         await _dbContext.Entry(artist).Reference(a => a.ArtistType).LoadAsync(cancellationToken);
+        await _dbContext.Entry(artist).Collection(a => a.ArtistUsers!).LoadAsync(cancellationToken);
 
         return artist.ToValueResult();
     }
@@ -105,7 +106,7 @@ public sealed class ArtistService : IArtistService
         if (artist is null)
         {
             return new NoContentError(
-                $"Could not able to delete artist, content with Id={artistId} not found."
+                $"Could not able to delete artist, content with Id = {{{artistId}}} not found."
             ).ToResult();
         }
 
@@ -125,7 +126,7 @@ public sealed class ArtistService : IArtistService
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
         if (artist is null)
         {
-            return new NotFoundError($"Artist with Id = {id} not found")
+            return new NotFoundError($"Artist with Id = {{{id}}} not found")
                 .ToValueResult<Artist>();
         }
 
@@ -243,41 +244,6 @@ public sealed class ArtistService : IArtistService
                 $"Couldn't update artist users: {ex.Message}"
             ).ToResult();
         }
-    }
-
-    /// <summary>
-    ///     Adds users to the <see cref="Artist"/> with passed Id into database. 
-    /// </summary>
-    /// <remarks>
-    ///     Does not check if user exists in identity service, validators should check themselves. 
-    /// </remarks>
-    /// <param name="artistId">
-    ///    The identifier of the <see cref="Artist"/> to add users.
-    /// </param>
-    /// <param name="userIds">
-    ///     A collection of user identifiers to add. 
-    /// </param>
-    /// <param name="cancellationToken">
-    ///     A token for cancelling operation. 
-    /// </param>
-    /// <returns>
-    ///     A task representing asynchronous operation.
-    /// </returns>
-    private Task AddArtistUsersAsync(
-        Guid artistId,
-        IEnumerable<string> userIds,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return _dbContext.ArtistUsers.AddRangeAsync(
-            userIds.Select(i => new ArtistUser
-            {
-                ArtistId = artistId,
-                UserId = i,
-                UserName = "", // TODO implement
-            }),
-            cancellationToken
-        );
     }
 
     public async Task<Result> SaveChangesAsync(CancellationToken cancellationToken = default)

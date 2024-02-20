@@ -31,7 +31,7 @@ public sealed class IdentityUserService : IIdentityUserService
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
         {
             return new NotFoundError(
-                $"Cannot find user with Id = {userId}"
+                $"Cannot find user with Id = {{{userId}}}"
             ).ToValueResult<UserInfo>();
         }
         catch(Exception ex)

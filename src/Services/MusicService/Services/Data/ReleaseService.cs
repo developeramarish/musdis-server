@@ -1,3 +1,5 @@
+using System.Globalization;
+
 using FluentValidation;
 
 using Microsoft.EntityFrameworkCore;
@@ -73,7 +75,7 @@ public sealed class ReleaseService : IReleaseService
             Name = request.Name,
             ReleaseTypeId = releaseType.Id,
             Slug = slugResult.Value,
-            ReleaseDate = DateTime.Parse(request.ReleaseDate),
+            ReleaseDate = DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture),
             CoverUrl = request.CoverUrl
         };
 
@@ -90,7 +92,10 @@ public sealed class ReleaseService : IReleaseService
         }
 
         await _dbContext.Releases.AddAsync(release, cancellationToken);
-        await _dbContext.Entry(release).Reference(r => r.Artists).LoadAsync(cancellationToken);
+
+        await _dbContext.Entry(release).Reference(r => r.ReleaseType).LoadAsync(cancellationToken);
+        await _dbContext.Entry(release).Collection(r => r.Artists!).LoadAsync(cancellationToken);
+        await _dbContext.Entry(release).Collection(r => r.Tracks!).LoadAsync(cancellationToken);
 
         return release.ToValueResult();
     }
@@ -105,7 +110,7 @@ public sealed class ReleaseService : IReleaseService
         if (release is null)
         {
             return new NoContentError(
-                $"Could not able to delete artist, content with Id={releaseId} not found."
+                $"Could not able to delete artist, content with Id = {{{releaseId}}} not found."
             ).ToResult();
         }
 
@@ -134,7 +139,7 @@ public sealed class ReleaseService : IReleaseService
         if (release is null)
         {
             return new NotFoundError(
-                $"Release with Id = {id} is not found."
+                $"Release with Id = {{{id}}} is not found."
             ).ToValueResult<Release>();
         }
 
@@ -160,7 +165,7 @@ public sealed class ReleaseService : IReleaseService
             if (releaseType is null)
             {
                 return new InternalServerError(
-                    $"Cannot update release, release type with slug = {request.ReleaseTypeSlug} is not found."
+                    $"Cannot update Release, ReleaseType with Slug = {{{request.ReleaseTypeSlug}}} is not found."
                 ).ToValueResult<Release>();
             }
 
@@ -169,7 +174,7 @@ public sealed class ReleaseService : IReleaseService
 
         if (request.ReleaseDate is not null)
         {
-            release.ReleaseDate = DateTime.Parse(request.ReleaseDate);
+            release.ReleaseDate = DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture);
         }
 
         release.CoverUrl = request.CoverUrl ?? release.CoverUrl;

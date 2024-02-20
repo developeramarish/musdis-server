@@ -44,7 +44,7 @@ public sealed class ArtistTypeService : IArtistTypeService
         if (existingArtistType is not null)
         {
             return new ConflictError(
-                $"Artist type with name = {request.Name} exists"
+                $"Artist type with Name = {{{request.Name}}} exists"
             ).ToValueResult<ArtistType>();
         }
 
@@ -84,7 +84,7 @@ public sealed class ArtistTypeService : IArtistTypeService
         if (artistType is null)
         {
             return new NoContentError(
-                $"Couldn't delete ArtistType, content with Id={artistTypeId} not found."
+                $"Couldn't delete ArtistType, content with Id = {{{artistTypeId}}} not found."
             ).ToResult();
         }
 
@@ -105,7 +105,7 @@ public sealed class ArtistTypeService : IArtistTypeService
         if (artistType is null)
         {
             return new NotFoundError(
-                $"Cannot update ArtistType, content with Id={id} not found."
+                $"Cannot update ArtistType, content with Id = {{{id}}} not found."
             ).ToValueResult<ArtistType>();
         }
 

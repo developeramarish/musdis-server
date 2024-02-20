@@ -42,7 +42,7 @@ public sealed class TagService : ITagService
         if (existingTag is not null)
         {
             return new ConflictError(
-                $"Cannot create Tag with name = {request.Name}"
+                $"Cannot create Tag with Name = {{{request.Name}}}"
             ).ToValueResult<Tag>();
         }
 
@@ -85,7 +85,7 @@ public sealed class TagService : ITagService
         if (tag is null)
         {
             return new NotFoundError(
-                $"Cannot update tag, Tag with Id = {id} not found."
+                $"Cannot update tag, Tag with Id = {{{id}}} not found."
             ).ToValueResult<Tag>();
         }
 
@@ -119,7 +119,7 @@ public sealed class TagService : ITagService
         if (tag is null)
         {
             return new NoContentError(
-                $"Couldn't delete tag with id = {tagId} because it is not found."
+                $"Couldn't delete tag with Id = {{{tagId}}} because it is not found."
             ).ToResult();
         }
 
