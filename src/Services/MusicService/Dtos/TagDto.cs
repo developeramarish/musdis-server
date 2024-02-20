@@ -1,3 +1,4 @@
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -27,28 +28,34 @@ public sealed record TagDto(
     /// <summary>
     ///     Maps a <see cref="Tag"/> to a <see cref="TagDto"/>.
     /// </summary>
+    /// <remarks>
+    ///     Make sure <paramref name="tag"/> is not null.
+    /// </remarks>
     /// 
     /// <param name="tag">
     ///     The <see cref="Tag"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped <see cref="TagDto"/>.
+    ///     The mapped <see cref="TagDto"/>.
     /// </returns>
-    public static Result<TagDto> FromTag(Tag tag)
+    /// <exception cref="InvalidMethodCallException">
+    ///     Thrown if method called incorrectly, see remarks.
+    /// </exception>
+    public static TagDto FromTag(Tag tag)
     {
         if (tag is null)
         {
-            return Result<TagDto>.Failure(
-                "Cannot convert Tag to TagDto, value is null"
+            throw new InvalidMethodCallException(
+                "Cannot convert tag into DTO, make sure it is not null."
             );
         }
 
-        return new TagDto(
+        return new(
             tag.Id,
             tag.Name,
             tag.Slug
-        ).ToValueResult();
+        );
     }
 
     /// <summary>
@@ -60,26 +67,11 @@ public sealed record TagDto(
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result{T}"/> containing the mapped collection of <see cref="TagDto"/>.
+    ///     The mapped collection of <see cref="TagDto"/>.
     /// </returns>
-    public static Result<IEnumerable<TagDto>> FromTags(IEnumerable<Tag> tags)
+    public static IEnumerable<TagDto> FromTags(IEnumerable<Tag> tags)
     {
-        List<TagDto> dtos = [];
-
-        foreach (var tag in tags)
-        {
-            var result = FromTag(tag);
-            if (result.IsFailure)
-            {
-                return Result<IEnumerable<TagDto>>.Failure(
-                    $"Cannot convert tag collection into tag DTOs: {result.Error.Description}"
-                );
-            }
-
-            dtos.Add(result.Value);
-        }
-
-        return dtos.AsEnumerable().ToValueResult();
+        return tags.Select(t => FromTag(t));
     }
 
 }

@@ -1,3 +1,4 @@
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -27,28 +28,34 @@ public sealed record ArtistTypeDto(
     /// <summary>
     ///     Maps an <see cref="ArtistType"/> to an <see cref="ArtistTypeDto"/>.
     /// </summary>
+    /// <remarks>
+    ///     Make sure <paramref name="artistType"/> is not null.
+    /// </remarks>
     /// 
     /// <param name="artistType">
     ///     The <see cref="ArtistType"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped <see cref="ArtistTypeDto"/>.
+    ///     The mapped <see cref="ArtistTypeDto"/>.
     /// </returns>
-    public static Result<ArtistTypeDto> FromArtistType(ArtistType artistType)
+    /// <exception cref="InvalidMethodCallException">
+    ///     Thrown if method called incorrectly, see remarks.
+    /// </exception>
+    public static ArtistTypeDto FromArtistType(ArtistType artistType)
     {
         if (artistType is null)
         {
-            return Result<ArtistTypeDto>.Failure(
-                "Cannot convert ArtistType to ArtistTypeDto, value is null"
+            throw new InvalidMethodCallException(
+                "Cannot convert artist type into DTO, make sure it is not null."
             );
         }
 
-        return new ArtistTypeDto(
+        return new(
             artistType.Id,
             artistType.Name,
             artistType.Slug
-        ).ToValueResult();
+        );
     }
 
     /// <summary>
@@ -60,26 +67,11 @@ public sealed record ArtistTypeDto(
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped collection of <see cref="ArtistTypeDto"/>.
+    ///     The mapped collection of <see cref="ArtistTypeDto"/>.
     /// </returns>
-    public static Result<IEnumerable<ArtistTypeDto>> FromArtistTypes(IEnumerable<ArtistType> artistTypes)
+    public static IEnumerable<ArtistTypeDto> FromArtistTypes(IEnumerable<ArtistType> artistTypes)
     {
-        List<ArtistTypeDto> dtos = [];
-
-        foreach (var artistType in artistTypes)
-        {
-            var result = FromArtistType(artistType);
-            if (result.IsFailure)
-            {
-                return Result<IEnumerable<ArtistTypeDto>>.Failure(
-                    $"Cannot convert artist types collection into artist type DTOs: {result.Error.Description}"
-                );
-            }
-
-            dtos.Add(result.Value);
-        }
-
-        return dtos.AsEnumerable().ToValueResult();
+        return artistTypes.Select(a => FromArtistType(a));
     }
 
 }

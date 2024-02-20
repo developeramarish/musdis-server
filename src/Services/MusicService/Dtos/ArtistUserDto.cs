@@ -1,3 +1,4 @@
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -26,26 +27,34 @@ public sealed record ArtistUserDto(
     /// <summary>
     ///     Maps a collection of <see cref="Artist"/> to a collection of <see cref="ArtistDto"/>.
     /// </summary>
+    /// <remarks>
+    ///     Make sure <paramref name="artistUser"/> is not null.
+    /// </remarks>
     /// 
     /// <param name="artists">
     ///     The collection of <see cref="Artist"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped collection of <see cref="ArtistDto"/>.
+    ///     The mapped collection of <see cref="ArtistDto"/>.
     /// </returns>
-    public Result<ArtistUserDto> FromArtistUser(ArtistUser artistUser)
+    /// <exception cref="InvalidMethodCallException">
+    ///     Thrown if method called incorrectly, see remarks.
+    /// </exception>
+    public ArtistUserDto FromArtistUser(ArtistUser artistUser)
     {
         if (artistUser is null)
         {
-            return Result<ArtistUserDto>.Failure("Cannot convert null to ArtistUserDto.");
+            throw new InvalidMethodCallException(
+                "Cannot convert artist user into DTO, make sure it is not null"
+            );
         }
 
-        return new ArtistUserDto(
+        return new(
             artistUser.ArtistId,
             artistUser.UserId,
             artistUser.UserName
-        ).ToValueResult();
+        );
     }
 
     /// <summary>
@@ -57,32 +66,10 @@ public sealed record ArtistUserDto(
     ///  </param>
     ///  
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped collection of <see cref="ArtistUserDto"/>.
+    ///     The mapped collection of <see cref="ArtistUserDto"/>.
     /// </returns>
-    public Result<IEnumerable<ArtistUserDto>> FromArtistUsers(IEnumerable<ArtistUser> artistUsers)
+    public IEnumerable<ArtistUserDto> FromArtistUsers(IEnumerable<ArtistUser> artistUsers)
     {
-        if (artistUsers is null)
-        {
-            return Result<IEnumerable<ArtistUserDto>>.Failure(
-                "Cannot convert null collection to ArtistUserDto collection."
-            );
-        }
-
-        List<ArtistUserDto> dtos = [];
-
-        foreach (var artistUser in artistUsers)
-        {
-            var result = FromArtistUser(artistUser);
-            if (result.IsFailure)
-            {
-                return Result<IEnumerable<ArtistUserDto>>.Failure(
-                    $"Cannot convert artist users collection to ArtistUserDto collection: {result.Error.Description}"
-                );
-            }
-
-            dtos.Add(result.Value);
-        }
-
-        return dtos.AsEnumerable().ToValueResult();
+        return  artistUsers.Select(au => FromArtistUser(au));
     }
 }

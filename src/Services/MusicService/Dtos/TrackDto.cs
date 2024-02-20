@@ -1,3 +1,4 @@
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -36,6 +37,63 @@ public sealed record TrackDto(
 )
 {
     /// <summary>
+    ///     Maps a <see cref="Track"/> to a <see cref="TrackDto"/>.
+    /// </summary>
+    /// <remarks>
+    ///     Make sure <paramref name="track"/>'s <see cref="Track.Artists"/>, 
+    ///     <see cref="Track.Tags"/>, <see cref="Track.Release"/> are not null.
+    /// </remarks>
+    /// 
+    /// <param name="track">
+    ///     The <see cref="Track"/> to map.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     The mapped <see cref="TrackDto"/>.
+    /// </returns>
+    /// <exception cref="InvalidMethodCallException">
+    ///     Thrown if method called incorrectly, see remarks.
+    /// </exception>
+    public static TrackDto FromTrack(Track track)
+    {
+        if (track?.Artists is null || track.Tags is null || track.Release is null)
+        {
+            throw new InvalidMethodCallException(
+                "Cannot convert track into DTO, make sure it is not null."
+            );
+        }
+
+        return new(
+            track.Id,
+            track.Title,
+            track.Slug,
+            ReleaseInfo.FromRelease(track.Release),
+            TagDto.FromTags(track.Tags),
+            ArtistDto.FromArtists(track.Artists)
+        );
+    }
+
+    /// <summary>
+    ///     Maps a collection of <see cref="Track"/> to a collection of <see cref="TrackDto"/>.
+    /// </summary>
+    /// <remarks>
+    ///     Make sure every track's <see cref="Track.Artists"/>, 
+    ///     <see cref="Track.Tags"/>, <see cref="Track.Release"/> are not null.
+    /// </remarks>
+    /// 
+    /// <param name="tracks">
+    ///     The collection of <see cref="Track"/> to map.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     A <see cref="Result{T}"/> containing the mapped collection of <see cref="TrackDto"/>.
+    /// </returns>
+    public static IEnumerable<TrackDto> FromTracks(IEnumerable<Track> tracks)
+    {
+        return tracks.Select(t => FromTrack(t));
+    }
+
+    /// <summary>
     ///     Represents release information for a track.
     /// </summary>
     /// 
@@ -68,115 +126,44 @@ public sealed record TrackDto(
         string ReleaseDate,
         string CoverUrl,
         IEnumerable<ArtistDto> Artists
-    );
-
-    public static Result<TrackDto> FromTrack(Track track)
+    )
     {
-        if (track?.Artists is null || track?.Tags is null || track?.Release is null)
+        /// <summary>
+        ///     Maps a <see cref="Release"/> to a <see cref="ReleaseInfo"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Make sure <paramref name="release"/>'s <see cref="Release.ReleaseType"/>, 
+        ///     <see cref="Release.Artists"/>, <see cref="Release.Tracks"/> are not null.
+        /// </remarks>
+        /// 
+        /// <param name="release">
+        ///     The <see cref="Release"/> to map.
+        /// </param>
+        /// 
+        /// <returns>
+        ///     The mapped <see cref="ReleaseInfo"/>.
+        /// </returns>
+        /// <exception cref="InvalidMethodCallException">
+        ///     Thrown if method called incorrectly, see remarks.
+        /// </exception>
+        public static ReleaseInfo FromRelease(Release release)
         {
-            return Result<TrackDto>.Failure(
-                "Cannot convert Track to Track DTO: Track or related data is null."
-            );
-        }
-
-        var tagsResult = TagDto.FromTags(track.Tags);
-        if (tagsResult.IsFailure)
-        {
-            return Result<TrackDto>.Failure(
-                $"Cannot convert Track to Track DTO: {tagsResult.Error.Description}"
-            );
-        }
-
-        var artistsResult = ArtistDto.FromArtists(track.Artists);
-        if (artistsResult.IsFailure)
-        {
-            return Result<TrackDto>.Failure(
-                $"Cannot convert Track to Track DTO: {artistsResult.Error.Description}"
-            );
-        }
-
-        var releaseInfoResult = ConvertReleaseToInfo(track.Release);
-        if (releaseInfoResult.IsFailure)
-        {
-            return Result<TrackDto>.Failure(
-                $"Cannot convert Track to TrackDto: {releaseInfoResult.Error.Description}"
-            );
-        }
-
-        return new TrackDto(
-            track.Id,
-            track.Title,
-            track.Slug,
-            releaseInfoResult.Value,
-            tagsResult.Value,
-            artistsResult.Value
-        ).ToValueResult();
-    }
-
-    /// <summary>
-    ///     Maps a collection of <see cref="Track"/> to a collection of <see cref="TrackDto"/>.
-    /// </summary>
-    /// 
-    /// <param name="tracks">
-    ///     The collection of <see cref="Track"/> to map.
-    /// </param>
-    /// 
-    /// <returns>
-    ///     A <see cref="Result{T}"/> containing the mapped collection of <see cref="TrackDto"/>.
-    /// </returns>
-    public static Result<IEnumerable<TrackDto>> FromTracks(IEnumerable<Track> tracks)
-    {
-        List<TrackDto> dtos = [];
-
-        foreach (var track in tracks)
-        {
-            var result = FromTrack(track);
-            if (result.IsFailure)
+            if (release?.ReleaseType is null || release.Artists is null || release.Tracks is null)
             {
-                return Result<IEnumerable<TrackDto>>.Failure(
-                    $"Cannot convert tag collection into tag DTOs: {result.Error.Description}"
+                throw new InvalidMethodCallException(
+                    "Cannot convert release to DTO: check if provided value or related data is not null."
                 );
             }
 
-            dtos.Add(result.Value);
-        }
-
-        return dtos.AsEnumerable().ToValueResult();
-    }
-
-    private static Result<ReleaseInfo> ConvertReleaseToInfo(Release release)
-    {
-        if (release?.ReleaseType is null || release?.Artists is null)
-        {
-            return Result<ReleaseInfo>.Failure(
-                "Cannot convert Release to TrackDto.ReleaseInfo: provided value or related data is null"
+            return new(
+                release.Id,
+                ReleaseTypeDto.FromReleaseType(release.ReleaseType),
+                release.Name,
+                release.Slug,
+                release.ReleaseDate.ToString("o"),
+                release.CoverUrl,
+                ArtistDto.FromArtists(release.Artists)
             );
         }
-
-        var releaseTypeResult = ReleaseTypeDto.FromReleaseType(release.ReleaseType);
-        if (releaseTypeResult.IsFailure)
-        {
-            return Result<ReleaseInfo>.Failure(
-                $"Cannot convert Release to TrackDto.ReleaseInfo: {releaseTypeResult.Error.Description}"
-            );
-        }
-
-        var artistsResult = ArtistDto.FromArtists(release.Artists);
-        if (artistsResult.IsFailure)
-        {
-            return Result<ReleaseInfo>.Failure(
-                $"Cannot convert Release to TrackDto.ReleaseInfo: {artistsResult.Error.Description}"
-            );
-        }
-
-        return new ReleaseInfo(
-            release.Id,
-            releaseTypeResult.Value,
-            release.Name,
-            release.Slug,
-            release.ReleaseDate.ToString("o"),
-            release.CoverUrl,
-            artistsResult.Value
-        ).ToValueResult();
     }
 }

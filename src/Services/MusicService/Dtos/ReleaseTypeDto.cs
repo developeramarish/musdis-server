@@ -1,3 +1,4 @@
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -27,20 +28,23 @@ public sealed record ReleaseTypeDto(
     /// <summary>
     ///     Maps a <see cref="ReleaseType"/> to an <see cref="ReleaseTypeDto"/>.
     /// </summary>
+    /// <remarks>
+    ///     Make sure <paramref name="releaseType"/> is not null.
+    /// </remarks>
     /// 
     /// <param name="releaseType">
     ///     The <see cref="ReleaseType"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped <see cref="ReleaseTypeDto"/>.
+    ///     The mapped <see cref="ReleaseTypeDto"/>.
     /// </returns>
-    public static Result<ReleaseTypeDto> FromReleaseType(ReleaseType releaseType)
+    public static ReleaseTypeDto FromReleaseType(ReleaseType releaseType)
     {
         if (releaseType is null)
         {
-            return Result<ReleaseTypeDto>.Failure(
-                "Cannot convert ReleaseType to ReleaseTypeDto, value is null"
+            throw new InvalidMethodCallException(
+                "Cannot convert artist type into DTO, make sure it is not null"
             );
         }
 
@@ -48,7 +52,7 @@ public sealed record ReleaseTypeDto(
             releaseType.Id,
             releaseType.Name,
             releaseType.Slug
-        ).ToValueResult();
+        );
     }
 
     /// <summary>
@@ -60,26 +64,10 @@ public sealed record ReleaseTypeDto(
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped collection of <see cref="ReleaseTypeDto"/>.
+    ///     The mapped collection of <see cref="ReleaseTypeDto"/>.
     /// </returns>
-    public static Result<IEnumerable<ReleaseTypeDto>> FromReleaseTypes(IEnumerable<ReleaseType> releaseTypes)
+    public static IEnumerable<ReleaseTypeDto> FromReleaseTypes(IEnumerable<ReleaseType> releaseTypes)
     {
-        List<ReleaseTypeDto> dtos = [];
-
-        foreach (var releaseType in releaseTypes)
-        {
-            var result = FromReleaseType(releaseType);
-            if (result.IsFailure)
-            {
-                return Result<IEnumerable<ReleaseTypeDto>>.Failure(
-                    $"Cannot convert release types collection into release type DTOs: {result.Error.Description}"
-                );
-            }
-
-            dtos.Add(result.Value);
-        }
-
-        return dtos.AsEnumerable().ToValueResult();
+        return releaseTypes.Select(rt => FromReleaseType(rt));
     }
-
 }

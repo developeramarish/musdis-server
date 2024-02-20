@@ -1,3 +1,6 @@
+using System.Data;
+
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -43,69 +46,57 @@ public sealed record ArtistDto(
     /// <summary>
     ///     Maps an <see cref="Artist"/> to an <see cref="ArtistDto"/>.
     /// </summary>
+    /// <remarks>
+    ///     Make sure <see cref="Artist.ArtistType"/> and <see cref="Artist.ArtistUsers"/> are not null.
+    /// </remarks>
     /// 
     /// <param name="artist">
     ///     The <see cref="Artist"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped <see cref="ArtistDto"/>.
+    ///    The mapped <see cref="ArtistDto"/>.
     /// </returns>
-    public static Result<ArtistDto> FromArtist(Artist artist)
+    /// <exception cref="InvalidMethodCallException">
+    ///     Thrown if method called incorrectly, see remarks.
+    /// </exception>
+    public static ArtistDto FromArtist(Artist artist)
     {
-        if (artist?.ArtistType is null || artist?.ArtistUsers is null)
+        if (artist?.ArtistType is null || artist.ArtistUsers is null)
         {
-            return Result<ArtistDto>.Failure(
-                "Cannot convert Artist to ArtistDto, incorrect data passed."
-            );
-        }
-    
-        var artistTypeDtosResult = ArtistTypeDto.FromArtistType(artist.ArtistType);
-        if (artistTypeDtosResult.IsFailure)
-        {
-            return Result<ArtistDto>.Failure(
-                "Cannot convert Artist to ArtistDto, incorrect data passed."
+            throw new InvalidMethodCallException(
+                "Cannot convert Artist to ArtistDto, check if ArtistType and ArtistUsers properties are not null."
             );
         }
 
-        return new ArtistDto(
+        return new(
             artist.Id,
             artist.Name,
             artist.Slug,
             artist.CoverUrl,
             artist.CreatorId,
-            artistTypeDtosResult.Value,
+            ArtistTypeDto.FromArtistType(artist.ArtistType),
             artist.ArtistUsers.Select(au => au.UserId)
-        ).ToValueResult();
+        );
     }
 
     /// <summary>
     ///     Maps a collection of <see cref="Artist"/> to a collection of <see cref="ArtistDto"/>.
     /// </summary>
+    /// <remarks>
+    ///     Make sure every artists's <see cref="Artist.ArtistType"/> and <see cref="Artist.ArtistUsers"/> 
+    ///     in collection are not null.
+    /// </remarks>
+    /// 
     /// <param name="artists">
     ///     The collection of <see cref="Artist"/> to map.
     /// </param>
     /// 
     /// <returns>
-    ///     A <see cref="Result"/> containing the mapped collection of <see cref="ArtistDto"/>.
+    ///     The mapped collection of <see cref="ArtistDto"/>.
     /// </returns>
-    public static Result<IEnumerable<ArtistDto>> FromArtists(IEnumerable<Artist> artists)
+    public static IEnumerable<ArtistDto> FromArtists(IEnumerable<Artist> artists)
     {
-        List<ArtistDto> dtos = [];
-
-        foreach (var artist in artists)
-        {
-            var result = FromArtist(artist);
-            if (result.IsFailure)
-            {
-                return Result<IEnumerable<ArtistDto>>.Failure(
-                    $"Cannot convert artists collection into artist DTOs: {result.Error.Description}"
-                );
-            }
-
-            dtos.Add(result.Value);
-        }
-
-        return dtos.AsEnumerable().ToValueResult();
+        return artists.Select(a => FromArtist(a));
     }
 }
