@@ -15,12 +15,12 @@ Use `ToProblemDetails` method to create Problem Details result for Minimal APIs.
 Predefined HTTP errors:
 
 1. `ConflictError` - a conflict with the current state of the target resource, associated with an HTTP status code 409.
-1. `ForbiddenError` - an error indicating  that the server understood the request but refuses to authorize it, associated with an HTTP status code 403.
-1. `GoneError` - an error indicating that access to the target resource is no longer available, associated with an HTTP status code 410.
-1. `InternalServerError` - an error indicating an internal server error, associated with an HTTP status code 500.
-1. `NotFoundError` - a resource not found error, associated with an HTTP status code 404.
-1. `UnauthorizedError` - an unauthorized error, associated with an HTTP status code 401.
-1. `ValidationError` - an error indicating a validation failure, associated with an HTTP status code 400.
+2. `ForbiddenError` - an error indicating  that the server understood the request but refuses to authorize it, associated with an HTTP status code 403.
+3. `GoneError` - an error indicating that access to the target resource is no longer available, associated with an HTTP status code 410.
+4. `InternalServerError` - an error indicating an internal server error, associated with an HTTP status code 500.
+5. `NotFoundError` - a resource not found error, associated with an HTTP status code 404.
+6. `UnauthorizedError` - an unauthorized error, associated with an HTTP status code 401.
+7. `ValidationError` - an error indicating a validation failure, associated with an HTTP status code 400.
 
 ### Create custom HTTP errors
 
@@ -30,11 +30,35 @@ Override `ToProblemDetails` method if your error need a specific Problem Details
 
 ## 📨 Response models
 
-`PagedResponse` is a model for pagination responses. Contains data and additional pagination info.
+### `DataResponse<TData>`
+
+The `DataResponse<TData>` class serves as a generic container for encapsulating and delivering data of a specified type.
+
+For single objects:
 
 ```json
 {
-    "data": [/*some_data*/],
+    "data": {
+        "some": "data"
+    }
+}
+```
+
+For collection of objects:
+
+```json
+{
+    "data": [{ "some": "data" }]
+}
+```
+
+### `PagedDataResponse<TData>`
+
+The `PagedDataResponse<TData>` model is designed specifically for handling paginated responses. It incorporates both the data payload and additional pagination information, making it well-suited for scenarios where data needs to be presented in chunks.
+
+```json
+{
+    "data": [{ "some": "data" }],
     "paginationInfo": {
         "currentPage": 2,
         "pageSize": 25,

@@ -7,10 +7,10 @@ namespace Musdis.ResponseHelpers.Responses;
 /// </summary>
 /// 
 /// <typeparam name="TData">The type of data.</typeparam>
-public class PagedDataResponse<TData>
+public class PagedDataResponse<TData> : DataResponse<IEnumerable<TData>> 
 {
     /// <summary>
-    ///     Creates <see cref="PagedDataResponse{T}"/>.
+    ///     Initializes a new instance of the <see cref="PagedDataResponse{TData}"/> class.
     /// </summary>
     public PagedDataResponse() { }
 
@@ -36,9 +36,8 @@ public class PagedDataResponse<TData>
         int currentPage,
         int pageSize,
         int totalCount
-    )
+    ) : base(data)
     {
-        Data = data;
         PaginationInfo = new PaginationInfo
         {
             CurrentPage = currentPage,
@@ -46,7 +45,6 @@ public class PagedDataResponse<TData>
             TotalCount = totalCount,
         };
     }
-
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="PagedDataResponse{TData}"/> class.
@@ -62,16 +60,10 @@ public class PagedDataResponse<TData>
     public PagedDataResponse(
         IEnumerable<TData> data,
         PaginationInfo paginationInfo
-    )
+    ) : base(data)
     {
-        Data = data;
         PaginationInfo = paginationInfo;
     }
-
-    /// <summary>
-    ///     A requested collection of data. 
-    /// </summary>
-    public required IEnumerable<TData> Data { get; init; }
 
     /// <summary>
     ///     Additional information about pagination.
