@@ -35,6 +35,7 @@ public static class ErrorExtensions
         return error switch
         {
             HttpError httpError => httpError.ToProblemHttpResult(instance),
+            NoContentError => Results.NoContent(),
             _ => new InternalServerError(error.Description).ToProblemHttpResult(instance),
         };
     }
