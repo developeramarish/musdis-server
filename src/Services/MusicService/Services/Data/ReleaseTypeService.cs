@@ -44,7 +44,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
         if (existingReleaseType is not null)
         {
             return new ConflictError(
-                $"Release type with name = {request.Name} exists"
+                $"Release type with Name = {{{request.Name}}} exists"
             ).ToValueResult<ReleaseType>();
         }
 
@@ -84,7 +84,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
         if (releaseType is null)
         {
             return new NoContentError(
-                $"Couldn't delete ReleaseType, content with Id={releaseTypeId} not found."
+                $"Couldn't delete ReleaseType, content with Id = {{{releaseTypeId}}} not found."
             ).ToResult();
         }
 
@@ -94,18 +94,18 @@ public sealed class ReleaseTypeService : IReleaseTypeService
     }
 
     public async Task<Result<ReleaseType>> UpdateAsync(
-        Guid id,
+        Guid releaseTypeId,
         UpdateReleaseTypeRequest request,
         CancellationToken cancellationToken = default
     )
     {
         var releaseType = await _dbContext.ReleaseTypes
-            .FirstOrDefaultAsync(at => at.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(at => at.Id == releaseTypeId, cancellationToken);
 
         if (releaseType is null)
         {
             return new NotFoundError(
-                $"Cannot update ReleaseType, content with Id={id} not found."
+                $"Cannot update ReleaseType, content with Id = {{{releaseTypeId}}} not found."
             ).ToValueResult<ReleaseType>();
         }
 
