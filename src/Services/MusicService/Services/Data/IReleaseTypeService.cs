@@ -39,7 +39,7 @@ public interface IReleaseTypeService
     ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
     /// </remarks>
     /// 
-    /// <param name="id">
+    /// <param name="releaseTypeId">
     ///     The identifier of the <see cref="ReleaseType"/>.
     /// </param>
     /// <param name="request">
@@ -54,7 +54,7 @@ public interface IReleaseTypeService
     ///     <see cref="Result{TValue}"/> of an operation with updated <see cref="ReleaseType"/> value.
     /// </returns>
     Task<Result<ReleaseType>> UpdateAsync(
-        Guid id,
+        Guid releaseTypeId,
         UpdateReleaseTypeRequest request,
         CancellationToken cancellationToken = default
     );
@@ -67,7 +67,7 @@ public interface IReleaseTypeService
     ///     Use <see cref="SaveChangesAsync(CancellationToken)"/> to save changes to the database.
     /// </remarks>
     /// 
-    /// <param name="ReleaseTypeId">
+    /// <param name="releaseTypeId">
     ///     The identifier of the <see cref="ReleaseType"/>
     /// </param>
     /// <param name="cancellationToken">
@@ -78,7 +78,7 @@ public interface IReleaseTypeService
     ///     The task result contains <see cref="Result"/> of the deletion.
     /// </returns>
     Task<Result> DeleteAsync(
-        Guid id,
+        Guid releaseTypeId,
         CancellationToken cancellationToken = default
     );
 
