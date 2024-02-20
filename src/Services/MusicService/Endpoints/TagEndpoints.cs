@@ -12,61 +12,47 @@ using Musdis.ResponseHelpers.Responses;
 
 namespace Musdis.MusicService.Endpoints;
 
-// TODO: Add authorization
+// TODO add authorization
 
 /// <summary>
-///     Artist endpoints.
+///     Tag endpoints.
 /// </summary>
-public static class ArtistEndpoints
+public static class TagEndpoints
 {
-    /// <summary>
-    ///     Maps <see cref="Models.Artist"/> related endpoints.
-    /// </summary>
-    /// 
-    /// <param name="groupBuilder">
-    ///     The group to add endpoints to.
-    /// </param>
-    /// 
-    /// <returns>
-    ///     The <paramref name="groupBuilder"/> with mapped <see cref="Models.Artist"/> endpoints. 
-    /// </returns>
-    public static RouteGroupBuilder MapArtists(
+    public static RouteGroupBuilder MapTags(
         this RouteGroupBuilder groupBuilder
     )
     {
         groupBuilder.MapGet("/", HandleGetManyAsync)
-            .Produces<PagedDataResponse<ArtistDto>>();
+            .Produces<PagedDataResponse<IEnumerable<TagDto>>>();
 
         groupBuilder.MapGet("/{idOrSlug}", HandleGetOneAsync)
-            .Produces<ArtistDto>()
+            .Produces<DataResponse<TagDto>>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         groupBuilder.MapPost("/", HandlePostAsync)
-            .Accepts<CreateArtistRequest>(MediaTypeNames.Application.Json)
-            .Produces(StatusCodes.Status201Created)
+            .Accepts<CreateTagRequest>(MediaTypeNames.Application.Json)
+            .Produces<TagDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         groupBuilder.MapPatch("/{id:guid}", HandlePatchAsync)
-            .Accepts<UpdateArtistRequest>(MediaTypeNames.Application.Json)
+            .Accepts<UpdateTagRequest>(MediaTypeNames.Application.Json)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        groupBuilder.MapDelete("/{id:guid}", HandleDeleteAsync)
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status204NoContent);
-
         return groupBuilder;
     }
+
     public static async Task<IResult> HandleGetManyAsync(
-        [FromServices] IArtistService artistService,
+        [FromServices] ITagService tagService,
         CancellationToken cancellationToken,
         [FromQuery] string? search = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 0
     )
     {
-        var queryable = artistService.GetQueryable();
+        var queryable = tagService.GetQueryable();
         if (search is not null)
         {
             queryable = queryable.Where(a => a.Name.StartsWith(search));
@@ -75,18 +61,17 @@ public static class ArtistEndpoints
         if (pageSize > 0)
         {
             var offset = (page - 1) * pageSize;
-            queryable = queryable.Skip(offset).Take(pageSize);
+            queryable = queryable
+                .Skip(offset)
+                .Take(pageSize);
         }
 
-        var artists = await queryable
-            .Include(a => a.ArtistUsers)
-            .Include(a => a.ArtistType)
-            .ToListAsync(cancellationToken);
+        var tags = await queryable.ToListAsync(cancellationToken);
 
         var totalCount = await queryable.CountAsync(cancellationToken);
-        var result = new PagedDataResponse<ArtistDto>
+        var result = new PagedDataResponse<TagDto>
         {
-            Data = ArtistDto.FromArtists(artists),
+            Data = TagDto.FromTags(tags),
             PaginationInfo = new()
             {
                 PageSize = pageSize,
@@ -100,73 +85,69 @@ public static class ArtistEndpoints
 
     public static async Task<IResult> HandleGetOneAsync(
         [FromRoute] string idOrSlug,
-        [FromServices] IArtistService artistService,
+        [FromServices] ITagService tagService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var queryable = artistService.GetQueryable()
-            .Include(a => a.ArtistUsers)
-            .Include(a => a.ArtistType);
-
-        var artist = await queryable
-            .FirstOrDefaultAsync(a => a.Slug == idOrSlug, cancellationToken);
-        if (artist is null && Guid.TryParse(idOrSlug, out var id))
+        var tag = await tagService.GetQueryable()
+            .FirstOrDefaultAsync(t => t.Slug == idOrSlug, cancellationToken);
+        
+        if (tag is null && Guid.TryParse(idOrSlug, out var id))
         {
-            artist = await queryable
-                .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+            tag = await tagService.GetQueryable()
+                .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         }
-
-        if (artist is null)
+        if (tag is null)
         {
             return new NotFoundError(
-                $"Cannot find Artist with Id or Slug = {{{idOrSlug}}}"
+                $"Tag with Id or Slug = {{{idOrSlug}}} is not found."
             ).ToHttpResult(context.Request.Path);
         }
 
-        return Results.Ok(new DataResponse<ArtistDto>
+        return Results.Ok(new DataResponse<TagDto>
         {
-            Data = ArtistDto.FromArtist(artist)
+            Data = TagDto.FromTag(tag)
         });
     }
 
     public static async Task<IResult> HandlePostAsync(
-        [FromBody] CreateArtistRequest request,
-        [FromServices] IArtistService artistService,
+        [FromBody] CreateTagRequest request,
+        [FromServices] ITagService tagService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var createResult = await artistService.CreateAsync(request, cancellationToken);
+        var createResult = await tagService.CreateAsync(request, cancellationToken);
         if (createResult.IsFailure)
         {
             return createResult.Error.ToHttpResult(context.Request.Path);
         }
-        var saveResult = await artistService.SaveChangesAsync(cancellationToken);
+        var saveResult = await tagService.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        var dto = ArtistDto.FromArtist(createResult.Value);
+        var dto = TagDto.FromTag(createResult.Value);
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }
 
     public static async Task<IResult> HandlePatchAsync(
         [FromRoute] Guid id,
-        [FromBody] UpdateArtistRequest request,
-        [FromServices] IArtistService artistService,
+        [FromBody] UpdateTagRequest request,
+        [FromServices] ITagService tagService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var updateResult = await artistService.UpdateAsync(id, request, cancellationToken);
+        var updateResult = await tagService.UpdateAsync(id, request, cancellationToken);
         if (updateResult.IsFailure)
         {
             return updateResult.Error.ToHttpResult(context.Request.Path);
         }
-        var saveResult = await artistService.SaveChangesAsync(cancellationToken);
+        var saveResult = await tagService.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
@@ -177,18 +158,17 @@ public static class ArtistEndpoints
 
     public static async Task<IResult> HandleDeleteAsync(
         [FromRoute] Guid id,
-        [FromServices] IArtistService artistService,
+        [FromServices] ITagService tagService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var deleteResult = await artistService.DeleteAsync(id, cancellationToken);
+        var deleteResult = await tagService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {
             return deleteResult.Error.ToHttpResult(context.Request.Path);
         }
-
-        var saveResult = await artistService.SaveChangesAsync(cancellationToken);
+        var saveResult = await tagService.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);

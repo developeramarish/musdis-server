@@ -12,43 +12,27 @@ using Musdis.ResponseHelpers.Responses;
 
 namespace Musdis.MusicService.Endpoints;
 
-// TODO: Add authorization
-
-/// <summary>
-///     Artist endpoints.
-/// </summary>
-public static class ArtistEndpoints
+public static class TrackEndpoints
 {
-    /// <summary>
-    ///     Maps <see cref="Models.Artist"/> related endpoints.
-    /// </summary>
-    /// 
-    /// <param name="groupBuilder">
-    ///     The group to add endpoints to.
-    /// </param>
-    /// 
-    /// <returns>
-    ///     The <paramref name="groupBuilder"/> with mapped <see cref="Models.Artist"/> endpoints. 
-    /// </returns>
-    public static RouteGroupBuilder MapArtists(
+    public static RouteGroupBuilder MapTracks(
         this RouteGroupBuilder groupBuilder
     )
     {
         groupBuilder.MapGet("/", HandleGetManyAsync)
-            .Produces<PagedDataResponse<ArtistDto>>();
+            .Produces<PagedDataResponse<IEnumerable<TrackDto>>>();
 
         groupBuilder.MapGet("/{idOrSlug}", HandleGetOneAsync)
-            .Produces<ArtistDto>()
+            .Produces<DataResponse<TrackDto>>()
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         groupBuilder.MapPost("/", HandlePostAsync)
-            .Accepts<CreateArtistRequest>(MediaTypeNames.Application.Json)
-            .Produces(StatusCodes.Status201Created)
+            .Accepts<CreateTrackRequest>(MediaTypeNames.Application.Json)
+            .Produces<TrackDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         groupBuilder.MapPatch("/{id:guid}", HandlePatchAsync)
-            .Accepts<UpdateArtistRequest>(MediaTypeNames.Application.Json)
+            .Accepts<UpdateTrackRequest>(MediaTypeNames.Application.Json)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
@@ -58,115 +42,119 @@ public static class ArtistEndpoints
 
         return groupBuilder;
     }
+
     public static async Task<IResult> HandleGetManyAsync(
-        [FromServices] IArtistService artistService,
+        [FromServices] ITrackService trackService,
         CancellationToken cancellationToken,
         [FromQuery] string? search = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 0
     )
     {
-        var queryable = artistService.GetQueryable();
+        var queryable = trackService.GetQueryable();
         if (search is not null)
         {
-            queryable = queryable.Where(a => a.Name.StartsWith(search));
+            queryable = queryable.Where(a => a.Title.StartsWith(search));
         }
-
         if (pageSize > 0)
         {
             var offset = (page - 1) * pageSize;
             queryable = queryable.Skip(offset).Take(pageSize);
         }
 
-        var artists = await queryable
-            .Include(a => a.ArtistUsers)
-            .Include(a => a.ArtistType)
+        var tracks = await queryable
+            .Include(t => t.Artists)
+            .Include(t => t.Tags)
+            .Include(t => t.Release)
             .ToListAsync(cancellationToken);
-
         var totalCount = await queryable.CountAsync(cancellationToken);
-        var result = new PagedDataResponse<ArtistDto>
+
+        var data = TrackDto.FromTracks(tracks);
+
+        return Results.Ok(new PagedDataResponse<TrackDto>
         {
-            Data = ArtistDto.FromArtists(artists),
+            Data = data,
             PaginationInfo = new()
             {
                 PageSize = pageSize,
                 TotalCount = totalCount,
                 CurrentPage = page
             }
-        };
-
-        return Results.Ok(result);
+        });
     }
 
     public static async Task<IResult> HandleGetOneAsync(
         [FromRoute] string idOrSlug,
-        [FromServices] IArtistService artistService,
+        [FromServices] ITrackService trackService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var queryable = artistService.GetQueryable()
-            .Include(a => a.ArtistUsers)
-            .Include(a => a.ArtistType);
+        var queryable = trackService.GetQueryable()
+            .Include(t => t.Artists)
+            .Include(t => t.Tags)
+            .Include(t => t.Release);
 
-        var artist = await queryable
-            .FirstOrDefaultAsync(a => a.Slug == idOrSlug, cancellationToken);
-        if (artist is null && Guid.TryParse(idOrSlug, out var id))
+        var track = await queryable
+            .FirstOrDefaultAsync(t => t.Slug == idOrSlug, cancellationToken);
+
+        if (track is null && Guid.TryParse(idOrSlug, out var id))
         {
-            artist = await queryable
-                .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+            track = await queryable
+                .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         }
 
-        if (artist is null)
+        if (track is null)
         {
             return new NotFoundError(
-                $"Cannot find Artist with Id or Slug = {{{idOrSlug}}}"
+                $"Track with Id or Slug = {{{idOrSlug}}} is not found."
             ).ToHttpResult(context.Request.Path);
         }
 
-        return Results.Ok(new DataResponse<ArtistDto>
+        var trackDto = TrackDto.FromTrack(track);
+        return Results.Ok(new DataResponse<TrackDto>
         {
-            Data = ArtistDto.FromArtist(artist)
+            Data = trackDto
         });
     }
 
     public static async Task<IResult> HandlePostAsync(
-        [FromBody] CreateArtistRequest request,
-        [FromServices] IArtistService artistService,
+        [FromBody] CreateTrackRequest request,
+        [FromServices] ITrackService trackService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var createResult = await artistService.CreateAsync(request, cancellationToken);
+        var createResult = await trackService.CreateAsync(request, cancellationToken);
         if (createResult.IsFailure)
         {
             return createResult.Error.ToHttpResult(context.Request.Path);
         }
-        var saveResult = await artistService.SaveChangesAsync(cancellationToken);
+        var saveResult = await trackService.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        var dto = ArtistDto.FromArtist(createResult.Value);
+        var dto = TrackDto.FromTrack(createResult.Value);
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }
 
     public static async Task<IResult> HandlePatchAsync(
         [FromRoute] Guid id,
-        [FromBody] UpdateArtistRequest request,
-        [FromServices] IArtistService artistService,
+        [FromBody] UpdateTrackRequest request,
+        [FromServices] ITrackService trackService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var updateResult = await artistService.UpdateAsync(id, request, cancellationToken);
+        var updateResult = await trackService.UpdateAsync(id, request, cancellationToken);
         if (updateResult.IsFailure)
         {
             return updateResult.Error.ToHttpResult(context.Request.Path);
         }
-        var saveResult = await artistService.SaveChangesAsync(cancellationToken);
+        var saveResult = await trackService.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
@@ -177,23 +165,22 @@ public static class ArtistEndpoints
 
     public static async Task<IResult> HandleDeleteAsync(
         [FromRoute] Guid id,
-        [FromServices] IArtistService artistService,
+        [FromServices] ITrackService trackService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var deleteResult = await artistService.DeleteAsync(id, cancellationToken);
+        var deleteResult = await trackService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {
             return deleteResult.Error.ToHttpResult(context.Request.Path);
         }
-
-        var saveResult = await artistService.SaveChangesAsync(cancellationToken);
+        var saveResult = await trackService.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        return Results.Ok();
+        return Results.NoContent();
     }
 }
