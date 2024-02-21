@@ -19,19 +19,87 @@ public sealed class TrackService : ITrackService
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateTrackRequest> _createRequestValidator;
     private readonly IValidator<UpdateTrackRequest> _updateRequestValidator;
+    private readonly IValidator<CreateReleaseRequest.TrackInfo> _trackInfoValidator;
 
     public TrackService(
         MusicServiceDbContext dbContext,
         ISlugGenerator slugGenerator,
         IValidator<CreateTrackRequest> createRequestValidator,
-        IValidator<UpdateTrackRequest> updateRequestValidator
+        IValidator<UpdateTrackRequest> updateRequestValidator,
+        IValidator<CreateReleaseRequest.TrackInfo> trackInfoValidator
     )
     {
         _dbContext = dbContext;
         _slugGenerator = slugGenerator;
         _createRequestValidator = createRequestValidator;
         _updateRequestValidator = updateRequestValidator;
+        _trackInfoValidator = trackInfoValidator;
     }
+
+    public async Task<Result<Track>> CreateForReleaseAsync(
+        CreateReleaseRequest.TrackInfo trackInfo, 
+        Release release, 
+        CancellationToken cancellationToken
+    )
+    {
+        var validationResult = await _trackInfoValidator.ValidateAsync(trackInfo, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Could not create a Track, incorrect data!",
+                validationResult.Errors.Select(f => f.ErrorMessage)
+            ).ToValueResult<Track>();
+        }
+        
+        var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Track>(
+            trackInfo.Title,
+            cancellationToken
+        );
+
+        if (slugResult.IsFailure)
+        {
+            return slugResult.Error.ToValueResult<Track>();
+        }
+
+        var track = new Track
+        {
+            Id = Guid.NewGuid(),
+            Title = trackInfo.Title,
+            Slug = slugResult.Value,
+            ReleaseId = release.Id
+        };
+
+        var artistIds = trackInfo.ArtistIds;
+        if (artistIds is null)
+        {
+            if (release.Artists is null) 
+            {
+                await _dbContext.Entry(release).Collection(r => r.Artists!).LoadAsync(cancellationToken);
+            }
+            artistIds = release.Artists!.Select(a => a.Id);
+        }
+
+        var addArtistsResult = await AddTrackArtistsAsync(track, artistIds, cancellationToken);
+        if (addArtistsResult.IsFailure)
+        {
+            return addArtistsResult.Error.ToValueResult<Track>();
+        }
+        
+        var addTagsResult = await AddTrackTagsAsync(track, trackInfo.TagSlugs, cancellationToken);
+        if (addTagsResult.IsFailure)
+        {
+            return addTagsResult.Error.ToValueResult<Track>();
+        }
+
+        await _dbContext.Tracks.AddAsync(track, cancellationToken);
+
+        await _dbContext.Entry(track).Reference(t => t.Release).LoadAsync(cancellationToken);
+        await _dbContext.Entry(track).Collection(t => t.Artists!).LoadAsync(cancellationToken);
+        await _dbContext.Entry(track).Collection(t => t.Tags!).LoadAsync(cancellationToken);
+
+        return track.ToValueResult();
+    }
+
     public async Task<Result<Track>> CreateAsync(
         CreateTrackRequest request,
         CancellationToken cancellationToken = default

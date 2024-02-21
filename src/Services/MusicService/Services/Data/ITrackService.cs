@@ -30,6 +30,30 @@ public interface ITrackService
     );
 
     /// <summary>
+    ///     Creates <see cref="Track"/> entity in database with specified <see cref="Track.ReleaseId"/>.
+    /// </summary>
+    /// 
+    /// <param name="trackInfo">
+    ///     The <see cref="CreateReleaseRequest.TrackInfo"/> to generate <see cref="Track"/> from.
+    /// </param>
+    /// <param name="release">
+    ///     The <see cref="Release"/> of the <see cref="Track"/>.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     A token to cancel the creation.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     A task representing asynchronous operation. The task result contains
+    ///     <see cref="Result{TValue}"/> of an operation with created <see cref="Track"/> value.
+    /// </returns>
+    Task<Result<Track>> CreateForReleaseAsync(
+        CreateReleaseRequest.TrackInfo trackInfo,
+        Release release,
+        CancellationToken cancellationToken
+    );
+
+    /// <summary>
     ///     Updates <see cref="Track"/> entity in the database.
     /// </summary>
     /// 
