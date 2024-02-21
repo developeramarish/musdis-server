@@ -4,6 +4,7 @@ using Musdis.Common.GrpcProtos;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Endpoints;
 using Musdis.MusicService.Extensions;
+using Musdis.MusicService.Services.Exceptions;
 using Musdis.MusicService.Services.Utils;
 
 using Slugify;
@@ -36,8 +37,20 @@ builder.Services.AddSwaggerGen(options =>
     options.CustomSchemaIds(type => type.ToString());
 });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddExceptionHandler<DeveloperExceptionHandler>();
+}
+else
+{
+    builder.Services.AddExceptionHandler<ExceptionHandler>();
+}
+builder.Services.AddProblemDetails();
+
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
