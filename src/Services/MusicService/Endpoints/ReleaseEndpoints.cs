@@ -51,9 +51,20 @@ public static class ReleaseEndpoints
     )
     {
         var queryable = releaseService.GetQueryable()
-            .Include(t => t.ReleaseType)
-            .Include(t => t.Artists)
-            .Include(t => t.Tracks);
+            .Include(r => r.ReleaseType)
+            .Include(r => r.Artists!)
+                .ThenInclude(a => a.ArtistType)
+            .Include(r => r.Artists!)
+                .ThenInclude(a => a.ArtistUsers)
+            .Include(r => r.Tracks!)
+                .ThenInclude(t => t.Tags)
+            .Include(r => r.Tracks!)
+                .ThenInclude(t => t.Artists!)
+                    .ThenInclude(a => a.ArtistType)
+            .Include(r => r.Tracks!)
+                .ThenInclude(t => t.Artists!)
+                    .ThenInclude(a => a.ArtistUsers)
+            .AsSplitQuery();
 
         var release = await queryable
             .FirstOrDefaultAsync(r => r.Slug == idOrSlug, cancellationToken);
@@ -96,9 +107,19 @@ public static class ReleaseEndpoints
         }
 
         var artists = await queryable
-            .Include(t => t.ReleaseType)
-            .Include(t => t.Artists)
-            .Include(t => t.Tracks)
+            .Include(r => r.ReleaseType)
+            .Include(r => r.Artists!)
+                .ThenInclude(a => a.ArtistType)
+            .Include(r => r.Artists!)
+                .ThenInclude(a => a.ArtistUsers)
+            .Include(r => r.Tracks!)
+                .ThenInclude(t => t.Tags)
+            .Include(r => r.Tracks!)
+                .ThenInclude(t => t.Artists!)
+                    .ThenInclude(a => a.ArtistType)
+            .Include(r => r.Tracks!)
+                .ThenInclude(t => t.Artists!)
+                    .ThenInclude(a => a.ArtistUsers)
             .ToListAsync(cancellationToken);
 
         var totalCount = await queryable.CountAsync(cancellationToken);
