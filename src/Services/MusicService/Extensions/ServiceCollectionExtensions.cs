@@ -80,6 +80,9 @@ public static class ServiceCollectionExtensions
             new UpdateReleaseRequestValidator(sp.GetRequiredService<MusicServiceDbContext>())
         );
 
+        services.AddScoped<IValidator<CreateReleaseRequest.TrackInfo>>(sp =>
+            new CreateReleaseRequestTrackInfoValidator(sp.GetRequiredService<MusicServiceDbContext>())
+        );
 
         return services;
     }
