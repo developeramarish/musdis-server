@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Utils;
@@ -75,7 +76,11 @@ public sealed class ReleaseService : IReleaseService
             Name = request.Name,
             ReleaseTypeId = releaseType.Id,
             Slug = slugResult.Value,
-            ReleaseDate = DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture),
+            // ReleaseDate = DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture),
+            ReleaseDate = DateTime.SpecifyKind(
+                DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture), 
+                DateTimeKind.Utc
+            ),
             CoverUrl = request.CoverUrl
         };
 
@@ -223,22 +228,16 @@ public sealed class ReleaseService : IReleaseService
     {
         if (release?.Artists is null)
         {
-            throw new ArgumentException("Cannot access Artists property in creating Release", nameof(release));
+            throw new InvalidMethodCallException("Cannot access Artists property in creating Release");
         }
 
         try
         {
             foreach (var trackInfo in trackInfos)
             {
-                var artistIds = trackInfo.ArtistIds ?? release.Artists.Select(a => a.Id);
-
-                var result = await _trackService.CreateAsync(
-                    new CreateTrackRequest(
-                        trackInfo.Title,
-                        release.Id,
-                        artistIds,
-                        trackInfo.TagSlugs
-                    ),
+                var result = await _trackService.CreateForReleaseAsync(
+                    trackInfo,
+                    release,
                     cancellationToken
                 );
                 if (result.IsFailure)
