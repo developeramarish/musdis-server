@@ -134,7 +134,7 @@ public sealed record ReleaseDto(
         /// </summary>
         /// <remarks>
         ///     Make sure <paramref name="track"/>'s <see cref="Track.Artists"/>, 
-        ///     <see cref="Track.Tags"/>, <see cref="Track.Release"/> are not null.
+        ///     <see cref="Track.Tags"/> are not null.
         /// </remarks>
         /// 
         /// <param name="track">
@@ -149,7 +149,7 @@ public sealed record ReleaseDto(
         /// </exception>
         private static TrackInfo FromTrack(Track track)
         {
-            if (track?.Artists is null || track.Tags is null || track.Release is null)
+            if (track?.Artists is null || track.Tags is null)
             {
                 throw new InvalidMethodCallException(
                     "Cannot convert track into track info, make sure it is or its properties are not null."
@@ -170,7 +170,7 @@ public sealed record ReleaseDto(
         /// </summary>
         /// <remarks>
         ///      Make sure every track's <see cref="Track.Artists"/>, 
-        ///     <see cref="Track.Tags"/>, <see cref="Track.Release"/> are not null.
+        ///     <see cref="Track.Tags"/>, are not null.
         /// </remarks>
         /// 
         /// <param name="tracks">
