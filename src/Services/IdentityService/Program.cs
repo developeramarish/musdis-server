@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Musdis.IdentityService.Services.Grpc;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,8 @@ builder.Services
             .GetSection(JwtOptions.Jwt)
             .Get<JwtOptions>()
             ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
+
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidIssuer = jwtOptions.Issuer,
