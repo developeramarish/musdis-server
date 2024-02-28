@@ -2,14 +2,16 @@
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Musdis.IdentityService.Defaults;
 
 namespace Musdis.IdentityService.Data;
-public class IdentityServiceDbContext(
-    DbContextOptions<IdentityServiceDbContext> options
-) : IdentityDbContext<User>(options)
+public class IdentityServiceDbContext : IdentityDbContext<User>
 {
-    protected override void OnModelCreating(ModelBuilder builder)
+    public IdentityServiceDbContext(
+        DbContextOptions<IdentityServiceDbContext> options
+    ) : base(options)
     {
-        base.OnModelCreating(builder);
+        Database.EnsureCreated();
     }
 }
