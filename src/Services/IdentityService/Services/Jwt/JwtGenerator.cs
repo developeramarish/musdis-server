@@ -40,11 +40,14 @@ public class JwtGenerator : IJwtGenerator
         };
         claims.AddRange(request.CustomClaims);
 
+        var localExpires = _timeProvider.GetLocalNow().DateTime
+            .AddMinutes(_jwtOptions.TokenLifetimeMinutes);
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = _jwtOptions.Issuer,
             Subject = new ClaimsIdentity(claims),
-            Expires = _timeProvider.GetUtcNow().DateTime.AddMinutes(_jwtOptions.TokenLifetimeMinutes),
+            Expires = localExpires.ToUniversalTime(),
             SigningCredentials = credentials,
         };
 
