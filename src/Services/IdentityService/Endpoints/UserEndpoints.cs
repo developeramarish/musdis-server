@@ -21,20 +21,25 @@ public static class UserEndpoints
     )
     {
         groupBuilder.MapGet("/", async (
-            CancellationToken cancellationToken,
-            HttpContext context,
             [FromServices] IdentityServiceDbContext dbContext,
+            HttpContext context,
+            CancellationToken cancellationToken,
             [FromQuery] int limit = 0,
             [FromQuery] int page = 1
         ) =>
         {
-            var offset = (page - 1) * limit;
             var queryable = dbContext.Users.AsNoTracking();
             var totalCount = await queryable.CountAsync(cancellationToken);
-            var users = await queryable
-                .Skip(offset)
-                .Take(limit)
-                .ToListAsync(cancellationToken);
+
+            if (limit > 0)
+            {
+                var offset = (page - 1) * limit;
+                queryable = queryable
+                    .Skip(offset)
+                    .Take(limit);
+            }
+
+            var users = await queryable.ToListAsync(cancellationToken);
 
             var dataResult = UserReadDto.FromUsers(users);
             if (dataResult.IsFailure)
