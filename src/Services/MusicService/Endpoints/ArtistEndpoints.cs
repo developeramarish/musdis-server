@@ -1,8 +1,10 @@
 using System.Net.Mime;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Data;
@@ -36,7 +38,7 @@ public static class ArtistEndpoints
     {
         groupBuilder.MapGet("/", HandleGetManyAsync)
             .Produces<PagedDataResponse<ArtistDto>>();
-
+            
         groupBuilder.MapGet("/{idOrSlug}", HandleGetOneAsync)
             .Produces<ArtistDto>()
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -157,10 +159,32 @@ public static class ArtistEndpoints
         [FromRoute] Guid id,
         [FromBody] UpdateArtistRequest request,
         [FromServices] IArtistService artistService,
+        [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
+        var artist = await artistService.GetQueryable()
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        if (artist is null)
+        {
+            return new NotFoundError(
+                $"Artist with Id = {{{id}}} not found"
+            ).ToHttpResult(context.Request.Path);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            context.User, 
+            artist, 
+            AuthorizationPolicies.SameAuthor
+        );
+        if (!authorizationResult.Succeeded)
+        {
+            return new UnauthorizedError(
+                "You are not authorized to update this Artist"
+            ).ToHttpResult(context.Request.Path);
+        }
+
         var updateResult = await artistService.UpdateAsync(id, request, cancellationToken);
         if (updateResult.IsFailure)
         {
