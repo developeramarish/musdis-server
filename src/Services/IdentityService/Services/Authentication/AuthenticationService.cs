@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using Musdis.OperationResults;
 using Musdis.ResponseHelpers.Errors;
 using Musdis.OperationResults.Extensions;
+using System.Security.Claims;
+using Musdis.IdentityService.Defaults;
 
 namespace Musdis.IdentityService.Services.Authentication;
 
@@ -67,12 +69,52 @@ public class AuthenticationService : IAuthenticationService
         }
 
         var user = request.ToUser();
-        var result = await _userManager.CreateAsync(user, request.Password);
 
-        if (!result.Succeeded)
+        var createResult = await _userManager.CreateAsync(user, request.Password);
+        if (!createResult.Succeeded)
         {
             return new InternalServerError(
                 "Could not create user, try again later!"
+            ).ToValueResult<AuthenticatedUserDto>();
+        }
+
+        var signInResult = await GetAuthenticatedUserDtoAsync(user, request.Password, cancellationToken);
+
+        return signInResult;
+    }
+
+    public async Task<Result<AuthenticatedUserDto>> SignAdminUpAsync(
+        SignUpRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var validationResult = await _signUpValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Cannot sign user up, incorrect data",
+                validationResult.Errors.Select(f => f.ErrorMessage)
+            ).ToValueResult<AuthenticatedUserDto>();
+        }
+
+        var user = request.ToUser();
+
+        var createResult = await _userManager.CreateAsync(user, request.Password);
+        if (!createResult.Succeeded)
+        {
+            return new InternalServerError(
+                "Could not create user, try again later!"
+            ).ToValueResult<AuthenticatedUserDto>();
+        }
+        
+        var claimAddResult = await _userManager.AddClaimAsync(
+            user, 
+            new (ClaimDefaults.Admin, "true", ClaimValueTypes.Boolean)
+        );
+        if (!claimAddResult.Succeeded)
+        {
+            return new InternalServerError(
+                "Could not add claim to user, try again later!"
             ).ToValueResult<AuthenticatedUserDto>();
         }
 
@@ -114,7 +156,9 @@ public class AuthenticationService : IAuthenticationService
 
         if (!result.Succeeded)
         {
-            return new UnauthorizedError().ToValueResult<AuthenticatedUserDto>();
+            return new UnauthorizedError(
+                "User unauthorized: invalid credentials."
+            ).ToValueResult<AuthenticatedUserDto>();
         }
 
         var claims = await _userManager.GetClaimsAsync(user);
@@ -130,7 +174,7 @@ public class AuthenticationService : IAuthenticationService
         if (cancellationToken.IsCancellationRequested)
         {
             return new InternalServerError(
-                "Request cancelled"
+                "Request cancelled."
             ).ToValueResult<AuthenticatedUserDto>();
         }
 
@@ -139,7 +183,7 @@ public class AuthenticationService : IAuthenticationService
             user.UserName!,
             user.Email!,
             token,
-            claims.ToKeyValuePairs()
+            claims.ToDictionary(c => c.Type, c => c.Value)
         ).ToValueResult();
     }
 }

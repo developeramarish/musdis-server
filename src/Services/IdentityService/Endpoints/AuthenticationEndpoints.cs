@@ -3,6 +3,7 @@ using Musdis.IdentityService.Services.Authentication;
 
 using Microsoft.AspNetCore.Mvc;
 using Musdis.ResponseHelpers.Errors;
+using Musdis.ResponseHelpers.Extensions;
 
 namespace Musdis.IdentityService.Endpoints;
 
@@ -40,15 +41,7 @@ public static class AuthenticationEndpoints
                 return Results.Ok(result.Value);
             }
 
-            return result.Error switch
-            {
-                HttpError httpError => httpError.ToProblemHttpResult(context.Request.Path),
-
-                _ => new InternalServerError(
-                    result.Error.Description
-                ).ToProblemHttpResult(context.Request.Path),
-            };
-
+            return result.Error.ToHttpResult(context.Request.Path);
         });
 
         groupBuilder.MapPost("/sign-up", async (
@@ -65,14 +58,24 @@ public static class AuthenticationEndpoints
                 return Results.Ok(result.Value);
             }
 
-            return result.Error switch
-            {
-                HttpError httpError => httpError.ToProblemHttpResult(context.Request.Path),
+            return result.Error.ToHttpResult(context.Request.Path);
+        });
 
-                _ => new InternalServerError(
-                    result.Error.Description
-                ).ToProblemHttpResult(context.Request.Path),
-            };
+        groupBuilder.MapPost("/sign-admin-up", async (
+            [FromBody] SignUpRequest request,
+            [FromServices] IAuthenticationService authenticationService,
+            HttpContext context,
+            CancellationToken cancellationToken
+        ) =>
+        {
+            var result = await authenticationService.SignAdminUpAsync(request, cancellationToken);
+
+            if (result.IsSuccess)
+            {
+                return Results.Ok(result.Value);
+            }
+
+            return result.Error.ToHttpResult(context.Request.Path);
         });
 
         return groupBuilder;

@@ -50,4 +50,24 @@ public interface IAuthenticationService
         SignUpRequest request,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    ///     Attempts to sign up a new admin user with the provided user information.
+    /// </summary>
+    /// 
+    /// <param name="request">
+    ///     The sign-up request containing user information.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     A cancellation token to cancel the operation.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     A <see cref="Task"/> representing the asynchronous operation, which returns
+    ///     a <see cref="Result{AuthenticatedUserDto}"/> containing the outcome of the sign-up attempt.
+    /// </returns>
+    Task<Result<AuthenticatedUserDto>> SignAdminUpAsync(
+        SignUpRequest request, 
+        CancellationToken cancellationToken = default
+    );
 }
