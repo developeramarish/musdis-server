@@ -1,9 +1,19 @@
+using System.Text;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 using Musdis.Common.GrpcProtos;
+using Musdis.MusicService.Authorization.Handlers;
+using Musdis.MusicService.Authorization.Requirements;
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Endpoints;
 using Musdis.MusicService.Extensions;
+using Musdis.MusicService.Options;
 using Musdis.MusicService.Services.Exceptions;
 using Musdis.MusicService.Services.Utils;
 
@@ -17,6 +27,40 @@ builder.Services.AddDbContext<MusicServiceDbContext>(options =>
         ?? throw new InvalidOperationException("Database connection is missing.");
     options.UseNpgsql(connection);
 });
+
+// Authentication
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration
+            .GetSection(JwtOptions.Jwt)
+            .Get<JwtOptions>()
+            ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
+
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtOptions.Key)
+            ),
+            ValidateIssuer = true,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+        };
+    });
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.SameAuthor, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new SameAuthorOrAdminRequirement());
+    });
+builder.Services.AddSingleton<IAuthorizationHandler, SameArtistCreatorAuthorizationHandler>();
+
 
 builder.Services.AddTransient<ISlugHelper, SlugHelper>();
 builder.Services.AddTransient<ISlugGenerator, SlugGenerator>();
@@ -34,7 +78,31 @@ builder.Services.AddGrpcClient<UserService.UserServiceClient>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "MyAPI", Version = "v1" });
     options.CustomSchemaIds(type => type.ToString());
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Enter your JWT token.",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 if (builder.Environment.IsDevelopment())
@@ -57,6 +125,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseHttpsRedirection();
 
