@@ -24,5 +24,5 @@ public record AuthenticatedUserDto(
     string UserName,
     string Email,
     string Jwt,
-    IEnumerable<KeyValuePair<string, string>> AdditionalClaims
+    Dictionary<string, string> AdditionalClaims
 );
