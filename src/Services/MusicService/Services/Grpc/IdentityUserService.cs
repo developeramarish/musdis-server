@@ -17,7 +17,10 @@ public sealed class IdentityUserService : IIdentityUserService
         _userServiceClient = userServiceClient;
     }
 
-    public async Task<Result<UserInfo>> GetUserInfoAsync(string userId, CancellationToken cancellationToken)
+    public async Task<Result<UserInfo>> GetUserInfoAsync(
+        string userId,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
@@ -34,9 +37,35 @@ public sealed class IdentityUserService : IIdentityUserService
                 $"Cannot find user with Id = {{{userId}}}"
             ).ToValueResult<UserInfo>();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return Result<UserInfo>.Failure(ex.Message);
+        }
+    }
+
+    public async Task<Result<UserInfos>> GetUserInfosAsync(
+        IEnumerable<string> userIds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            var request = new GetUserInfosRequest();
+            request.Ids.AddRange(userIds);
+            var userInfos = await _userServiceClient.GetUserInfosAsync(
+                request,
+                cancellationToken: cancellationToken
+            );
+
+            return userInfos.ToValueResult();
+        }
+        catch (RpcException ex) when (ex.StatusCode is StatusCode.InvalidArgument or StatusCode.NotFound)
+        {
+            return new ValidationError(ex.Message).ToValueResult<UserInfos>();
+        }
+        catch (Exception ex)
+        {
+            return Result<UserInfos>.Failure(ex.Message);
         }
     }
 }

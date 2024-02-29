@@ -22,5 +22,27 @@ public interface IIdentityUserService
     /// <returns>
     ///     A user information requested.
     /// </returns>
-    Task<Result<UserInfo>> GetUserInfoAsync(string userId, CancellationToken cancellationToken);
+    Task<Result<UserInfo>> GetUserInfoAsync(
+        string userId, 
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    ///     Gets information of users from IdentityService.
+    /// </summary>
+    /// 
+    /// <param name="userIds">
+    ///     A collection of identifiers of users from IdentityService.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     A token to cancel the operation.
+    /// </param>
+    /// 
+    /// <returns>
+    ///     A collection of users information requested.
+    /// </returns>
+    Task<Result<UserInfos>> GetUserInfosAsync(
+        IEnumerable<string> userIds,
+        CancellationToken cancellationToken = default
+    );
 }
