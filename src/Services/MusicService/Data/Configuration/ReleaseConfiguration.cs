@@ -21,11 +21,12 @@ public sealed class ReleaseConfiguration : IEntityTypeConfiguration<Release>
 
         builder.Property(r => r.CoverUrl).IsRequired();
 
+        builder.Property(r => r.CreatorId).IsRequired();
 
         builder.HasMany(r => r.Tracks)
             .WithOne(t => t.Release)
             .HasForeignKey(t => t.ReleaseId);
-        
+
         builder.HasOne(r => r.ReleaseType)
             .WithMany(rt => rt.Releases)
             .HasForeignKey(r => r.ReleaseTypeId);

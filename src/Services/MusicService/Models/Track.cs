@@ -21,6 +21,11 @@ public class Track
     public required string Slug { get; set; }
 
     /// <summary>
+    ///     The identifier of the user from Identity service, who created this <see cref="Artist"/>.
+    /// </summary>
+    public required string CreatorId { get; set; }
+
+    /// <summary>
     ///     The foreign key to <see cref="Models.Release"/> table.
     /// </summary>
     public required Guid ReleaseId { get; set; }

@@ -36,6 +36,11 @@ public class Release
     public required DateTime ReleaseDate { get; set; }
 
     /// <summary>
+    ///     The identifier of the user from Identity service, who created this <see cref="Release"/>.
+    /// </summary>
+    public required string CreatorId { get; set; }
+
+    /// <summary>
     ///     A URL to the cover of the <see cref="Release"/>.
     /// </summary>
     public required string CoverUrl { get; set; }

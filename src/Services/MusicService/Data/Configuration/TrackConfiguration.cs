@@ -17,6 +17,8 @@ public sealed class TrackConfiguration : IEntityTypeConfiguration<Track>
 
         builder.Property(t => t.ReleaseId).IsRequired();
 
+        builder.Property(t => t.CreatorId).IsRequired();
+
         builder.HasKey(t => t.Id);
         builder.HasIndex(t => t.Slug).IsUnique();
     }
