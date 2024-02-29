@@ -1,16 +1,28 @@
 using Microsoft.AspNetCore.Authorization;
 
 using Musdis.MusicService.Authorization.Requirements;
+using Musdis.MusicService.Defaults;
 
 namespace Musdis.MusicService.Authorization;
 
-public sealed class AdminAuthorizationHandler : AuthorizationHandler<SameAuthorOrAdminRequirement>
+public sealed class AdminAuthorizationHandler : IAuthorizationHandler
 {
-    protected override Task HandleRequirementAsync(
-        AuthorizationHandlerContext context, 
-        SameAuthorOrAdminRequirement requirement
-    )
+    public Task HandleAsync(AuthorizationHandlerContext context)
     {
-        throw new NotImplementedException();
+        var adminClaim = context.User.Claims
+            .FirstOrDefault(c => c.Type == ClaimDefaults.Admin)?.Value;
+
+        var pendingRequirements = context.PendingRequirements.ToList();
+
+        foreach (var requirement in pendingRequirements)
+        {
+            if (requirement is SameAuthorOrAdminRequirement or AdminRequirement &&
+                adminClaim == "true"
+            )
+            {
+                context.Succeed(requirement);
+            }
+        }
+        return Task.CompletedTask;
     }
 }

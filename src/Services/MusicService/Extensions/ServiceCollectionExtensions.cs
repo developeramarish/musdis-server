@@ -1,5 +1,9 @@
 using FluentValidation;
 
+using Microsoft.AspNetCore.Authorization;
+
+using Musdis.MusicService.Authorization;
+using Musdis.MusicService.Authorization.Handlers;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Data;
@@ -84,6 +88,16 @@ public static class ServiceCollectionExtensions
             new CreateReleaseRequestTrackInfoValidator(sp.GetRequiredService<MusicServiceDbContext>())
         );
 
+        return services;
+    }
+
+
+    public static IServiceCollection AddAuthorizationHandlers(this IServiceCollection services)
+    {
+        services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>();
+        services.AddSingleton<IAuthorizationHandler, ArtistAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, ReleaseAutherizationHandler>();
+ 
         return services;
     }
 }
