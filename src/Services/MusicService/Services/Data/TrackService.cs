@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+
 using FluentValidation;
 
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,7 @@ namespace Musdis.MusicService.Services.Data;
 public sealed class TrackService : ITrackService
 {
     private readonly MusicServiceDbContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateTrackRequest> _createRequestValidator;
     private readonly IValidator<UpdateTrackRequest> _updateRequestValidator;
@@ -26,7 +29,8 @@ public sealed class TrackService : ITrackService
         ISlugGenerator slugGenerator,
         IValidator<CreateTrackRequest> createRequestValidator,
         IValidator<UpdateTrackRequest> updateRequestValidator,
-        IValidator<CreateReleaseRequest.TrackInfo> trackInfoValidator
+        IValidator<CreateReleaseRequest.TrackInfo> trackInfoValidator,
+        IHttpContextAccessor httpContextAccessor
     )
     {
         _dbContext = dbContext;
@@ -34,6 +38,7 @@ public sealed class TrackService : ITrackService
         _createRequestValidator = createRequestValidator;
         _updateRequestValidator = updateRequestValidator;
         _trackInfoValidator = trackInfoValidator;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<Track>> CreateForReleaseAsync(
@@ -42,6 +47,15 @@ public sealed class TrackService : ITrackService
         CancellationToken cancellationToken
     )
     {
+        var userId = _httpContextAccessor.HttpContext?.User.Claims
+            .FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+        if (userId is null)
+        {
+            return new UnauthorizedError(
+                "Cannot create an Artist without a valid User"
+            ).ToValueResult<Track>();
+        }
+
         var validationResult = await _trackInfoValidator.ValidateAsync(trackInfo, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -66,7 +80,8 @@ public sealed class TrackService : ITrackService
             Id = Guid.NewGuid(),
             Title = trackInfo.Title,
             Slug = slugResult.Value,
-            ReleaseId = release.Id
+            ReleaseId = release.Id,
+            CreatorId = userId,
         };
 
         var artistIds = trackInfo.ArtistIds;
@@ -105,6 +120,15 @@ public sealed class TrackService : ITrackService
         CancellationToken cancellationToken = default
     )
     {
+        var userId = _httpContextAccessor.HttpContext?.User.Claims
+            .FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+        if (userId is null)
+        {
+            return new UnauthorizedError(
+                "Cannot create an Artist without a valid User"
+            ).ToValueResult<Track>();
+        }
+
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -118,7 +142,6 @@ public sealed class TrackService : ITrackService
             request.Title,
             cancellationToken
         );
-
         if (slugResult.IsFailure)
         {
             return slugResult.Error.ToValueResult<Track>();
@@ -129,7 +152,8 @@ public sealed class TrackService : ITrackService
             Id = Guid.NewGuid(),
             Title = request.Title,
             Slug = slugResult.Value,
-            ReleaseId = request.ReleaseId
+            ReleaseId = request.ReleaseId,
+            CreatorId = userId,
         };
 
         var addArtistsResult = await AddTrackArtistsAsync(track, request.ArtistIds, cancellationToken);

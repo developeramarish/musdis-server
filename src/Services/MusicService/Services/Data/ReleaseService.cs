@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 
 using FluentValidation;
 
@@ -18,6 +19,7 @@ namespace Musdis.MusicService.Services.Data;
 public sealed class ReleaseService : IReleaseService
 {
     private readonly ITrackService _trackService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly MusicServiceDbContext _dbContext;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateReleaseRequest> _createValidator;
@@ -28,7 +30,8 @@ public sealed class ReleaseService : IReleaseService
         ISlugGenerator slugGenerator,
         ITrackService trackService,
         IValidator<CreateReleaseRequest> createValidator,
-        IValidator<UpdateReleaseRequest> updateValidator
+        IValidator<UpdateReleaseRequest> updateValidator,
+        IHttpContextAccessor httpContextAccessor
     )
     {
         _dbContext = dbContext;
@@ -36,6 +39,7 @@ public sealed class ReleaseService : IReleaseService
         _trackService = trackService;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<Release>> CreateAsync(
@@ -43,6 +47,15 @@ public sealed class ReleaseService : IReleaseService
         CancellationToken cancellationToken = default
     )
     {
+        var userId = _httpContextAccessor.HttpContext?.User.Claims
+            .FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+        if (userId is null)
+        {
+            return new UnauthorizedError(
+                "Cannot create an Artist without a valid User"
+            ).ToValueResult<Release>();
+        }
+
         var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -76,12 +89,12 @@ public sealed class ReleaseService : IReleaseService
             Name = request.Name,
             ReleaseTypeId = releaseType.Id,
             Slug = slugResult.Value,
-            // ReleaseDate = DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture),
             ReleaseDate = DateTime.SpecifyKind(
                 DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture), 
                 DateTimeKind.Utc
             ),
-            CoverUrl = request.CoverUrl
+            CoverUrl = request.CoverUrl,
+            CreatorId = userId
         };
 
         var addArtistsResult = await AddReleaseArtistsAsync(release, request.ArtistIds, cancellationToken);

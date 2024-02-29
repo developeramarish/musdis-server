@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+
 using FluentValidation;
 
 using Microsoft.EntityFrameworkCore;
@@ -16,17 +18,20 @@ namespace Musdis.MusicService.Services.Data;
 public sealed class ArtistService : IArtistService
 {
     private readonly MusicServiceDbContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateArtistRequest> _createRequestValidator;
     private readonly IValidator<UpdateArtistRequest> _updateRequestValidator;
     public ArtistService(
         MusicServiceDbContext dbContext,
+        IHttpContextAccessor httpContextAccessor,
         ISlugGenerator slugGenerator,
         IValidator<CreateArtistRequest> createRequestValidator,
         IValidator<UpdateArtistRequest> updateRequestValidator
     )
     {
         _dbContext = dbContext;
+        _httpContextAccessor = httpContextAccessor;
         _slugGenerator = slugGenerator;
         _createRequestValidator = createRequestValidator;
         _updateRequestValidator = updateRequestValidator;
@@ -37,6 +42,15 @@ public sealed class ArtistService : IArtistService
         CancellationToken cancellationToken = default
     )
     {
+        var userId = _httpContextAccessor.HttpContext?.User.Claims
+            .FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+        if (userId is null)
+        {
+            return new UnauthorizedError(
+                "Cannot create an Artist without a valid User"
+            ).ToValueResult<Artist>();
+        }
+
         var existingArtist = await _dbContext.Artists
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Name == request.Name, cancellationToken);
@@ -75,7 +89,7 @@ public sealed class ArtistService : IArtistService
         {
             return slugResult.Error.ToValueResult<Artist>();
         }
-
+        
         var artist = new Artist
         {
             Id = Guid.NewGuid(),
@@ -83,13 +97,13 @@ public sealed class ArtistService : IArtistService
             ArtistTypeId = artistType.Id,
             Slug = slugResult.Value,
             CoverUrl = request.CoverUrl,
-            CreatorId = "NOT IMPLEMENTED", // TODO add implementation
+            CreatorId = userId,
         };
-        artist.ArtistUsers = request.UserIds.Select(userId => new ArtistUser
+        artist.ArtistUsers = request.UserIds.Select(id => new ArtistUser
         {
             ArtistId = artist.Id,
-            UserId = userId,
-            UserName = "" // TODO implement
+            UserId = id,
+            UserName = "NOT IMPLEMENTED" // TODO implement
         }).ToList();
 
         await _dbContext.Artists.AddAsync(artist, cancellationToken);
