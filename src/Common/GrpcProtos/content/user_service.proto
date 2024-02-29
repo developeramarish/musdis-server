@@ -4,7 +4,8 @@ package musdis.common.grpc_protos;
 
 service UserService {
   rpc GetUserInfo(GetUserInfoRequest) returns (UserInfo); 
-}
+  rpc GetUserInfos(GetUserInfosRequest) returns (UserInfos);
+} 
 
 message UserInfo {
   string id = 1;
@@ -13,4 +14,12 @@ message UserInfo {
 
 message GetUserInfoRequest {
   string id = 1;
+}
+
+message UserInfos {
+  repeated UserInfo users = 1;
+}
+
+message GetUserInfosRequest {
+  repeated string ids = 1; 
 }
