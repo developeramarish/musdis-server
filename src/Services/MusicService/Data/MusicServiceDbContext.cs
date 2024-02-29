@@ -7,14 +7,10 @@ namespace Musdis.MusicService.Data;
 /// <summary>
 ///     Application database context.
 /// </summary>
-public sealed class MusicServiceDbContext : DbContext
+public sealed class MusicServiceDbContext(
+    DbContextOptions<MusicServiceDbContext> options
+) : DbContext(options)
 {
-    public MusicServiceDbContext(DbContextOptions<MusicServiceDbContext> options)
-        : base(options)
-    {
-        Database.EnsureCreated();
-    }
-
     public DbSet<Artist> Artists => Set<Artist>();
     public DbSet<ArtistUser> ArtistUsers => Set<ArtistUser>();
     public DbSet<ArtistType> ArtistTypes => Set<ArtistType>();
