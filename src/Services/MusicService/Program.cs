@@ -2,6 +2,7 @@ using System.Text;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -15,6 +16,7 @@ using Musdis.MusicService.Endpoints;
 using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Options;
 using Musdis.MusicService.Services.Exceptions;
+using Musdis.MusicService.Services.Grpc;
 using Musdis.MusicService.Services.Utils;
 
 using Slugify;
@@ -59,8 +61,9 @@ builder.Services.AddAuthorizationBuilder()
         policy.RequireAuthenticatedUser();
         policy.Requirements.Add(new SameAuthorOrAdminRequirement());
     });
-builder.Services.AddSingleton<IAuthorizationHandler, SameArtistCreatorAuthorizationHandler>();
 
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<ISlugHelper, SlugHelper>();
 builder.Services.AddTransient<ISlugGenerator, SlugGenerator>();
@@ -74,6 +77,7 @@ builder.Services.AddGrpcClient<UserService.UserServiceClient>(options =>
         ?? throw new InvalidOperationException("Configuration section is missing: \"Services:IdentityService:Address\".");
     options.Address = new Uri(addressString);
 });
+builder.Services.AddTransient<IIdentityUserService, IdentityUserService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
