@@ -10,7 +10,7 @@ using Musdis.MusicService.Models;
 
 namespace Musdis.MusicService.Authorization;
 
-public sealed class ReleaseAutherizationHandler 
+public sealed class ReleaseAuthorizationHandler 
     : AuthorizationHandler<SameAuthorOrAdminRequirement, Release>
 {
 

@@ -9,7 +9,7 @@ using Musdis.MusicService.Models;
 
 namespace Musdis.MusicService.Authorization;
 
-public sealed class TrackAuthorAuthorizationHandler 
+public sealed class TrackAuthorizationHandler 
     : AuthorizationHandler<SameAuthorOrAdminRequirement, Track>
 {
     protected override Task HandleRequirementAsync(
