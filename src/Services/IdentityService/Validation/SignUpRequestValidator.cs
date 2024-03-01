@@ -14,28 +14,44 @@ namespace Musdis.IdentityService.Validation;
 /// </summary>
 public class SignUpRequestValidator : AbstractValidator<SignUpRequest>
 {
-    private readonly IdentityPasswordOptions _passwordOptions;
+    private readonly IdentityConfigOptions _identityOptions;
     private readonly UserManager<User> _userManager;
     public SignUpRequestValidator(
         UserManager<User> userManager,
-        IOptions<IdentityPasswordOptions> options
+        IOptions<IdentityConfigOptions> options
     )
     {
         _userManager = userManager;
-        _passwordOptions = options.Value;
+        _identityOptions = options.Value;
 
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .Must(BeCorrectPassword);
         RuleFor(x => x.UserName)
             .NotEmpty()
             .MustAsync(BeUniqueNameAsync)
-            .WithMessage("Username must be unique");
+            .WithMessage("Username must be unique.")
+            .WithErrorCode(ErrorCodes.NonUniqueData);
+
+        RuleFor(x => x.UserName)
+            .Must(BeCorrectUserName)
+            .WithMessage(_ => GenerateUserNameErrorMessage());
+
         RuleFor(x => x.Email)
             .NotEmpty()
             .EmailAddress()
             .MustAsync(BeUniqueEmailAsync)
-            .WithMessage("Email must be unique");
+            .WithMessage("Email must be unique.")
+            .WithErrorCode(ErrorCodes.NonUniqueData);
+
+        RuleFor(x => x.Password)
+            .NotEmpty()
+            .Must(BeCorrectPassword);
+    }
+
+    private string GenerateUserNameErrorMessage()
+    {
+        return $"""
+            Username must be at least ${_identityOptions.User.MinUserNameLength} characters long and not longer than ${_identityOptions.User.MaxUserNameLength} characters long.
+            Allowed characters: {_identityOptions.User.AllowedUserNameCharacters}
+        """;
     }
 
     private async Task<bool> BeUniqueNameAsync(string name, CancellationToken cancellationToken)
@@ -50,25 +66,43 @@ public class SignUpRequestValidator : AbstractValidator<SignUpRequest>
 
         return user is null;
     }
+
+    private bool BeCorrectUserName(string userName)
+    {
+        if (userName.Length < _identityOptions.User.MinUserNameLength)
+        {
+            return false;
+        }
+        if (userName.Length > _identityOptions.User.MaxUserNameLength)
+        {
+            return false;
+        }
+        if (!userName.All(_identityOptions.User.AllowedUserNameCharacters.Contains))
+        {
+            return false;
+        }
+
+        return true;
+    }
     private bool BeCorrectPassword(string password)
     {
-        if (_passwordOptions.RequireDigit && !password.Any(char.IsDigit))
+        if (_identityOptions.Password.RequireDigit && !password.Any(char.IsDigit))
         {
             return false;
         }
-        if (_passwordOptions.RequireLowercase && !password.Any(char.IsLower))
+        if (_identityOptions.Password.RequireLowercase && !password.Any(char.IsLower))
         {
             return false;
         }
-        if (password.Length < _passwordOptions.RequiredLength)
+        if (password.Length < _identityOptions.Password.RequiredLength)
         {
             return false;
         }
-        if (_passwordOptions.RequireNonAlphanumeric && password.All(char.IsLetterOrDigit))
+        if (_identityOptions.Password.RequireNonAlphanumeric && password.All(char.IsLetterOrDigit))
         {
             return false;
         }
-        if (new string(password.Distinct().ToArray()).Length < _passwordOptions.RequiredUniqueChars)
+        if (new string(password.Distinct().ToArray()).Length < _identityOptions.Password.RequiredUniqueChars)
         {
             return false;
         }
