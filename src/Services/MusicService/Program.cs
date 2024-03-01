@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using Musdis.Common.GrpcProtos;
+using Musdis.MusicService.Authorization;
 using Musdis.MusicService.Authorization.Handlers;
 using Musdis.MusicService.Authorization.Requirements;
 using Musdis.MusicService.Data;
@@ -60,7 +61,17 @@ builder.Services.AddAuthorizationBuilder()
     {
         policy.RequireAuthenticatedUser();
         policy.Requirements.Add(new SameAuthorOrAdminRequirement());
+    })
+    .AddPolicy(AuthorizationPolicies.Admin, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new AdminRequirement());
     });
+
+builder.Services.AddSingleton<IAuthorizationHandler, ArtistAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, ReleaseAuthorizationHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, TrackAuthorizationHandler>();
 
 
 builder.Services.AddHttpContextAccessor();
