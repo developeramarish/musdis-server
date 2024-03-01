@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 using Grpc.Core;
 
 using Musdis.Common.GrpcProtos;
@@ -61,7 +63,12 @@ public sealed class IdentityUserService : IIdentityUserService
         }
         catch (RpcException ex) when (ex.StatusCode is StatusCode.InvalidArgument or StatusCode.NotFound)
         {
-            return new ValidationError(ex.Message).ToValueResult<UserInfos>();
+            var match = Regex.Match(ex.Message, @"Detail=""([^""]*)""");
+            var detail = match.Groups[1].Value;
+            return new ValidationError(
+                $"Cannot find users.",
+                [detail]
+            ).ToValueResult<UserInfos>();
         }
         catch (Exception ex)
         {
