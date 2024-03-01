@@ -41,7 +41,7 @@ public sealed record ArtistUserDto(
     /// <exception cref="InvalidMethodCallException">
     ///     Thrown if method called incorrectly, see remarks.
     /// </exception>
-    public ArtistUserDto FromArtistUser(ArtistUser artistUser)
+    public static ArtistUserDto FromArtistUser(ArtistUser artistUser)
     {
         if (artistUser is null)
         {
@@ -68,7 +68,7 @@ public sealed record ArtistUserDto(
     /// <returns>
     ///     The mapped collection of <see cref="ArtistUserDto"/>.
     /// </returns>
-    public IEnumerable<ArtistUserDto> FromArtistUsers(IEnumerable<ArtistUser> artistUsers)
+    public static IEnumerable<ArtistUserDto> FromArtistUsers(IEnumerable<ArtistUser> artistUsers)
     {
         return  artistUsers.Select(au => FromArtistUser(au));
     }
