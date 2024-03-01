@@ -9,4 +9,9 @@ public static class AuthorizationPolicies
     ///     The same author policy name.
     /// </summary>
     public const string SameAuthor = nameof(SameAuthor);
+
+    /// <summary>
+    ///     The same author policy name.
+    /// </summary>
+    public const string Admin = nameof(Admin);
 }
