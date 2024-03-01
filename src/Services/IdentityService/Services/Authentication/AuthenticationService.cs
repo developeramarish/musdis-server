@@ -76,7 +76,7 @@ public class AuthenticationService : IAuthenticationService
             }
 
             return new ValidationError(
-                "Cannot sign user up, incorrect data",
+                "Cannot sign user up, incorrect data.",
                 validationResult.Errors.Select(f => f.ErrorMessage)
             ).ToValueResult<AuthenticatedUserDto>();
         }
