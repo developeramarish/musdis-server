@@ -1,3 +1,5 @@
+using System.Globalization;
+
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
@@ -7,7 +9,7 @@ namespace Musdis.MusicService.Validation;
 public static class RuleHelpers
 {
     public static async Task<bool> BeExistingArtistTypeSlugAsync(
-        string artistTypeSlug, 
+        string artistTypeSlug,
         MusicServiceDbContext dbContext,
         CancellationToken cancellationToken
     )
@@ -47,7 +49,7 @@ public static class RuleHelpers
 
     public static bool BeDateString(string value)
     {
-        return DateTime.TryParse(value, out var _);
+        return DateTime.TryParse(value, CultureInfo.InvariantCulture, out var _);
     }
     public static async Task<bool> BeExistingReleaseTypeSlugAsync(
         string releaseTypeSlug,
