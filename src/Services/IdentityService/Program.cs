@@ -18,7 +18,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Musdis.IdentityService.Services.Grpc;
-using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,16 +25,24 @@ var configuration = builder.Configuration;
 var connection = configuration.GetConnectionString("IdentityDbConnection");
 
 // Exception handler
-builder.Services.AddExceptionHandler<ExceptionHandler>();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddExceptionHandler<DeveloperExceptionHandler>();
+}
+else
+{
+    builder.Services.AddExceptionHandler<ExceptionHandler>();
+}
 builder.Services.AddProblemDetails();
 
 // Options
-builder.Services.Configure<JwtOptions>(
-    builder.Configuration.GetSection(JwtOptions.Jwt)
-);
-builder.Services.Configure<IdentityPasswordOptions>(
-    builder.Configuration.GetSection(IdentityPasswordOptions.Password)
-);
+
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.Jwt))
+    .ValidateOnStart();
+builder.Services.AddOptions<IdentityConfigOptions>()
+    .Bind(builder.Configuration.GetSection(IdentityConfigOptions.Identity))
+    .ValidateOnStart();
 
 // Database
 builder.Services.AddDbContext<IdentityServiceDbContext>(
@@ -46,18 +53,20 @@ builder.Services.AddDbContext<IdentityServiceDbContext>(
 builder.Services
     .AddIdentityCore<User>(options =>
     {
-        var passwordOptions = builder.Configuration
-            .GetSection(IdentityPasswordOptions.Password)
-            .Get<IdentityPasswordOptions>()
+        var config = builder.Configuration
+            .GetSection(IdentityConfigOptions.Identity)
+            .Get<IdentityConfigOptions>()
             ?? throw new InvalidOperationException("An Identity configuration section is missing.");
 
-        options.User.RequireUniqueEmail = true;
-        options.Password.RequireDigit = passwordOptions.RequireDigit;
-        options.Password.RequireNonAlphanumeric = passwordOptions.RequireNonAlphanumeric;
-        options.Password.RequireLowercase = passwordOptions.RequireLowercase;
-        options.Password.RequireUppercase = passwordOptions.RequireUppercase;
-        options.Password.RequiredLength = passwordOptions.RequiredLength;
-        options.Password.RequiredUniqueChars = passwordOptions.RequiredUniqueChars;
+        options.User.AllowedUserNameCharacters = config.User.AllowedUserNameCharacters;
+        options.User.RequireUniqueEmail = config.User.RequireUniqueEmail;
+
+        options.Password.RequireDigit = config.Password.RequireDigit;
+        options.Password.RequireNonAlphanumeric = config.Password.RequireNonAlphanumeric;
+        options.Password.RequireLowercase = config.Password.RequireLowercase;
+        options.Password.RequireUppercase = config.Password.RequireUppercase;
+        options.Password.RequiredLength = config.Password.RequiredLength;
+        options.Password.RequiredUniqueChars = config.Password.RequiredUniqueChars;
     })
     .AddSignInManager<SignInManager<User>>()
     .AddEntityFrameworkStores<IdentityServiceDbContext>();
@@ -96,7 +105,7 @@ builder.Services.AddGrpc();
 ValidatorOptions.Global.LanguageManager.Enabled = false;
 builder.Services.AddTransient<IValidator<SignUpRequest>>(sp => new SignUpRequestValidator(
     sp.GetRequiredService<UserManager<User>>(),
-    sp.GetRequiredService<IOptions<IdentityPasswordOptions>>()
+    sp.GetRequiredService<IOptions<IdentityConfigOptions>>()
 ));
 
 // Utils
