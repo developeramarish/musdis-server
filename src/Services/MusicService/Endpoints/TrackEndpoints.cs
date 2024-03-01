@@ -1,8 +1,10 @@
 using System.Net.Mime;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Data;
@@ -145,10 +147,33 @@ public static class TrackEndpoints
         [FromRoute] Guid id,
         [FromBody] UpdateTrackRequest request,
         [FromServices] ITrackService trackService,
+        [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
+        var track = await trackService 
+            .GetQueryable()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (track is null) 
+        {
+            return new NotFoundError(
+                $"Track with Id = {{{id}}} is not found."
+            ).ToHttpResult(context.Request.Path);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            context.User,
+            track,
+            AuthorizationPolicies.SameAuthor
+        );
+        if (!authorizationResult.Succeeded)
+        {
+            return new ForbiddenError(
+                "You are not authorized to update this Track"
+            ).ToHttpResult(context.Request.Path);
+        }
+
         var updateResult = await trackService.UpdateAsync(id, request, cancellationToken);
         if (updateResult.IsFailure)
         {
@@ -166,10 +191,33 @@ public static class TrackEndpoints
     public static async Task<IResult> HandleDeleteAsync(
         [FromRoute] Guid id,
         [FromServices] ITrackService trackService,
+        [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
+        var track = await trackService 
+            .GetQueryable()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (track is null) 
+        {
+            return new NotFoundError(
+                $"Track with Id = {{{id}}} is not found."
+            ).ToHttpResult(context.Request.Path);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            context.User,
+            track,
+            AuthorizationPolicies.SameAuthor
+        );
+        if (!authorizationResult.Succeeded)
+        {
+            return new ForbiddenError(
+                "You are not authorized to update this Release"
+            ).ToHttpResult(context.Request.Path);
+        }
+        
         var deleteResult = await trackService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {

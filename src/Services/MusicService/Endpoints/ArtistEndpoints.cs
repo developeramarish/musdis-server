@@ -14,8 +14,6 @@ using Musdis.ResponseHelpers.Responses;
 
 namespace Musdis.MusicService.Endpoints;
 
-// TODO: Add authorization
-
 /// <summary>
 ///     Artist endpoints.
 /// </summary>
@@ -180,7 +178,7 @@ public static class ArtistEndpoints
         );
         if (!authorizationResult.Succeeded)
         {
-            return new UnauthorizedError(
+            return new ForbiddenError(
                 "You are not authorized to update this Artist"
             ).ToHttpResult(context.Request.Path);
         }
@@ -202,10 +200,30 @@ public static class ArtistEndpoints
     public static async Task<IResult> HandleDeleteAsync(
         [FromRoute] Guid id,
         [FromServices] IArtistService artistService,
+        [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
+        var artist = await artistService.GetQueryable()
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        if (artist is null)
+        {
+            return new NoContentError().ToHttpResult(context.Request.Path);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            context.User, 
+            artist, 
+            AuthorizationPolicies.SameAuthor
+        );
+        if (!authorizationResult.Succeeded)
+        {
+            return new ForbiddenError(
+                "You are not authorized to update this Artist"
+            ).ToHttpResult(context.Request.Path);
+        }
+
         var deleteResult = await artistService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {

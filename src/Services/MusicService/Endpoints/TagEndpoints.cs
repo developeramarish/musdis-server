@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Data;
@@ -11,8 +12,6 @@ using Musdis.ResponseHelpers.Extensions;
 using Musdis.ResponseHelpers.Responses;
 
 namespace Musdis.MusicService.Endpoints;
-
-// TODO add authorization
 
 /// <summary>
 ///     Tag endpoints.
@@ -31,15 +30,22 @@ public static class TagEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         groupBuilder.MapPost("/", HandlePostAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin)
             .Accepts<CreateTagRequest>(MediaTypeNames.Application.Json)
             .Produces<TagDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         groupBuilder.MapPatch("/{id:guid}", HandlePatchAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin)
             .Accepts<UpdateTagRequest>(MediaTypeNames.Application.Json)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        groupBuilder.MapDelete("/{id:guid}", HandleDeleteAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin)
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent);
 
         return groupBuilder;
     }

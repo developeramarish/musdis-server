@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Data;
@@ -11,7 +12,6 @@ using Musdis.ResponseHelpers.Extensions;
 using Musdis.ResponseHelpers.Responses;
 
 namespace Musdis.MusicService.Endpoints;
-// TODO add authorization
 
 /// <summary>
 ///     Release types endpoints.
@@ -30,17 +30,20 @@ public static class ReleaseTypeEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         groupBuilder.MapPost("/", HandlePostAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin)
             .Accepts<CreateReleaseTypeRequest>(MediaTypeNames.Application.Json)
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         groupBuilder.MapPatch("/{id:guid}", HandlePatchAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin)
             .Accepts<UpdateReleaseTypeRequest>(MediaTypeNames.Application.Json)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         groupBuilder.MapDelete("/{id:guid}", HandleDeleteAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status204NoContent);
 

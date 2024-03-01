@@ -1,8 +1,10 @@
 using System.Net.Mime;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Data;
@@ -164,10 +166,33 @@ public static class ReleaseEndpoints
         [FromRoute] Guid id,
         [FromBody] UpdateReleaseRequest request,
         [FromServices] IReleaseService releaseService,
+        [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
+        var release = await releaseService 
+            .GetQueryable()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (release is null) 
+        {
+            return new NotFoundError(
+                $"Release with Id = {{{id}}} is not found."
+            ).ToHttpResult(context.Request.Path);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            context.User,
+            release,
+            AuthorizationPolicies.SameAuthor
+        );
+        if (!authorizationResult.Succeeded)
+        {
+            return new ForbiddenError(
+                "You are not authorized to update this Release"
+            ).ToHttpResult(context.Request.Path);
+        }
+
         var updateResult = await releaseService.UpdateAsync(id, request, cancellationToken);
         if (updateResult.IsFailure)
         {
@@ -185,10 +210,31 @@ public static class ReleaseEndpoints
     public static async Task<IResult> HandleDeleteAsync(
         [FromRoute] Guid id,
         [FromServices] IReleaseService releaseService,
+        [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
+        var release = await releaseService 
+            .GetQueryable()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (release is null) 
+        {
+            return new NoContentError().ToHttpResult(context.Request.Path);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(
+            context.User,
+            release,
+            AuthorizationPolicies.SameAuthor
+        );
+        if (!authorizationResult.Succeeded)
+        {
+            return new ForbiddenError(
+                "You are not authorized to update this Release"
+            ).ToHttpResult(context.Request.Path);
+        }
+
         var deleteResult = await releaseService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {
