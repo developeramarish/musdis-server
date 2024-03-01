@@ -30,8 +30,8 @@ namespace Musdis.MusicService.Dtos;
 /// <param name="Type">
 ///     The type of the <see cref="Artist"/>.
 /// </param>
-/// <param name="UserIds">
-///     A collection of user identifiers that are participants of the <see cref="Artist"/>.
+/// <param name="Users">
+///     A collection of users that are participants of the <see cref="Artist"/>.
 /// </param>
 public sealed record ArtistDto(
     Guid Id,
@@ -40,7 +40,7 @@ public sealed record ArtistDto(
     string CoverUrl,
     string CreatorId,
     ArtistTypeDto Type,
-    IEnumerable<string> UserIds
+    IEnumerable<ArtistUserDto> Users
 )
 {
     /// <summary>
@@ -76,7 +76,7 @@ public sealed record ArtistDto(
             artist.CoverUrl,
             artist.CreatorId,
             ArtistTypeDto.FromArtistType(artist.ArtistType),
-            artist.ArtistUsers.Select(au => au.UserId)
+            ArtistUserDto.FromArtistUsers(artist.ArtistUsers)
         );
     }
 
