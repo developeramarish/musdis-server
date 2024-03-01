@@ -1,7 +1,5 @@
 using FluentValidation;
 
-using Microsoft.EntityFrameworkCore;
-
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Requests;
 

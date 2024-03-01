@@ -52,7 +52,7 @@ public sealed class TrackService : ITrackService
         if (userId is null)
         {
             return new UnauthorizedError(
-                "Cannot create an Artist without a valid User"
+                "Cannot create a Track without a valid User"
             ).ToValueResult<Track>();
         }
 
@@ -125,7 +125,7 @@ public sealed class TrackService : ITrackService
         if (userId is null)
         {
             return new UnauthorizedError(
-                "Cannot create an Artist without a valid User"
+                "Cannot create a Track without a valid User"
             ).ToValueResult<Track>();
         }
 

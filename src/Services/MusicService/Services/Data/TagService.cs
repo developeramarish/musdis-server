@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Utils;
@@ -36,22 +37,11 @@ public sealed class TagService : ITagService
         CancellationToken cancellationToken = default
     )
     {
-        var existingTag = await _dbContext.Tags
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Name == request.Name, cancellationToken);
-        if (existingTag is not null)
-        {
-            return new ConflictError(
-                $"Cannot create Tag with Name = {{{request.Name}}}"
-            ).ToValueResult<Tag>();
-        }
-
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return new ValidationError(
-                "Could not create a Tag, incorrect data!",
-                validationResult.Errors.Select(f => f.ErrorMessage)
+            return validationResult.Errors.ToError(
+                "Cannot create an Tag, incorrect data."
             ).ToValueResult<Tag>();
         }
 

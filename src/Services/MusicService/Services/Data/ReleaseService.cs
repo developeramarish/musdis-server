@@ -52,7 +52,7 @@ public sealed class ReleaseService : IReleaseService
         if (userId is null)
         {
             return new UnauthorizedError(
-                "Cannot create an Artist without a valid User"
+                "Cannot create a Release without a valid User"
             ).ToValueResult<Release>();
         }
 

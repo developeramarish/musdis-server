@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Grpc;
@@ -56,22 +57,11 @@ public sealed class ArtistService : IArtistService
             ).ToValueResult<Artist>();
         }
 
-        var existingArtist = await _dbContext.Artists
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Name == request.Name, cancellationToken);
-        if (existingArtist is not null)
-        {
-            return new ConflictError(
-                $"Artist with Name = {{{request.Name}}} exists"
-            ).ToValueResult<Artist>();
-        }
-
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return new ValidationError(
-                "Could not create an Artist, incorrect data!",
-                validationResult.Errors.Select(f => f.ErrorMessage)
+            return validationResult.Errors.ToError(
+                "Cannot create an Artist, incorrect data."
             ).ToValueResult<Artist>();
         }
 
@@ -90,7 +80,7 @@ public sealed class ArtistService : IArtistService
         if (artistType is null)
         {
             return new InternalServerError(
-                "Could not create an Artist"
+                "Cannot create an Artist."
             ).ToValueResult<Artist>();
         }
 
@@ -166,9 +156,8 @@ public sealed class ArtistService : IArtistService
         var validationResult = await _updateRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return new ValidationError(
-                "Could not update an Artist, incorrect data!",
-                validationResult.Errors.Select(f => f.ErrorMessage)
+            return validationResult.Errors.ToError(
+                "Cannot update artist, incorrect data."
             ).ToValueResult<Artist>();
         }
 

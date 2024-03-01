@@ -96,7 +96,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>();
         services.AddSingleton<IAuthorizationHandler, ArtistAuthorizationHandler>();
-        services.AddScoped<IAuthorizationHandler, ReleaseAutherizationHandler>();
+        services.AddScoped<IAuthorizationHandler, ReleaseAuthorizationHandler>();
  
         return services;
     }

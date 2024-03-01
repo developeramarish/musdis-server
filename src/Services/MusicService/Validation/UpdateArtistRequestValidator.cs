@@ -12,16 +12,37 @@ namespace Musdis.MusicService.Validation;
 /// </summary>
 public class UpdateArtistRequestValidator : AbstractValidator<UpdateArtistRequest>
 {
-    // TODO add user ids check.
+    private readonly MusicServiceDbContext _dbContext;
     public UpdateArtistRequestValidator(MusicServiceDbContext dbContext)
     {
+        _dbContext = dbContext;
+
         RuleFor(x => x.Name).NotEmpty().When(x => x.Name is not null);
+
+        RuleFor(x => x.Name)
+            .MustAsync(BeUniqueNameAsync)
+            .When(x => x.Name is not null)
+            .WithErrorCode(ErrorCodes.NonUniqueData)
+            .WithMessage("Artist name must be unique.");
 
         RuleFor(x => x.ArtistTypeSlug!)
             .NotEmpty()
-            .MustAsync((slug, cancel) => 
+            .MustAsync((slug, cancel) =>
                 RuleHelpers.BeExistingArtistTypeSlugAsync(slug, dbContext, cancel)
             )
             .When(x => x.ArtistTypeSlug is not null);
+    }
+
+    private async Task<bool> BeUniqueNameAsync(
+        string? name,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var releaseType = await _dbContext.Artists.FirstOrDefaultAsync(
+            a => a.Name == name,
+            cancellationToken
+        );
+
+        return releaseType is null;
     }
 }

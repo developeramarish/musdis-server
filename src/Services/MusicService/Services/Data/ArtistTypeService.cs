@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Utils;
@@ -38,22 +39,11 @@ public sealed class ArtistTypeService : IArtistTypeService
         CancellationToken cancellationToken = default
     )
     {
-        var existingArtistType = await _dbContext.Artists
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Name == request.Name, cancellationToken);
-        if (existingArtistType is not null)
-        {
-            return new ConflictError(
-                $"Artist type with Name = {{{request.Name}}} exists"
-            ).ToValueResult<ArtistType>();
-        }
-
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return new ValidationError(
-                "Could not create an ArtistType, incorrect data!",
-                validationResult.Errors.Select(f => f.ErrorMessage)
+            return validationResult.Errors.ToError(
+                "Cannot update an ArtistType, incorrect data."
             ).ToValueResult<ArtistType>();
         }
 
@@ -84,7 +74,7 @@ public sealed class ArtistTypeService : IArtistTypeService
         if (artistType is null)
         {
             return new NoContentError(
-                $"Couldn't delete ArtistType, content with Id = {{{artistTypeId}}} not found."
+                $"Cannot delete ArtistType, content with Id = {{{artistTypeId}}} not found."
             ).ToResult();
         }
 
@@ -112,9 +102,8 @@ public sealed class ArtistTypeService : IArtistTypeService
         var validationResult = await _updateRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return new ValidationError(
-                "Could not update an ArtistType, incorrect data!",
-                validationResult.Errors.Select(f => f.ErrorMessage)
+            return validationResult.Errors.ToError(
+                "Cannot update an ArtistType, incorrect data."
             ).ToValueResult<ArtistType>();
         }
 
