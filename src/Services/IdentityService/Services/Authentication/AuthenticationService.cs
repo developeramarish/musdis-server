@@ -14,6 +14,7 @@ using Musdis.ResponseHelpers.Errors;
 using Musdis.OperationResults.Extensions;
 using System.Security.Claims;
 using Musdis.IdentityService.Defaults;
+using Musdis.IdentityService.Validation;
 
 namespace Musdis.IdentityService.Services.Authentication;
 
@@ -62,6 +63,18 @@ public class AuthenticationService : IAuthenticationService
         var validationResult = await _signUpValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
+            if (validationResult.Errors.Exists(e => e.ErrorCode == ErrorCodes.NonUniqueData))
+            {
+                var errorMessages = validationResult.Errors
+                    .Where(f => f.ErrorCode == ErrorCodes.NonUniqueData)
+                    .Select(f => f.ErrorMessage);
+                var message = string.Join("\n", errorMessages);
+                
+                return new ConflictError(
+                    $"Some data is not unique: {message}"
+                ).ToValueResult<AuthenticatedUserDto>();
+            }
+
             return new ValidationError(
                 "Cannot sign user up, incorrect data",
                 validationResult.Errors.Select(f => f.ErrorMessage)
@@ -73,6 +86,7 @@ public class AuthenticationService : IAuthenticationService
         var createResult = await _userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
         {
+
             return new InternalServerError(
                 "Could not create user, try again later!"
             ).ToValueResult<AuthenticatedUserDto>();
