@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
+using Musdis.MusicService.Services.Grpc;
 using Musdis.MusicService.Services.Utils;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -19,13 +20,16 @@ public sealed class ArtistService : IArtistService
 {
     private readonly MusicServiceDbContext _dbContext;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IIdentityUserService _identityUserService;
     private readonly ISlugGenerator _slugGenerator;
     private readonly IValidator<CreateArtistRequest> _createRequestValidator;
     private readonly IValidator<UpdateArtistRequest> _updateRequestValidator;
+
     public ArtistService(
         MusicServiceDbContext dbContext,
         IHttpContextAccessor httpContextAccessor,
         ISlugGenerator slugGenerator,
+        IIdentityUserService identityUserService,
         IValidator<CreateArtistRequest> createRequestValidator,
         IValidator<UpdateArtistRequest> updateRequestValidator
     )
@@ -33,6 +37,7 @@ public sealed class ArtistService : IArtistService
         _dbContext = dbContext;
         _httpContextAccessor = httpContextAccessor;
         _slugGenerator = slugGenerator;
+        _identityUserService = identityUserService;
         _createRequestValidator = createRequestValidator;
         _updateRequestValidator = updateRequestValidator;
     }
@@ -61,7 +66,6 @@ public sealed class ArtistService : IArtistService
             ).ToValueResult<Artist>();
         }
 
-        // TODO add main user info to db 
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -69,6 +73,15 @@ public sealed class ArtistService : IArtistService
                 "Could not create an Artist, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
             ).ToValueResult<Artist>();
+        }
+
+        var userInfosResult = await _identityUserService.GetUserInfosAsync(
+            [userId, .. request.UserIds],
+            cancellationToken
+        );
+        if (userInfosResult.IsFailure)
+        {
+            return userInfosResult.Error.ToValueResult<Artist>();
         }
 
         var artistType = await _dbContext.ArtistTypes
@@ -89,7 +102,7 @@ public sealed class ArtistService : IArtistService
         {
             return slugResult.Error.ToValueResult<Artist>();
         }
-        
+
         var artist = new Artist
         {
             Id = Guid.NewGuid(),
@@ -98,13 +111,19 @@ public sealed class ArtistService : IArtistService
             Slug = slugResult.Value,
             CoverUrl = request.CoverUrl,
             CreatorId = userId,
+            ArtistUsers = []
         };
-        artist.ArtistUsers = request.UserIds.Select(id => new ArtistUser
+
+        var users = userInfosResult.Value.Users;
+        foreach (var user in users)
         {
-            ArtistId = artist.Id,
-            UserId = id,
-            UserName = "NOT IMPLEMENTED" // TODO implement
-        }).ToList();
+            artist.ArtistUsers.Add(new ArtistUser
+            {
+                ArtistId = artist.Id,
+                UserId = user.Id,
+                UserName = user.UserName
+            });
+        }
 
         await _dbContext.Artists.AddAsync(artist, cancellationToken);
         await _dbContext.Entry(artist).Reference(a => a.ArtistType).LoadAsync(cancellationToken);
@@ -167,7 +186,7 @@ public sealed class ArtistService : IArtistService
 
             artist.ArtistTypeId = artistType.Id;
         }
-        
+
         artist.CoverUrl = request.CoverUrl ?? artist.CoverUrl;
         if (request.Name is not null)
         {
@@ -185,7 +204,7 @@ public sealed class ArtistService : IArtistService
 
         if (request.UserIds is not null)
         {
-            var updateResult = UpdateArtistUsers(artist, request.UserIds);
+            var updateResult = await UpdateArtistUsersAsync(artist, request.UserIds, cancellationToken);
             if (updateResult.IsFailure)
             {
                 return updateResult.Error.ToValueResult<Artist>();
@@ -213,11 +232,19 @@ public sealed class ArtistService : IArtistService
     /// <param name="userIds">
     ///     Updated collection of user identifiers.
     /// </param>
+    /// <param name="cancellationToken">
+    ///     A token to cancel the asynchronous operation.
+    /// </param>
     /// 
     /// <returns>
-    ///     The result of an operation.
+    ///     A task representing asynchronous operation.
+    ///     The task result contains <see cref="Result"/> of the operation.
     /// </returns>
-    private Result UpdateArtistUsers(Artist artist, IEnumerable<string> userIds)
+    private async Task<Result> UpdateArtistUsersAsync(
+        Artist artist,
+        IEnumerable<string> userIds,
+        CancellationToken cancellationToken = default
+    )
     {
         if (artist?.ArtistUsers is null || userIds is null)
         {
@@ -226,15 +253,23 @@ public sealed class ArtistService : IArtistService
             ).ToResult();
         }
 
+        var userInfosResult = await _identityUserService.GetUserInfosAsync(userIds, cancellationToken);
+        if (userInfosResult.IsFailure)
+        {
+            return userInfosResult.Error.ToResult();
+        }
+
         try
         {
-            var userIdsToAdd = userIds
-                .Where(id => artist.ArtistUsers.FirstOrDefault(au => au.UserId == id) is null)
-                .ToArray();
+            var users = userInfosResult.Value.Users;
 
             var artistUsersToDelete = artist.ArtistUsers
-                .Where(au => !userIds.Contains(au.UserId))
+                .ExceptBy(userIds, au => au.UserId)
                 .ToArray();
+            var userIdsToAdd = userIds
+                .Except(artist.ArtistUsers.Select(u => u.UserId))
+                .ToArray();
+
             foreach (var artistUser in artistUsersToDelete)
             {
                 artist.ArtistUsers!.Remove(artistUser);
@@ -242,11 +277,19 @@ public sealed class ArtistService : IArtistService
             }
             foreach (var userId in userIdsToAdd)
             {
+                var userName = users.FirstOrDefault(u => u.Id == userId)?.UserName;
+                if (userName is null)
+                {
+                    return new InternalServerError(
+                        "Cannot update artist users"
+                    ).ToResult();
+                }
+
                 artist.ArtistUsers.Add(new()
                 {
                     UserId = userId,
                     ArtistId = artist.Id,
-                    UserName = "", // TODO implement
+                    UserName = userName,
                 });
             }
 
