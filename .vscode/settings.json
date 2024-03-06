@@ -1,6 +1,7 @@
 {
     "dotnet-test-explorer.testProjectPath": "test/**/*.csproj",
     "cSpell.words": [
+        "Firestore",
         "Musdis"
     ]
 }
