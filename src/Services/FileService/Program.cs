@@ -1,26 +1,34 @@
 using Musdis.FileService.Options;
-using Musdis.FileService.Services.StorageService;
+using Musdis.FileService.Services.Storage;
 
 using Google.Cloud.Storage.V1;
+using Musdis.FileService.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<FileServiceDbContext>(options =>
+{
+    var connection = builder.Configuration.GetConnectionString("FileDbConnection")
+        ?? throw new InvalidOperationException("Database connection is missing.");
+    options.UseNpgsql(connection);
+});
+
 // Options
-builder.Services.Configure<FirebaseOptions>(
-    builder.Configuration.GetSection(FirebaseOptions.Firebase)
-);
+builder.Services.AddOptions<FirebaseOptions>()
+    .Bind(builder.Configuration.GetSection(FirebaseOptions.Firebase))
+    .ValidateOnStart();
 
 // Environment variables
-var firebaseOptions = builder.Configuration
-    .GetSection(FirebaseOptions.Firebase)
-    .Get<FirebaseOptions>()!;
 Environment.SetEnvironmentVariable(
-    firebaseOptions.KeyEnvironmentVariableName,
-    firebaseOptions.KeyPath
+    builder.Configuration["Firebase:KeyEnvironmentVariableName"] 
+        ?? throw new InvalidOperationException("Cannot start app, configuration is missing Firebase:KeyEnvironmentVariableName"),
+    builder.Configuration["Firebase:KeyPath"]
+        ?? throw new InvalidOperationException("Cannot start app, configuration is missing Firebase:KeyPath")
 );
 
 builder.Services.AddTransient(_ => StorageClient.Create());
-builder.Services.AddTransient<IStorageService, FirebaseStorageService>();
+builder.Services.AddTransient<IStorageProvider, FirebaseStorageProvider>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
