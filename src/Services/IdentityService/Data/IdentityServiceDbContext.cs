@@ -2,16 +2,16 @@
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Musdis.IdentityService.Defaults;
 
 namespace Musdis.IdentityService.Data;
-public class IdentityServiceDbContext : IdentityDbContext<User>
-{
-    public IdentityServiceDbContext(
-        DbContextOptions<IdentityServiceDbContext> options
-    ) : base(options)
-    {
-        Database.EnsureCreated();
-    }
-}
+
+/// <summary>
+///     The database context for the identity service.
+/// </summary>
+/// 
+/// <param name="options">
+///     The options for the database context.
+/// </param>
+public class IdentityServiceDbContext(
+    DbContextOptions<IdentityServiceDbContext> options
+) : IdentityDbContext<User>(options) { }
