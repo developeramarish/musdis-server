@@ -32,9 +32,9 @@ public class FileController : ControllerBase
 
     [Route("get-file-uri")]
     [HttpGet]
-    public async Task<IActionResult> GetFileUriAsync()
+    public async Task<IActionResult> GetFileUriAsync(string image)
     {
-        var result = await _storageService.GetFileUriAsync("images/121.jpg");
+        var result = await _storageService.GetFileUrlAsync(image);
 
         return result switch
         {
