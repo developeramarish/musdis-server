@@ -17,29 +17,11 @@ public sealed class FileServiceDbContext(DbContextOptions<FileServiceDbContext> 
     /// <summary>
     ///     The set of file infos.
     /// </summary>
-    public DbSet<FileDetails> FileInfos => Set<FileDetails>();
-
-    /// <summary>
-    ///     The set of file types.
-    /// </summary>
-    public DbSet<FileType> FileTypes => Set<FileType>();
+    public DbSet<FileMetadata> FilesMetadata => Set<FileMetadata>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = GetType().Assembly;
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
-
-        modelBuilder.Entity<FileType>().HasData(
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Name = "image"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Name = "audio"
-            }
-        );
     }
 }
