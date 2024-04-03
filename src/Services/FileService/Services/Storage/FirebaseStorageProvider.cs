@@ -25,23 +25,23 @@ public class FirebaseStorageProvider : IStorageProvider
     }
 
     public async Task<Result<Uri>> GetFileUrlAsync(
-        string fileName,
+        string filePath,
         CancellationToken cancellationToken = default
     )
     {
         try
         {
-            var objects = _storageClient.ListObjectsAsync(_firebaseOptions.DefaultBucketName, fileName);
+            var objects = _storageClient.ListObjectsAsync(_firebaseOptions.DefaultBucketName, filePath);
             var entriesCount = await objects.CountAsync(cancellationToken);
 
             if (entriesCount == 0)
             {
-                return new NotFoundError($"Files with name {{{fileName}}} not found")
+                return new NotFoundError($"Files with name {{{filePath}}} not found")
                     .ToValueResult<Uri>();
             }
             var file = await _storageClient.GetObjectAsync(
                 _firebaseOptions.DefaultBucketName,
-                fileName,
+                filePath,
                 cancellationToken: cancellationToken
             );
 
@@ -56,12 +56,12 @@ public class FirebaseStorageProvider : IStorageProvider
     }
 
     public async Task<Result<List<Uri>>> GetFileUrlsAsync(
-        IList<string> fileNames,
+        IList<string> filePaths,
         CancellationToken cancellationToken = default
     )
     {
-        var urls = new List<Uri>(fileNames.Count);
-        foreach (var fileName in fileNames)
+        var urls = new List<Uri>(filePaths.Count);
+        foreach (var fileName in filePaths)
         {
             var result = await GetFileUrlAsync(fileName, cancellationToken);
             if (result.IsFailure)
@@ -78,7 +78,7 @@ public class FirebaseStorageProvider : IStorageProvider
     }
 
     public async Task<Result<Uri>> UploadFileAsync(
-        string fileName,
+        string filePath,
         IFormFile file,
         CancellationToken cancellationToken = default
     )
@@ -87,10 +87,10 @@ public class FirebaseStorageProvider : IStorageProvider
         {
             using var stream = new MemoryStream();
             await file.CopyToAsync(stream, cancellationToken);
-
+            
             var uploaded = await _storageClient.UploadObjectAsync(
                 _firebaseOptions.DefaultBucketName,
-                fileName,
+                filePath,
                 file.ContentType,
                 stream
             );
@@ -106,7 +106,7 @@ public class FirebaseStorageProvider : IStorageProvider
     }
 
     public async Task<Result> DeleteFileAsync(
-        string fileName,
+        string filePath,
         CancellationToken cancellationToken = default
     )
     {
@@ -114,7 +114,7 @@ public class FirebaseStorageProvider : IStorageProvider
         {
             var obj = await _storageClient.GetObjectAsync(
                 _firebaseOptions.DefaultBucketName,
-                fileName,
+                filePath,
                 cancellationToken: cancellationToken
             );
 

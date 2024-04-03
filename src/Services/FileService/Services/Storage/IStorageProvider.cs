@@ -11,7 +11,7 @@ public interface IStorageProvider
     ///     Uploads the file to storage.
     /// </summary>
     /// 
-    /// <param name="fileName">
+    /// <param name="filePath">
     ///     The name of the file.
     /// </param>
     /// <param name="file">
@@ -25,7 +25,7 @@ public interface IStorageProvider
     ///     The task result contains the URL of the uploaded file.
     /// </returns>
     Task<Result<Uri>> UploadFileAsync(
-        string fileName,
+        string filePath,
         IFormFile file,
         CancellationToken cancellationToken = default
     );
@@ -34,7 +34,7 @@ public interface IStorageProvider
     ///     Deletes the file from the storage.
     /// </summary>
     /// 
-    /// <param name="fileName">
+    /// <param name="filePath">
     ///     The name of the file.
     /// </param>
     /// <param name="cancellationToken">
@@ -46,7 +46,7 @@ public interface IStorageProvider
     ///     The task result contains the result of the operation.
     /// </returns>
     Task<Result> DeleteFileAsync(
-        string fileName, 
+        string filePath, 
         CancellationToken cancellationToken = default
     );
 
@@ -54,7 +54,7 @@ public interface IStorageProvider
     ///     Gets the URL of the file.
     /// </summary>
     /// 
-    /// <param name="fileName">
+    /// <param name="filePath">
     ///     The name of the file.
     /// </param>
     /// <param name="cancellationToken">
@@ -66,7 +66,7 @@ public interface IStorageProvider
     ///     The task result contains the URL of the file.
     /// </returns>
     Task<Result<Uri>> GetFileUrlAsync(
-        string fileName, 
+        string filePath, 
         CancellationToken cancellationToken = default
     );
 
@@ -74,7 +74,7 @@ public interface IStorageProvider
     ///     Gets the URLs of the files.
     /// </summary>
     /// 
-    /// <param name="fileNames">
+    /// <param name="filePaths">
     ///     The names of the files.
     /// </param>
     /// <param name="cancellationToken">
@@ -86,7 +86,7 @@ public interface IStorageProvider
     ///     The task result contains the URLs of the files.
     /// </returns>
     Task<Result<List<Uri>>> GetFileUrlsAsync(
-        IList<string> fileNames,
+        IList<string> filePaths,
         CancellationToken cancellationToken = default
     );
 }
