@@ -1,9 +1,12 @@
 using System.Net.Mime;
 
+using MassTransit;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MessageBrokerHelpers.Events;
 using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
@@ -142,6 +145,7 @@ public static class ReleaseEndpoints
     public static async Task<IResult> HandlePostAsync(
         [FromBody] CreateReleaseRequest request,
         [FromServices] IReleaseService releaseService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         HttpContext context,
         CancellationToken cancellationToken
     )
@@ -157,6 +161,8 @@ public static class ReleaseEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
+        await publishEndpoint.Publish(new FileUsed(request.CoverFile.Id));
+
         var dto = ReleaseDto.FromRelease(createResult.Value);
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
@@ -166,15 +172,16 @@ public static class ReleaseEndpoints
         [FromRoute] Guid id,
         [FromBody] UpdateReleaseRequest request,
         [FromServices] IReleaseService releaseService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var release = await releaseService 
+        var release = await releaseService
             .GetQueryable()
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-        if (release is null) 
+        if (release is null)
         {
             return new NotFoundError(
                 $"Release with Id = {{{id}}} is not found."
@@ -204,24 +211,31 @@ public static class ReleaseEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
+        if (request.CoverFile is not null)
+        {
+            await publishEndpoint.Publish(new FileUsed(request.CoverFile.Id));
+        }
+
         return Results.NoContent();
     }
 
     public static async Task<IResult> HandleDeleteAsync(
         [FromRoute] Guid id,
         [FromServices] IReleaseService releaseService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var release = await releaseService 
+        var release = await releaseService
             .GetQueryable()
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-        if (release is null) 
+        if (release is null)
         {
             return new NoContentError().ToHttpResult(context.Request.Path);
         }
+
 
         var authorizationResult = await authorizationService.AuthorizeAsync(
             context.User,
@@ -235,6 +249,8 @@ public static class ReleaseEndpoints
             ).ToHttpResult(context.Request.Path);
         }
 
+        var fileId = release.CoverFileId;
+        
         var deleteResult = await releaseService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {
@@ -245,6 +261,9 @@ public static class ReleaseEndpoints
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
+
+        await publishEndpoint.Publish(new EntityWithFileDeleted(fileId));
+
 
         return Results.Ok();
     }

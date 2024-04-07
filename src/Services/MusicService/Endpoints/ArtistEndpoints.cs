@@ -1,9 +1,12 @@
 using System.Net.Mime;
 
+using MassTransit;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MessageBrokerHelpers.Events;
 using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
@@ -36,7 +39,7 @@ public static class ArtistEndpoints
     {
         groupBuilder.MapGet("/", HandleGetManyAsync)
             .Produces<PagedDataResponse<ArtistDto>>();
-            
+
         groupBuilder.MapGet("/{idOrSlug}", HandleGetOneAsync)
             .Produces<ArtistDto>()
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -133,6 +136,7 @@ public static class ArtistEndpoints
     public static async Task<IResult> HandlePostAsync(
         [FromBody] CreateArtistRequest request,
         [FromServices] IArtistService artistService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         HttpContext context,
         CancellationToken cancellationToken
     )
@@ -148,6 +152,8 @@ public static class ArtistEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
+        await publishEndpoint.Publish(new FileUsed(createResult.Value.CoverFileId));
+
         var dto = ArtistDto.FromArtist(createResult.Value);
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
@@ -158,6 +164,7 @@ public static class ArtistEndpoints
         [FromBody] UpdateArtistRequest request,
         [FromServices] IArtistService artistService,
         [FromServices] IAuthorizationService authorizationService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         HttpContext context,
         CancellationToken cancellationToken
     )
@@ -172,8 +179,8 @@ public static class ArtistEndpoints
         }
 
         var authorizationResult = await authorizationService.AuthorizeAsync(
-            context.User, 
-            artist, 
+            context.User,
+            artist,
             AuthorizationPolicies.SameAuthor
         );
         if (!authorizationResult.Succeeded)
@@ -193,6 +200,10 @@ public static class ArtistEndpoints
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
+        if (request.CoverFile is not null)
+        {
+            await publishEndpoint.Publish(new FileUsed(updateResult.Value.CoverFileId));
+        }
 
         return Results.NoContent();
     }
@@ -201,6 +212,7 @@ public static class ArtistEndpoints
         [FromRoute] Guid id,
         [FromServices] IArtistService artistService,
         [FromServices] IAuthorizationService authorizationService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         HttpContext context,
         CancellationToken cancellationToken
     )
@@ -213,8 +225,8 @@ public static class ArtistEndpoints
         }
 
         var authorizationResult = await authorizationService.AuthorizeAsync(
-            context.User, 
-            artist, 
+            context.User,
+            artist,
             AuthorizationPolicies.SameAuthor
         );
         if (!authorizationResult.Succeeded)
@@ -223,6 +235,8 @@ public static class ArtistEndpoints
                 "You are not authorized to update this Artist"
             ).ToHttpResult(context.Request.Path);
         }
+
+        var fileId = artist.CoverFileId;
 
         var deleteResult = await artistService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
@@ -235,6 +249,7 @@ public static class ArtistEndpoints
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
+        await publishEndpoint.Publish(new EntityWithFileDeleted(fileId));
 
         return Results.Ok();
     }

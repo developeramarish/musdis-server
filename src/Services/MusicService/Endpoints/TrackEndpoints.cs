@@ -1,9 +1,12 @@
 using System.Net.Mime;
 
+using MassTransit;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MessageBrokerHelpers.Events;
 using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Requests;
@@ -123,6 +126,7 @@ public static class TrackEndpoints
     public static async Task<IResult> HandlePostAsync(
         [FromBody] CreateTrackRequest request,
         [FromServices] ITrackService trackService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         HttpContext context,
         CancellationToken cancellationToken
     )
@@ -138,6 +142,8 @@ public static class TrackEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
+        await publishEndpoint.Publish(new FileUsed(request.AudioFile.Id));
+
         var dto = TrackDto.FromTrack(createResult.Value);
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
@@ -147,15 +153,16 @@ public static class TrackEndpoints
         [FromRoute] Guid id,
         [FromBody] UpdateTrackRequest request,
         [FromServices] ITrackService trackService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         [FromServices] IAuthorizationService authorizationService,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var track = await trackService 
+        var track = await trackService
             .GetQueryable()
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-        if (track is null) 
+        if (track is null)
         {
             return new NotFoundError(
                 $"Track with Id = {{{id}}} is not found."
@@ -185,6 +192,11 @@ public static class TrackEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
+        if (request.AudioFile is not null)
+        {
+            await publishEndpoint.Publish(new FileUsed(request.AudioFile.Id));
+        }
+
         return Results.NoContent();
     }
 
@@ -192,14 +204,15 @@ public static class TrackEndpoints
         [FromRoute] Guid id,
         [FromServices] ITrackService trackService,
         [FromServices] IAuthorizationService authorizationService,
+        [FromServices] IPublishEndpoint publishEndpoint,
         HttpContext context,
         CancellationToken cancellationToken
     )
     {
-        var track = await trackService 
+        var track = await trackService
             .GetQueryable()
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-        if (track is null) 
+        if (track is null)
         {
             return new NotFoundError(
                 $"Track with Id = {{{id}}} is not found."
@@ -217,7 +230,9 @@ public static class TrackEndpoints
                 "You are not authorized to update this Release"
             ).ToHttpResult(context.Request.Path);
         }
-        
+
+        var fileId = track.AudioFileId;
+
         var deleteResult = await trackService.DeleteAsync(id, cancellationToken);
         if (deleteResult.IsFailure)
         {
@@ -228,6 +243,8 @@ public static class TrackEndpoints
         {
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
+
+        await publishEndpoint.Publish(new FileUsed(fileId));
 
         return Results.NoContent();
     }
