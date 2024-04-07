@@ -7,9 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Musdis.FileService.Endpoints;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.OpenApi.Models;
 using Musdis.FileService.Swagger;
 using Musdis.OperationResults;
@@ -17,13 +14,38 @@ using Musdis.ResponseHelpers.Extensions;
 using Musdis.AuthHelpers.Extensions;
 using FluentValidation;
 using Musdis.FileService.Validation;
+using MassTransit;
+using Musdis.FileService.MessageBroker.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCommonAuthentication(
-    builder.Configuration,
-    "JwtSettings"
-);
+// Message broker
+builder.Services.AddMassTransit(busConfigurator =>
+{
+    busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+    busConfigurator.AddDelayedMessageScheduler();
+
+    busConfigurator.AddConsumer<FileUsedConsumer>();
+    busConfigurator.AddConsumer<EntityWithFileDeletedConsumer>();
+    busConfigurator.AddConsumer<DeleteFileScheduledConsumer>();
+
+    busConfigurator.UsingRabbitMq((context, config) =>
+    {
+        config.Host(builder.Configuration["MessageBroker:Host"], "/", h =>
+        {
+            h.Username("MessageBroker:Username");
+            h.Password("MessageBroker:Password");
+        });
+
+        config.UseDelayedMessageScheduler();
+
+        config.ConfigureEndpoints(context);
+    });
+});
+
+// Authentication and authorization
+builder.Services.AddCommonAuthentication(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<FileServiceDbContext>(options =>
@@ -37,6 +59,9 @@ builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 // Options
 builder.Services.AddOptions<FirebaseOptions>()
     .Bind(builder.Configuration.GetSection(FirebaseOptions.Firebase))
+    .ValidateOnStart();
+builder.Services.AddOptions<FileDeletionOptions>()
+    .Bind(builder.Configuration.GetSection(FileDeletionOptions.FileDeletionSettings))
     .ValidateOnStart();
 
 // Environment variables
@@ -75,8 +100,8 @@ app.UseAuthorization();
 app.UseHttpsRedirection();
 
 app.MapGet("antiforgery/token", (
-    HttpContext context,
-    [FromServices] IAntiforgery antiforgery
+    [FromServices] IAntiforgery antiforgery,
+    HttpContext context
 ) =>
 {
     var tokens = antiforgery.GetAndStoreTokens(context);
