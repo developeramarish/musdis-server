@@ -1,20 +1,21 @@
-using FluentValidation;
+using System.Security.Claims;
 
-using Musdis.IdentityService.Extensions;
-using Musdis.IdentityService.Models;
-using Musdis.IdentityService.Dtos;
-using Musdis.IdentityService.Requests;
-using Musdis.IdentityService.Services.Jwt;
+using FluentValidation;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-using Musdis.OperationResults;
-using Musdis.ResponseHelpers.Errors;
-using Musdis.OperationResults.Extensions;
-using System.Security.Claims;
-using Musdis.IdentityService.Defaults;
+using Musdis.IdentityService.Models;
+using Musdis.IdentityService.Dtos;
+using Musdis.IdentityService.Requests;
+using Musdis.IdentityService.Services.Jwt;
 using Musdis.IdentityService.Validation;
+
+
+using Musdis.OperationResults;
+using Musdis.OperationResults.Extensions;
+using Musdis.ResponseHelpers.Errors;
+using Musdis.AuthHelpers.Authorization;
 
 namespace Musdis.IdentityService.Services.Authentication;
 
@@ -69,7 +70,7 @@ public class AuthenticationService : IAuthenticationService
                     .Where(f => f.ErrorCode == ErrorCodes.NonUniqueData)
                     .Select(f => f.ErrorMessage);
                 var message = string.Join("\n", errorMessages);
-                
+
                 return new ConflictError(
                     $"Some data is not unique: {message}"
                 ).ToValueResult<AuthenticatedUserDto>();
@@ -120,10 +121,10 @@ public class AuthenticationService : IAuthenticationService
                 "Could not create user, try again later!"
             ).ToValueResult<AuthenticatedUserDto>();
         }
-        
+
         var claimAddResult = await _userManager.AddClaimAsync(
-            user, 
-            new (ClaimDefaults.Admin, "true", ClaimValueTypes.Boolean)
+            user,
+            new(ClaimDefaults.Admin, "true", ClaimValueTypes.Boolean)
         );
         if (!claimAddResult.Succeeded)
         {
