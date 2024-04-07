@@ -1,12 +1,10 @@
-using System.Text;
+using MassTransit;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+using Musdis.AuthHelpers.Extensions;
 using Musdis.Common.GrpcProtos;
 using Musdis.MusicService.Authorization;
 using Musdis.MusicService.Authorization.Handlers;
@@ -15,7 +13,6 @@ using Musdis.MusicService.Data;
 using Musdis.MusicService.Defaults;
 using Musdis.MusicService.Endpoints;
 using Musdis.MusicService.Extensions;
-using Musdis.MusicService.Options;
 using Musdis.MusicService.Services.Exceptions;
 using Musdis.MusicService.Services.Grpc;
 using Musdis.MusicService.Services.Utils;
@@ -24,6 +21,24 @@ using Slugify;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Message broker
+builder.Services.AddMassTransit(busConfigurator =>
+{
+    busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+    busConfigurator.UsingRabbitMq((context, config) =>
+    {
+        config.Host(builder.Configuration["MessageBroker:Host"], "/", h =>
+        {
+            h.Username("MessageBroker:Username");
+            h.Password("MessageBroker:Password");
+        });
+
+        config.ConfigureEndpoints(context);
+    });
+});
+
+// Database
 builder.Services.AddDbContext<MusicServiceDbContext>(options =>
 {
     var connection = builder.Configuration.GetConnectionString("MusicDbConnection")
@@ -31,30 +46,8 @@ builder.Services.AddDbContext<MusicServiceDbContext>(options =>
     options.UseNpgsql(connection);
 });
 
-// Authentication
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var jwtOptions = builder.Configuration
-            .GetSection(JwtOptions.Jwt)
-            .Get<JwtOptions>()
-            ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
-
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidIssuer = jwtOptions.Issuer,
-            ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtOptions.Key)
-            ),
-            ValidateIssuer = true,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-        };
-    });
+// Authentication and authorization
+builder.Services.AddCommonAuthentication(builder.Configuration.GetSection("Jwt"));
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AuthorizationPolicies.SameAuthor, policy =>
