@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 
+using Musdis.AuthHelpers.Authorization;
 using Musdis.MusicService.Authorization.Requirements;
-using Musdis.MusicService.Defaults;
 
 namespace Musdis.MusicService.Authorization;
 
