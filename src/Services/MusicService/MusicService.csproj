@@ -9,21 +9,23 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.9.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.25.3" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.61.0" />
-    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.61.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.26.1" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.62.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.62.0" />
     <PackageReference Include="Grpc.Tools" Version="2.62.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Musdis.Common.AuthHelpers" Version="0.0.1" />
     <PackageReference Include="Musdis.Common.GrpcProtos" Version="0.0.1" />
     <PackageReference Include="Musdis.Common.OperationResults" Version="1.0.0" />
     <PackageReference Include="Musdis.Common.ResponseHelpers" Version="1.0.4" />
@@ -34,6 +36,10 @@
 
   <ItemGroup>
     <Protobuf Include="Protos/user_service.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\MessageBrokerHelpers\MessageBrokerHelpers.csproj" />
   </ItemGroup>
 
 </Project>
