@@ -72,6 +72,25 @@ public interface IStorageService
     );
 
     /// <summary>
+    ///     Deletes a file from the storage.
+    /// </summary>
+    /// 
+    /// <param name="url">
+    ///     The URL of the file to be deleted.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     The cancellation token.
+    /// </param>
+    /// <returns>
+    ///     The task that represents the asynchronous operation.
+    ///     The result contains the result of the operation.
+    /// </returns>
+    Task<Result> DeleteFileAsync(
+        string url,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     ///     Gets the metadata of a file.
     /// </summary>
     /// 
@@ -110,18 +129,4 @@ public interface IStorageService
         IList<Guid> ids,
         CancellationToken cancellationToken = default
     );
-
-    /// <summary>
-    ///     Saves changes to the database.
-    /// </summary>
-    /// 
-    /// <param name="cancellationToken">
-    ///     The cancellation token.
-    /// </param>
-    /// 
-    /// <returns>
-    ///     The task that represents the asynchronous operation.
-    ///     The result contains the result of the operation.
-    /// </returns>
-    Task<Result> SaveChangesToDbAsync(CancellationToken cancellationToken = default);
 }

@@ -1,10 +1,15 @@
 using FluentValidation;
 
+using MassTransit;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 using Musdis.FileService.Data;
 using Musdis.FileService.Dtos;
+using Musdis.FileService.MessageBroker.Commands;
 using Musdis.FileService.Models;
+using Musdis.FileService.Options;
 using Musdis.FileService.Utils;
 using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
@@ -20,16 +25,25 @@ public class StorageService : IStorageService
     private readonly FileServiceDbContext _dbContext;
     private readonly IStorageProvider _storageProvider;
     private readonly IValidator<IFormFile> _formFileValidator;
+    private readonly IMessageScheduler _messageScheduler;
+    private readonly FileDeletionOptions _fileDeletionOptions;
+    private readonly TimeProvider _timeProvider;
 
     public StorageService(
         IStorageProvider storageProvider,
         FileServiceDbContext dbContext,
-        IValidator<IFormFile> formFileValidator
+        IValidator<IFormFile> formFileValidator,
+        IMessageScheduler messageScheduler,
+        IOptions<FileDeletionOptions> fileDeletionOptions,
+        TimeProvider timeProvider
     )
     {
         _storageProvider = storageProvider;
         _dbContext = dbContext;
         _formFileValidator = formFileValidator;
+        _messageScheduler = messageScheduler;
+        _fileDeletionOptions = fileDeletionOptions.Value;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Result<FileMetadataDto>> UploadFileAsync(
@@ -37,48 +51,33 @@ public class StorageService : IStorageService
         CancellationToken cancellationToken = default
     )
     {
-        var validationResult = await _formFileValidator.ValidateAsync(file, cancellationToken);
-        if (!validationResult.IsValid)
+        var uploadResult = await UploadSingleFileAsync(file, cancellationToken);
+        if (uploadResult.IsFailure)
         {
-            return new ValidationError(
-                "Cannot upload file, validation failed",
-                validationResult.Errors.Select(err => err.ErrorMessage)
+            return uploadResult;
+        }
+
+        var savingResult = await SaveChangesToDbAsync(cancellationToken);
+        if (savingResult.IsFailure)
+        {
+            return savingResult.Error.ToValueResult<FileMetadataDto>();
+        }
+        try
+        {
+            await _messageScheduler.SchedulePublish<DeleteFileScheduled>(
+                _timeProvider.GetUtcNow().AddHours(_fileDeletionOptions.ExpirationTimeInHours).DateTime,
+                new(uploadResult.Value.Id),
+                cancellationToken
+            );
+        }
+        catch (Exception ex)
+        {
+            return new Error(
+                $"Cannot schedule file deletion: {ex.Message}"
             ).ToValueResult<FileMetadataDto>();
         }
 
-        var fileId = Guid.NewGuid();
-
-        var extension = Path.GetExtension(file.FileName);
-        var fileTypeResult = FileHelper.GetFileType(extension);
-        if (fileTypeResult.IsFailure)
-        {
-            return fileTypeResult.Error.ToValueResult<FileMetadataDto>();
-        }
-
-        var newName = Path.Combine(fileId.ToString(), extension);
-        var filePathResult = GenerateFilePath(newName);
-        if (filePathResult.IsFailure)
-        {
-            return filePathResult.Error.ToValueResult<FileMetadataDto>();
-        }
-
-        var uploadResult = await _storageProvider.UploadFileAsync(filePathResult.Value, file, cancellationToken);
-        if (uploadResult.IsFailure)
-        {
-            return uploadResult.Error.ToValueResult<FileMetadataDto>();
-        }
-
-        var fileMetadata = new FileMetadata
-        {
-            Id = fileId,
-            Url = uploadResult.Value.ToString(),
-            Path = filePathResult.Value,
-            FileType = fileTypeResult.Value
-        };
-
-        await _dbContext.FilesMetadata.AddAsync(fileMetadata, cancellationToken);
-
-        return FileMetadataDto.FromFileMetadata(fileMetadata).ToValueResult();
+        return uploadResult;
     }
 
     public async Task<FilesMetadataResult> UploadFilesAsync(
@@ -101,13 +100,19 @@ public class StorageService : IStorageService
         var filesMetadata = new List<FileMetadataDto>(files.Count);
         foreach (var file in files)
         {
-            var uploadResult = await UploadFileAsync(file, cancellationToken);
+            var uploadResult = await UploadSingleFileAsync(file, cancellationToken);
             if (uploadResult.IsFailure)
             {
                 return uploadResult.Error.ToValueResult<IList<FileMetadataDto>>();
             }
 
             filesMetadata.Add(uploadResult.Value);
+        }
+
+        var savingResult = await SaveChangesToDbAsync(cancellationToken);
+        if (savingResult.IsFailure)
+        {
+            return savingResult.Error.ToValueResult<IList<FileMetadataDto>>();
         }
         // Cannot implicitly convert to `IList<FileMetadataDto>` from `List<FileMetadataDto>`.
         IList<FileMetadataDto> metadataDtos = filesMetadata;
@@ -135,10 +140,36 @@ public class StorageService : IStorageService
         }
 
         _dbContext.FilesMetadata.Remove(fileMetadata);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        var savingResult = await SaveChangesToDbAsync(cancellationToken);
 
-        return Result.Success();
+        return savingResult;
     }
+
+    public async Task<Result> DeleteFileAsync(
+        string url,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var fileMetadata = await _dbContext.FilesMetadata
+            .FirstOrDefaultAsync(f => f.Url == url, cancellationToken);
+
+        if (fileMetadata is null)
+        {
+            return new NoContentError().ToResult();
+        }
+
+        var deleteResult = await _storageProvider.DeleteFileAsync(fileMetadata.Path, cancellationToken);
+        if (deleteResult.IsFailure)
+        {
+            return deleteResult.Error.ToResult();
+        }
+
+        _dbContext.FilesMetadata.Remove(fileMetadata);
+        var savingResult = await SaveChangesToDbAsync(cancellationToken);
+
+        return savingResult;
+    }
+
 
     public async Task<Result<FileMetadataDto>> GetFileMetadataAsync(
         Guid id,
@@ -193,6 +224,7 @@ public class StorageService : IStorageService
         }
     }
 
+
     private static Result<string> GenerateFilePath(string fileName)
     {
         var extension = Path.GetExtension(fileName);
@@ -219,5 +251,55 @@ public class StorageService : IStorageService
         {
             return Result<string>.Failure($"Cannot generate file path: {ex.Message}");
         }
+    }
+
+    private async Task<Result<FileMetadataDto>> UploadSingleFileAsync(
+        IFormFile file,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var validationResult = await _formFileValidator.ValidateAsync(file, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Cannot upload file, validation failed",
+                validationResult.Errors.Select(err => err.ErrorMessage)
+            ).ToValueResult<FileMetadataDto>();
+        }
+
+        var fileId = Guid.NewGuid();
+
+        var extension = Path.GetExtension(file.FileName);
+        var fileTypeResult = FileHelper.GetFileType(extension);
+        if (fileTypeResult.IsFailure)
+        {
+            return fileTypeResult.Error.ToValueResult<FileMetadataDto>();
+        }
+
+        var newName = Path.Combine(fileId.ToString(), extension);
+        var filePathResult = GenerateFilePath(newName);
+        if (filePathResult.IsFailure)
+        {
+            return filePathResult.Error.ToValueResult<FileMetadataDto>();
+        }
+
+        var uploadResult = await _storageProvider.UploadFileAsync(filePathResult.Value, file, cancellationToken);
+        if (uploadResult.IsFailure)
+        {
+            return uploadResult.Error.ToValueResult<FileMetadataDto>();
+        }
+
+        var fileMetadata = new FileMetadata
+        {
+            Id = fileId,
+            Url = uploadResult.Value.ToString(),
+            Path = filePathResult.Value,
+            FileType = fileTypeResult.Value,
+            IsUsed = false
+        };
+
+        await _dbContext.FilesMetadata.AddAsync(fileMetadata, cancellationToken);
+
+        return FileMetadataDto.FromFileMetadata(fileMetadata).ToValueResult();
     }
 }
