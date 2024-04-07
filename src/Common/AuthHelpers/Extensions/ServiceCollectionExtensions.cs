@@ -21,42 +21,28 @@ public static class ServiceCollectionExtensions
     /// <param name="services">
     ///     The <see cref="IServiceCollection"/> instance.
     /// </param>
-    /// <param name="configuration">
-    ///     The <see cref="IConfiguration"/> instance.
-    /// </param>
-    /// <param name="jwtSectionName">
-    ///     The name of the JWT configuration section.
+    /// <param name="jwtOptions">
+    ///     The JWT options.
     /// </param>
     /// 
     /// <returns>
     ///     The <see cref="IServiceCollection"/> instance with added authentication.
     /// </returns>
-    /// <exception cref="InvalidOperationException">
-    ///     Thrown if <see cref="JwtOptions"/> configuration section is missing.
-    /// </exception>
     public static IServiceCollection AddCommonAuthentication(
         this IServiceCollection services,
-        IConfiguration configuration,
-        string jwtSectionName
+        JwtOptions jwtOptions
     )
     {
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                var jwtOptions = configuration
-                    .GetSection(jwtSectionName)
-                    .Get<JwtOptions>()
-                    ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
-
                 options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidIssuer = jwtOptions.Issuer,
                     ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtOptions.Key)
-                    ),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
                     ValidateIssuer = true,
                     ValidateAudience = false,
                     ValidateLifetime = true,
@@ -65,5 +51,33 @@ public static class ServiceCollectionExtensions
             });
 
         return services;
+    }
+
+    /// <summary>
+    ///     <inheritdoc cref="AddCommonAuthentication(IServiceCollection, JwtOptions)"/>
+    /// </summary>
+    /// 
+    /// <param name="services">
+    ///     The <see cref="IServiceCollection"/> instance.
+    /// </param>
+    /// 
+    /// <param name="jwtConfiguration">
+    ///     The configuration section that can be mapped to <see cref="JwtOptions"/> object.
+    /// </param>
+    /// <returns>
+    ///     The <see cref="IServiceCollection"/> instance with added authentication.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    ///     Thrown if <see cref="JwtOptions"/> configuration section is missing.
+    /// </exception>
+    public static IServiceCollection AddCommonAuthentication(
+        this IServiceCollection services,
+        IConfigurationSection jwtConfiguration
+    )
+    {
+        var jwtOptions = jwtConfiguration.Get<JwtOptions>()
+            ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
+
+        return services.AddCommonAuthentication(jwtOptions);
     }
 }
