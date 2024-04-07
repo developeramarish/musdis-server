@@ -3,26 +3,26 @@ using System.Security.Claims;
 using System.Text;
 
 using Musdis.IdentityService.Requests;
-using Musdis.IdentityService.Options;
 
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Musdis.IdentityService.Options;
 
 namespace Musdis.IdentityService.Services.Jwt;
 
 /// <inheritdoc cref="IJwtGenerator"/>
 public class JwtGenerator : IJwtGenerator
 {
-    private readonly JwtOptions _jwtOptions;
+    private readonly JwtConfigurationOptions _jwtConfigurationOptions;
     private readonly TimeProvider _timeProvider;
     private readonly SymmetricSecurityKey _securityKey;
 
-    public JwtGenerator(IOptions<JwtOptions> options, TimeProvider timeProvider)
+    public JwtGenerator(IOptions<JwtConfigurationOptions> options, TimeProvider timeProvider)
     {
-        _jwtOptions = options.Value;
+        _jwtConfigurationOptions = options.Value;
         _timeProvider = timeProvider;
 
-        _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+        _securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfigurationOptions.Security.Key));
     }
 
     /// <inheritdoc cref="IJwtGenerator.GenerateToken(GenerateJwtRequest)"/>
@@ -41,11 +41,11 @@ public class JwtGenerator : IJwtGenerator
         claims.AddRange(request.CustomClaims);
 
         var localExpires = _timeProvider.GetLocalNow().DateTime
-            .AddMinutes(_jwtOptions.TokenLifetimeMinutes);
+            .AddMinutes(_jwtConfigurationOptions.Settings.TokenLifetimeMinutes);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Issuer = _jwtOptions.Issuer,
+            Issuer = _jwtConfigurationOptions.Security.Issuer,
             Subject = new ClaimsIdentity(claims),
             Expires = localExpires.ToUniversalTime(),
             SigningCredentials = credentials,
