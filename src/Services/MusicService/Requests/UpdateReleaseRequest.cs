@@ -13,8 +13,8 @@ namespace Musdis.MusicService.Requests;
 /// <param name="ReleaseDate">
 ///     An updated release date.
 /// </param>
-/// <param name="CoverUrl">
-///     A new URL of release cover.
+/// <param name="CoverFile">
+///     A new file of cover of the release.
 /// </param>
 /// <param name="ArtistIds">
 ///     An updated collection of artists of the release.
@@ -23,6 +23,6 @@ public sealed record UpdateReleaseRequest(
     string? Name,
     string? ReleaseTypeSlug,
     string? ReleaseDate,
-    string? CoverUrl,
+    FileDetails? CoverFile,
     IEnumerable<Guid>? ArtistIds
 );

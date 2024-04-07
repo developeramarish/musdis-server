@@ -1,8 +1,4 @@
-using System.Data;
-
 using FluentValidation;
-
-using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Requests;
@@ -24,6 +20,9 @@ public class CreateTrackRequestValidator : AbstractValidator<CreateTrackRequest>
             .WithMessage(
                 x => $"Cannot create Track with ReleaseId = {{{x.ReleaseId}}}, Release it is not found."
             );
+
+        RuleFor(x => x.AudioFile)
+            .Must(x => RuleHelpers.BeValidUrl(x.Url));
 
         RuleFor(x => x.ArtistIds)
             .MustAsync((ids, cancel) =>

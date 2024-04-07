@@ -12,6 +12,9 @@ namespace Musdis.MusicService.Requests;
 /// <param name="ReleaseId">
 ///     An identifier of the new <see cref="Release"/> to which the track is attached.
 /// </param>
+/// <param name="AudioFile">
+///     A new file of the <see cref="Track"/>
+/// </param>
 /// <param name="ArtistIds">
 ///     An updated collection of artists created this <see cref="Track"/>.
 /// </param>
@@ -21,6 +24,7 @@ namespace Musdis.MusicService.Requests;
 public sealed record UpdateTrackRequest(
     string? Title,
     Guid? ReleaseId,
+    FileDetails? AudioFile,
     IEnumerable<Guid>? ArtistIds,
     IEnumerable<string>? TagSlugs
 );

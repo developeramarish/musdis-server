@@ -26,6 +26,16 @@ public class Track
     public required string CreatorId { get; set; }
 
     /// <summary>
+    ///     The URL of the track.
+    /// </summary>
+    public required string AudioUrl { get; set; }
+
+    /// <summary>
+    ///     The identifier of the file from file service database.
+    /// </summary>
+    public required Guid AudioFileId { get; set; }
+
+    /// <summary>
     ///     The foreign key to <see cref="Models.Release"/> table.
     /// </summary>
     public required Guid ReleaseId { get; set; }

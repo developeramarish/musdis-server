@@ -10,11 +10,16 @@ public sealed class CreateReleaseRequestTrackInfoValidator : AbstractValidator<C
     public CreateReleaseRequestTrackInfoValidator(MusicServiceDbContext dbContext)
     {
         RuleFor(x => x.Title).NotEmpty();
-        RuleFor(x => x.TagSlugs).MustAsync((slugs, cancel) => 
+        RuleFor(x => x.TagSlugs).MustAsync((slugs, cancel) =>
             RuleHelpers.BeExistingTagSlugsAsync(slugs, dbContext, cancel)
         );
         RuleFor(x => x.ArtistIds)
-            .MustAsync((ids, cancel) => RuleHelpers.BeExistingArtistIdsAsync(ids!, dbContext, cancel))
+            .MustAsync((ids, cancel) =>
+                RuleHelpers.BeExistingArtistIdsAsync(ids!, dbContext, cancel)
+            )
             .When(x => x.ArtistIds is not null);
+
+        RuleFor(x => x.AudioFile)
+            .Must(x => RuleHelpers.BeValidUrl(x.Url));
     }
 }

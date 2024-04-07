@@ -15,8 +15,6 @@ public sealed class UpdateReleaseRequestValidator : AbstractValidator<UpdateRele
 
         RuleFor(x => x.Name).NotEmpty().When(x => x.Name is not null);
 
-        RuleFor(x => x.CoverUrl).NotEmpty().When(x => x.CoverUrl is not null);
-
         RuleFor(x => x.ReleaseDate)
             .Must(str => RuleHelpers.BeDateString(str!))
             .When(x => x.ReleaseDate is not null);
@@ -33,5 +31,9 @@ public sealed class UpdateReleaseRequestValidator : AbstractValidator<UpdateRele
                 RuleHelpers.BeExistingArtistIdsAsync(ids!, dbContext, cancel)
             )
             .When(x => x.ArtistIds is not null);
+
+        RuleFor(x => x.CoverFile)
+            .Must(x => RuleHelpers.BeValidUrl(x!.Url))
+            .When(x => x.CoverFile is not null);
     }
 }

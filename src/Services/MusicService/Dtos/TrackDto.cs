@@ -18,6 +18,9 @@ namespace Musdis.MusicService.Dtos;
 /// <param name="Slug">
 ///     The slug of the track.
 /// </param>
+/// <param name="AudioUrl">
+///     The audio URL of the track.
+/// </param>
 /// <param name="Release">
 ///     The release information for the track.
 /// </param>
@@ -31,6 +34,7 @@ public sealed record TrackDto(
     Guid Id,
     string Title,
     string Slug,
+    string AudioUrl,
     TrackDto.ReleaseInfo Release,
     IEnumerable<TagDto> Tags,
     IEnumerable<ArtistDto> Artists
@@ -67,6 +71,7 @@ public sealed record TrackDto(
             track.Id,
             track.Title,
             track.Slug,
+            track.AudioUrl,
             ReleaseInfo.FromRelease(track.Release),
             TagDto.FromTags(track.Tags),
             ArtistDto.FromArtists(track.Artists)

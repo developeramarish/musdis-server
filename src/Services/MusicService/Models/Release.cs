@@ -46,6 +46,11 @@ public class Release
     public required string CoverUrl { get; set; }
 
     /// <summary>
+    ///     The identifier of the file from file service database.
+    /// </summary>
+    public required Guid CoverFileId { get; set; }
+
+    /// <summary>
     ///     A collection of <see cref="Artist"/>s participated in creation of this <see cref="Track"/>.
     /// </summary>
     public ICollection<Artist>? Artists { get; set; }

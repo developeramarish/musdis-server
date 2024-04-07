@@ -42,8 +42,8 @@ public sealed class TrackService : ITrackService
     }
 
     public async Task<Result<Track>> CreateForReleaseAsync(
-        CreateReleaseRequest.TrackInfo trackInfo, 
-        Release release, 
+        CreateReleaseRequest.TrackInfo trackInfo,
+        Release release,
         CancellationToken cancellationToken
     )
     {
@@ -64,7 +64,7 @@ public sealed class TrackService : ITrackService
                 validationResult.Errors.Select(f => f.ErrorMessage)
             ).ToValueResult<Track>();
         }
-        
+
         var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Track>(
             trackInfo.Title,
             cancellationToken
@@ -82,12 +82,14 @@ public sealed class TrackService : ITrackService
             Slug = slugResult.Value,
             ReleaseId = release.Id,
             CreatorId = userId,
+            AudioUrl = trackInfo.AudioFile.Url,
+            AudioFileId = trackInfo.AudioFile.Id
         };
 
         var artistIds = trackInfo.ArtistIds;
         if (artistIds is null)
         {
-            if (release.Artists is null) 
+            if (release.Artists is null)
             {
                 await _dbContext.Entry(release).Collection(r => r.Artists!).LoadAsync(cancellationToken);
             }
@@ -99,7 +101,7 @@ public sealed class TrackService : ITrackService
         {
             return addArtistsResult.Error.ToValueResult<Track>();
         }
-        
+
         var addTagsResult = await AddTrackTagsAsync(track, trackInfo.TagSlugs, cancellationToken);
         if (addTagsResult.IsFailure)
         {
@@ -154,6 +156,8 @@ public sealed class TrackService : ITrackService
             Slug = slugResult.Value,
             ReleaseId = request.ReleaseId,
             CreatorId = userId,
+            AudioUrl = request.AudioFile.Url,
+            AudioFileId = request.AudioFile.Id
         };
 
         var addArtistsResult = await AddTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
@@ -190,7 +194,7 @@ public sealed class TrackService : ITrackService
                 .ToListAsync(cancellationToken);
 
             track.Tags = [];
-            foreach(var tag in tags)
+            foreach (var tag in tags)
             {
                 track.Tags.Add(tag);
             }

@@ -13,8 +13,8 @@ namespace Musdis.MusicService.Requests;
 /// <param name="ReleaseDate">
 ///     Release date as string. 
 /// </param>
-/// <param name="CoverUrl">
-///     A URL to the cover image.
+/// <param name="CoverFile">
+///     The cover image of the <see cref="Models.Release"/>.
 /// </param>
 /// <param name="ArtistIds">
 ///     A collection of identifiers of artists participated in this release. 
@@ -26,7 +26,7 @@ public sealed record CreateReleaseRequest(
     string Name,
     string ReleaseTypeSlug,
     string ReleaseDate,
-    string CoverUrl,
+    FileDetails CoverFile,
     IEnumerable<Guid> ArtistIds,
     IEnumerable<CreateReleaseRequest.TrackInfo> Tracks
 )
@@ -44,11 +44,15 @@ public sealed record CreateReleaseRequest(
     /// <param name="TagSlugs">
     ///     A collection of slugs of this track.
     /// </param>
+    /// <param name="AudioFile">
+    ///     A file of the track.
+    /// </param>
     /// <param name="ArtistIds">
     ///     A collection of artists participated in creation of this track.
     /// </param>
     public sealed record TrackInfo(
         string Title,
+        FileDetails AudioFile,
         IEnumerable<string> TagSlugs,
         IEnumerable<Guid>? ArtistIds = null
     );

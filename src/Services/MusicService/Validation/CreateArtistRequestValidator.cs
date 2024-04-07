@@ -24,6 +24,10 @@ public class CreateArtistRequestValidator : AbstractValidator<CreateArtistReques
             .WithErrorCode(ErrorCodes.NonUniqueData)
             .WithMessage("Artist name must be unique.");
 
+        RuleFor(x => x.CoverFile)
+            .Must(x => RuleHelpers.BeValidUrl(x.Url))
+            .When(x => x.CoverFile.Id != Guid.Empty);
+
         RuleFor(x => x.ArtistTypeSlug)
             .NotEmpty()
             .MustAsync((slug, cancel) =>

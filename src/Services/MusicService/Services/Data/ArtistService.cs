@@ -2,8 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 
 using FluentValidation;
 
+using MassTransit;
+
 using Microsoft.EntityFrameworkCore;
 
+using Musdis.MessageBrokerHelpers.Events;
 using Musdis.MusicService.Data;
 using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Models;
@@ -99,7 +102,8 @@ public sealed class ArtistService : IArtistService
             Name = request.Name,
             ArtistTypeId = artistType.Id,
             Slug = slugResult.Value,
-            CoverUrl = request.CoverUrl,
+            CoverUrl = request.CoverFile.Url,
+            CoverFileId = request.CoverFile.Id,
             CreatorId = userId,
             ArtistUsers = []
         };
@@ -176,7 +180,11 @@ public sealed class ArtistService : IArtistService
             artist.ArtistTypeId = artistType.Id;
         }
 
-        artist.CoverUrl = request.CoverUrl ?? artist.CoverUrl;
+        if (request.CoverFile is not null)
+        {
+            artist.CoverUrl = request.CoverFile.Url;
+            artist.CoverFileId = request.CoverFile.Id;
+        }
         if (request.Name is not null)
         {
             var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Artist>(

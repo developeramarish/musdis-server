@@ -29,7 +29,8 @@ public class CreateReleaseRequestValidator : AbstractValidator<CreateReleaseRequ
             .NotEmpty()
             .Must(RuleHelpers.BeDateString);
 
-        RuleFor(x => x.CoverUrl).NotEmpty();
+        RuleFor(x => x.CoverFile)
+            .Must(x => RuleHelpers.BeValidUrl(x.Url));
 
         RuleFor(x => x.ArtistIds)
             .MustAsync((ids, cancel) =>

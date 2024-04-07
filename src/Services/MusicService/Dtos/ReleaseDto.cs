@@ -115,6 +115,9 @@ public sealed record ReleaseDto(
     /// <param name="Slug">
     ///     The slug of the track.
     /// </param>
+    /// <param name="AudioUrl">
+    ///     The audio URL of the track.
+    /// </param>
     /// <param name="Tags">
     ///     The collection of tags associated with the track.
     /// </param>
@@ -125,6 +128,7 @@ public sealed record ReleaseDto(
         Guid Id,
         string Title,
         string Slug,
+        string AudioUrl,
         IEnumerable<TagDto> Tags,
         IEnumerable<ArtistDto> Artists
     )
@@ -160,6 +164,7 @@ public sealed record ReleaseDto(
                 track.Id,
                 track.Title,
                 track.Slug,
+                track.AudioUrl,
                 TagDto.FromTags(track.Tags),
                 ArtistDto.FromArtists(track.Artists)
             );

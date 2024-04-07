@@ -1,7 +1,5 @@
 namespace Musdis.MusicService.Models;
 
-// TODO add image urls.
-
 /// <summary>
 ///     Represents musicians, bands or other type of songwriters.
 /// </summary>
@@ -31,6 +29,11 @@ public class Artist
     ///     A URL to the cover of the <see cref="Artist"/>.
     /// </summary>
     public required string CoverUrl { get; set; }
+
+    /// <summary>
+    ///     The identifier of the file from file service database.
+    /// </summary>
+    public required Guid CoverFileId { get; set; }
 
     /// <summary>
     ///     The foreign key to <see cref="Models.ArtistType"/> table.

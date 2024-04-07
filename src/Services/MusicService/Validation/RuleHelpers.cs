@@ -77,4 +77,9 @@ public static class RuleHelpers
 
         return existingCount == tagSlugs.Count();
     }
+
+    public static bool BeValidUrl(string value)
+    {
+        return Uri.TryCreate(value, UriKind.Absolute, out _);
+    }
 }

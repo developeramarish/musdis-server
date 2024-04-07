@@ -10,8 +10,8 @@ namespace Musdis.MusicService.Requests;
 /// <param name="ArtistTypeSlug">
 ///     A slug of changed <see cref="Models.ArtistType"/>.
 /// </param>
-/// <param name="CoverUrl">
-///     A new URL to the cover image of the <see cref="Models.Artist"/>.
+/// <param name="CoverFile">
+///     A new file of <see cref="Models.Artist"/>
 /// </param>
 /// <param name="UserIds">
 ///     A new collection of user identifiers related with this <see cref="Models.Artist"/>.
@@ -19,6 +19,6 @@ namespace Musdis.MusicService.Requests;
 public sealed record UpdateArtistRequest(
     string? Name,
     string? ArtistTypeSlug,
-    string? CoverUrl,
+    FileDetails? CoverFile,
     IEnumerable<string>? UserIds
 );

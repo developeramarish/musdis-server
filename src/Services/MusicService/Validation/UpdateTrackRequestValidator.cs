@@ -33,5 +33,9 @@ public class UpdateTrackRequestValidator : AbstractValidator<UpdateTrackRequest>
             .MustAsync((ids, cancel) => RuleHelpers.BeExistingArtistIdsAsync(ids!, dbContext, cancel))
             .When(x => x.ArtistIds is not null)
             .WithMessage("Provided artist ids should be in database");
+
+        RuleFor(x => x.AudioFile)
+            .Must(x => RuleHelpers.BeValidUrl(x!.Url))
+            .When(x => x.AudioFile is not null);
     }
 }

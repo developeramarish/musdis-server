@@ -90,10 +90,11 @@ public sealed class ReleaseService : IReleaseService
             ReleaseTypeId = releaseType.Id,
             Slug = slugResult.Value,
             ReleaseDate = DateTime.SpecifyKind(
-                DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture), 
+                DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture),
                 DateTimeKind.Utc
             ),
-            CoverUrl = request.CoverUrl,
+            CoverUrl = request.CoverFile.Url,
+            CoverFileId = request.CoverFile.Id,
             CreatorId = userId
         };
 
@@ -195,7 +196,11 @@ public sealed class ReleaseService : IReleaseService
             release.ReleaseDate = DateTime.Parse(request.ReleaseDate, CultureInfo.InvariantCulture);
         }
 
-        release.CoverUrl = request.CoverUrl ?? release.CoverUrl;
+        if (request.CoverFile is not null)
+        {
+            release.CoverUrl = request.CoverFile.Url;
+            release.CoverFileId = request.CoverFile.Id;
+        }
         if (request.ArtistIds is not null)
         {
             var updateArtistsResult = await UpdateReleaseArtistsAsync(
