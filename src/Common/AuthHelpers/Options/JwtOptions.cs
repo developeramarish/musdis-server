@@ -8,15 +8,15 @@ public sealed class JwtOptions
     /// <summary>
     ///     The JWT issuer.
     /// </summary>
-    public required string Issuer { get; set; }
+    public required string Issuer { get; init; }
 
     /// <summary>
     ///     The JWT audience.
     /// </summary>
-    public required string Audience { get; set; }
+    public required string Audience { get; init; }
 
     /// <summary>
     ///     The JWT signing key.
     /// </summary>
-    public required string Key { get; set; }
+    public required string Key { get; init; }
 }
