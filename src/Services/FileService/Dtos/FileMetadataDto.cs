@@ -7,7 +7,8 @@ public sealed record FileMetadataDto(
     Guid Id,
     string Path,
     string Url,
-    string FileType
+    string FileType,
+    bool IsUsed
 )
 {
     /// <summary>
@@ -33,7 +34,8 @@ public sealed record FileMetadataDto(
             fileMetadata.Id,
             fileMetadata.Path,
             fileMetadata.Url,
-            fileMetadata.FileType
+            fileMetadata.FileType,
+            fileMetadata.IsUsed
         );
     }
 

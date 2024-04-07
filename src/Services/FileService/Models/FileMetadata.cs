@@ -24,4 +24,9 @@ public sealed class FileMetadata
     ///     The type of the file.
     /// </summary>
     public required string FileType { get; set; }
+
+    /// <summary>
+    ///     Indicates if the file is used.
+    /// </summary>
+    public required bool IsUsed { get; set; }
 }

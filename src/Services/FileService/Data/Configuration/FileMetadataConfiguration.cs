@@ -21,6 +21,8 @@ public sealed class FileMetadataConfiguration : IEntityTypeConfiguration<FileMet
         
         builder.Property(x => x.FileType).IsRequired();
 
+        builder.HasIndex(x => x.Url);
+
         builder.HasKey(x => x.Id);
     }
 }
