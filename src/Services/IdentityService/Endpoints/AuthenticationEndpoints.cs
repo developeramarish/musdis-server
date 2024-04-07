@@ -4,6 +4,7 @@ using Musdis.IdentityService.Services.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Musdis.ResponseHelpers.Errors;
 using Musdis.ResponseHelpers.Extensions;
+using Musdis.IdentityService.Authorization;
 
 namespace Musdis.IdentityService.Endpoints;
 
@@ -27,58 +28,65 @@ public static class AuthenticationEndpoints
         this RouteGroupBuilder groupBuilder
     )
     {
-        groupBuilder.MapPost("/sign-in", async (
-            [FromBody] SignInRequest request,
-            [FromServices] IAuthenticationService authenticationService,
-            HttpContext context,
-            CancellationToken cancellationToken
-        ) =>
-        {
-            var result = await authenticationService.SignInAsync(request, cancellationToken);
+        groupBuilder.MapPost("/sign-in", HandleSignInAsync);
 
-            if (result.IsSuccess)
-            {
-                return Results.Ok(result.Value);
-            }
+        groupBuilder.MapPost("/sign-up", HandleSignUpAsync);
 
-            return result.Error.ToHttpResult(context.Request.Path);
-        });
-
-        groupBuilder.MapPost("/sign-up", async (
-            [FromBody] SignUpRequest request,
-            [FromServices] IAuthenticationService authenticationService,
-            HttpContext context,
-            CancellationToken cancellationToken
-        ) =>
-        {
-            var result = await authenticationService.SignUpAsync(request, cancellationToken);
-
-            if (result.IsSuccess)
-            {
-                return Results.Ok(result.Value);
-            }
-
-            return result.Error.ToHttpResult(context.Request.Path);
-        });
-
-        groupBuilder.MapPost("/sign-admin-up", async (
-            [FromBody] SignUpRequest request,
-            [FromServices] IAuthenticationService authenticationService,
-            HttpContext context,
-            CancellationToken cancellationToken
-        ) =>
-        {
-            var result = await authenticationService.SignAdminUpAsync(request, cancellationToken);
-
-            if (result.IsSuccess)
-            {
-                return Results.Ok(result.Value);
-            }
-
-            return result.Error.ToHttpResult(context.Request.Path);
-        });
+        groupBuilder.MapPost("/sign-admin-up", HandleSignAdminUpAsync)
+            .RequireAuthorization(AuthorizationPolicies.Admin);
 
         return groupBuilder;
+    }
+
+    private static async Task<IResult> HandleSignInAsync(
+        [FromBody] SignInRequest request,
+        [FromServices] IAuthenticationService authenticationService,
+        HttpContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await authenticationService.SignInAsync(request, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return Results.Ok(result.Value);
+        }
+
+        return result.Error.ToHttpResult(context.Request.Path);
+    }
+
+    private static async Task<IResult> HandleSignUpAsync(
+        [FromBody] SignUpRequest request,
+        [FromServices] IAuthenticationService authenticationService,
+        HttpContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await authenticationService.SignUpAsync(request, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return Results.Ok(result.Value);
+        }
+
+        return result.Error.ToHttpResult(context.Request.Path);
+    }
+
+    private static async Task<IResult> HandleSignAdminUpAsync(
+        [FromBody] SignUpRequest request,
+        [FromServices] IAuthenticationService authenticationService,
+        HttpContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await authenticationService.SignAdminUpAsync(request, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            return Results.Ok(result.Value);
+        }
+
+        return result.Error.ToHttpResult(context.Request.Path);
     }
 }
 

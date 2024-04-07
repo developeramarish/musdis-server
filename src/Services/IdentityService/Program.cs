@@ -1,23 +1,23 @@
-using System.Text;
-
 using FluentValidation;
 
+using Musdis.AuthHelpers.Extensions;
+
 using Musdis.IdentityService.Data;
+using Musdis.IdentityService.Endpoints;
 using Musdis.IdentityService.Requests;
 using Musdis.IdentityService.Models;
 using Musdis.IdentityService.Options;
 using Musdis.IdentityService.Services.Exceptions;
 using Musdis.IdentityService.Services.Authentication;
 using Musdis.IdentityService.Services.Jwt;
+using Musdis.IdentityService.Services.Grpc;
 using Musdis.IdentityService.Validation;
-using Musdis.IdentityService.Endpoints;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Musdis.IdentityService.Services.Grpc;
+using Musdis.IdentityService.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +37,8 @@ builder.Services.AddProblemDetails();
 
 // Options
 
-builder.Services.AddOptions<JwtOptions>()
-    .Bind(builder.Configuration.GetSection(JwtOptions.Jwt))
+builder.Services.AddOptions<JwtConfigurationOptions>()
+    .Bind(builder.Configuration.GetSection(JwtConfigurationOptions.Jwt))
     .ValidateOnStart();
 builder.Services.AddOptions<IdentityConfigOptions>()
     .Bind(builder.Configuration.GetSection(IdentityConfigOptions.Identity))
@@ -71,32 +71,16 @@ builder.Services
     .AddSignInManager<SignInManager<User>>()
     .AddEntityFrameworkStores<IdentityServiceDbContext>();
 
-// Authentication
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+// Authentication and authorization
+builder.Services.AddCommonAuthentication(builder.Configuration.GetSection("Jwt:Security"));
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.Admin, policy =>
     {
-        var jwtOptions = builder.Configuration
-            .GetSection(JwtOptions.Jwt)
-            .Get<JwtOptions>()
-            ?? throw new InvalidOperationException("A JwtOptions configuration section is missing.");
-
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidIssuer = jwtOptions.Issuer,
-            ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtOptions.Key)
-            ),
-            ValidateIssuer = true,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-        };
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new AdminRequirement());
     });
+builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>();
 
-builder.Services.AddAuthorization();
 
 // Other
 builder.Services.AddGrpc();
@@ -139,9 +123,8 @@ app.UseAuthorization();
 
 app.MapGrpcService<UserGrpcService>();
 
-app.MapGroup("/api/authentication")
-    .MapAuthentication();
-app.MapGroup("/api/users")
+app.MapGroup("/").MapAuthentication();
+app.MapGroup("/users")
     .MapUsers();
 
 app.Run();
