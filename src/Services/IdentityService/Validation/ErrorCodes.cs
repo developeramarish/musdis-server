@@ -1,7 +1,7 @@
 namespace Musdis.IdentityService.Validation;
 
 /// <summary>
-///     Error cordes for validators.
+///     Error codes for validators.
 /// </summary>
 public static class ErrorCodes
 {
