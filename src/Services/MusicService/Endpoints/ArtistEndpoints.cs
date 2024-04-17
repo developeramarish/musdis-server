@@ -152,9 +152,9 @@ public static class ArtistEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        await publishEndpoint.Publish(new FileUsed(createResult.Value.CoverFileId));
+        await publishEndpoint.Publish(new FileUsed(request.CoverFile.Id));
 
-        var dto = ArtistDto.FromArtist(createResult.Value);
+        var dto = createResult.Value;
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }
@@ -202,7 +202,7 @@ public static class ArtistEndpoints
         }
         if (request.CoverFile is not null)
         {
-            await publishEndpoint.Publish(new FileUsed(updateResult.Value.CoverFileId));
+            await publishEndpoint.Publish(new FileUsed(request.CoverFile.Id));
         }
 
         return Results.NoContent();

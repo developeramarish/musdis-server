@@ -112,7 +112,7 @@ public static class ArtistTypeEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        var dto = ArtistTypeDto.FromArtistType(createResult.Value);
+        var dto = createResult.Value;
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }

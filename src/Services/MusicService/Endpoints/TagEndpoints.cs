@@ -135,7 +135,7 @@ public static class TagEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        var dto = TagDto.FromTag(createResult.Value);
+        var dto = createResult.Value;
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }

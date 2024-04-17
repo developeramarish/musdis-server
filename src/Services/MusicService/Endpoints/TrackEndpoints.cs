@@ -144,7 +144,7 @@ public static class TrackEndpoints
 
         await publishEndpoint.Publish(new FileUsed(request.AudioFile.Id));
 
-        var dto = TrackDto.FromTrack(createResult.Value);
+        var dto = createResult.Value;
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }

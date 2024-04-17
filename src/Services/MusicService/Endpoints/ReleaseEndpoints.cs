@@ -163,7 +163,7 @@ public static class ReleaseEndpoints
 
         await publishEndpoint.Publish(new FileUsed(request.CoverFile.Id));
 
-        var dto = ReleaseDto.FromRelease(createResult.Value);
+        var dto = createResult.Value;
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }

@@ -112,7 +112,7 @@ public static class ReleaseTypeEndpoints
             return saveResult.Error.ToHttpResult(context.Request.Path);
         }
 
-        var dto = ReleaseTypeDto.FromReleaseType(createResult.Value);
+        var dto = createResult.Value;
 
         return Results.Created($"{context.Request.Path}/{dto.Id}", dto);
     }
