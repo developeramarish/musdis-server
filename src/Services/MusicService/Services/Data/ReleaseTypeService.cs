@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Utils;
@@ -33,7 +34,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
         _updateRequestValidator = updateRequestValidator;
     }
 
-    public async Task<Result<ReleaseType>> CreateAsync(
+    public async Task<Result<ReleaseTypeDto>> CreateAsync(
         CreateReleaseTypeRequest request,
         CancellationToken cancellationToken = default
     )
@@ -45,7 +46,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
         {
             return new ConflictError(
                 $"Release type with Name = {{{request.Name}}} exists"
-            ).ToValueResult<ReleaseType>();
+            ).ToValueResult<ReleaseTypeDto>();
         }
 
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
@@ -54,14 +55,14 @@ public sealed class ReleaseTypeService : IReleaseTypeService
             return new ValidationError(
                 "Could not create an ReleaseType, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<ReleaseType>();
+            ).ToValueResult<ReleaseTypeDto>();
         }
 
         var slugResult = _slugGenerator.Generate(request.Name);
 
         if (slugResult.IsFailure)
         {
-            return slugResult.Error.ToValueResult<ReleaseType>();
+            return slugResult.Error.ToValueResult<ReleaseTypeDto>();
         }
 
         var releaseType = new ReleaseType
@@ -73,7 +74,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
 
         await _dbContext.ReleaseTypes.AddAsync(releaseType, cancellationToken);
 
-        return releaseType.ToValueResult();
+        return ReleaseTypeDto.FromReleaseType(releaseType).ToValueResult();
     }
 
     public async Task<Result> DeleteAsync(Guid releaseTypeId, CancellationToken cancellationToken = default)
@@ -93,7 +94,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
         return Result.Success();
     }
 
-    public async Task<Result<ReleaseType>> UpdateAsync(
+    public async Task<Result<ReleaseTypeDto>> UpdateAsync(
         Guid releaseTypeId,
         UpdateReleaseTypeRequest request,
         CancellationToken cancellationToken = default
@@ -106,7 +107,7 @@ public sealed class ReleaseTypeService : IReleaseTypeService
         {
             return new NotFoundError(
                 $"Cannot update ReleaseType, content with Id = {{{releaseTypeId}}} not found."
-            ).ToValueResult<ReleaseType>();
+            ).ToValueResult<ReleaseTypeDto>();
         }
 
         var validationResult = await _updateRequestValidator.ValidateAsync(request, cancellationToken);
@@ -115,20 +116,20 @@ public sealed class ReleaseTypeService : IReleaseTypeService
             return new ValidationError(
                 "Could not update an ReleaseType, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<ReleaseType>();
+            ).ToValueResult<ReleaseTypeDto>();
         }
 
 
         var slugResult = _slugGenerator.Generate(request.Name);
         if (slugResult.IsFailure)
         {
-            return slugResult.Error.ToValueResult<ReleaseType>();
+            return slugResult.Error.ToValueResult<ReleaseTypeDto>();
         }
 
         releaseType.Name = request.Name;
         releaseType.Slug = slugResult.Value;
 
-        return releaseType.ToValueResult();
+        return ReleaseTypeDto.FromReleaseType(releaseType).ToValueResult();
     }
 
     public IQueryable<ReleaseType> GetQueryable()

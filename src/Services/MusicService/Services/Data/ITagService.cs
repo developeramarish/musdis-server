@@ -1,3 +1,4 @@
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.OperationResults;
@@ -27,7 +28,7 @@ public interface ITagService
     ///     A task representing asynchronous operation. The task result contains 
     ///     <see cref="Result{TValue}"/> of an operation with created <see cref="Tag"/> value.
     /// </returns>
-    Task<Result<Tag>> CreateAsync(
+    Task<Result<TagDto>> CreateAsync(
         CreateTagRequest request,
         CancellationToken cancellationToken = default
     );
@@ -53,7 +54,7 @@ public interface ITagService
     ///     A task representing asynchronous operation. The task result contains 
     ///     <see cref="Result{TValue}"/> of an operation with updated <see cref="Tag"/> value.
     /// </returns>
-    Task<Result<Tag>> UpdateAsync(
+    Task<Result<TagDto>> UpdateAsync(
         Guid id,
         UpdateTagRequest request,
         CancellationToken cancellationToken = default

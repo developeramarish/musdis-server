@@ -1,3 +1,4 @@
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.OperationResults;
@@ -27,7 +28,7 @@ public interface IReleaseTypeService
     ///     A task representing asynchronous operation. The task result contains 
     ///     <see cref="Result{TValue}"/> of an operation with created <see cref="ReleaseType"/> object.
     /// </returns>
-    Task<Result<ReleaseType>> CreateAsync(
+    Task<Result<ReleaseTypeDto>> CreateAsync(
         CreateReleaseTypeRequest request,
         CancellationToken cancellationToken = default
     );
@@ -53,7 +54,7 @@ public interface IReleaseTypeService
     ///     A task representing asynchronous operation. The task result contains 
     ///     <see cref="Result{TValue}"/> of an operation with updated <see cref="ReleaseType"/> value.
     /// </returns>
-    Task<Result<ReleaseType>> UpdateAsync(
+    Task<Result<ReleaseTypeDto>> UpdateAsync(
         Guid releaseTypeId,
         UpdateReleaseTypeRequest request,
         CancellationToken cancellationToken = default

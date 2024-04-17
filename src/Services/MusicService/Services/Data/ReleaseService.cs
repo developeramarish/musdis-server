@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Exceptions;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
@@ -42,7 +43,7 @@ public sealed class ReleaseService : IReleaseService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Result<Release>> CreateAsync(
+    public async Task<Result<ReleaseDto>> CreateAsync(
         CreateReleaseRequest request,
         CancellationToken cancellationToken = default
     )
@@ -53,7 +54,7 @@ public sealed class ReleaseService : IReleaseService
         {
             return new UnauthorizedError(
                 "Cannot create a Release without a valid User"
-            ).ToValueResult<Release>();
+            ).ToValueResult<ReleaseDto>();
         }
 
         var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
@@ -62,7 +63,7 @@ public sealed class ReleaseService : IReleaseService
             return new ValidationError(
                 "Cannot create Release, incorrect data!",
                 validationResult.Errors.Select(e => e.ErrorMessage)
-            ).ToValueResult<Release>();
+            ).ToValueResult<ReleaseDto>();
         }
 
         var releaseType = await _dbContext.ReleaseTypes
@@ -72,7 +73,7 @@ public sealed class ReleaseService : IReleaseService
         {
             return new ValidationError(
                 "Cannot create Release, ReleaseTypeSlug is invalid."
-            ).ToValueResult<Release>();
+            ).ToValueResult<ReleaseDto>();
         }
 
         var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Release>(request.Name, cancellationToken);
@@ -80,7 +81,7 @@ public sealed class ReleaseService : IReleaseService
         {
             return new InternalServerError(
                 "Cannot generate slug for Release while creating."
-            ).ToValueResult<Release>();
+            ).ToValueResult<ReleaseDto>();
         }
 
         var release = new Release
@@ -101,22 +102,21 @@ public sealed class ReleaseService : IReleaseService
         var addArtistsResult = await AddReleaseArtistsAsync(release, request.ArtistIds, cancellationToken);
         if (addArtistsResult.IsFailure)
         {
-            return addArtistsResult.Error.ToValueResult<Release>();
+            return addArtistsResult.Error.ToValueResult<ReleaseDto>();
         }
 
         var addTracksResult = await AddReleaseTracksAsync(release, request.Tracks, cancellationToken);
         if (addTracksResult.IsFailure)
         {
-            return addTracksResult.Error.ToValueResult<Release>();
+            return addTracksResult.Error.ToValueResult<ReleaseDto>();
         }
 
         await _dbContext.Releases.AddAsync(release, cancellationToken);
 
         await _dbContext.Entry(release).Reference(r => r.ReleaseType).LoadAsync(cancellationToken);
-        await _dbContext.Entry(release).Collection(r => r.Artists!).LoadAsync(cancellationToken);
         await _dbContext.Entry(release).Collection(r => r.Tracks!).LoadAsync(cancellationToken);
 
-        return release.ToValueResult();
+        return ReleaseDto.FromRelease(release).ToValueResult();
     }
 
     public async Task<Result> DeleteAsync(
@@ -138,7 +138,7 @@ public sealed class ReleaseService : IReleaseService
         return Result.Success();
     }
 
-    public async Task<Result<Release>> UpdateAsync(
+    public async Task<Result<ReleaseDto>> UpdateAsync(
         Guid id,
         UpdateReleaseRequest request,
         CancellationToken cancellationToken = default
@@ -150,16 +150,19 @@ public sealed class ReleaseService : IReleaseService
             return new ValidationError(
                 "Cannot update release, incorrect data",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<Release>();
+            ).ToValueResult<ReleaseDto>();
         }
 
         var release = await _dbContext.Releases
+            .Include(r => r.ReleaseType)
+            .Include(r => r.Artists)
+            .Include(r => r.Tracks)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (release is null)
         {
             return new NotFoundError(
                 $"Release with Id = {{{id}}} is not found."
-            ).ToValueResult<Release>();
+            ).ToValueResult<ReleaseDto>();
         }
 
         if (request.Name is not null)
@@ -170,7 +173,7 @@ public sealed class ReleaseService : IReleaseService
             );
             if (slugResult.IsFailure)
             {
-                return slugResult.Error.ToValueResult<Release>();
+                return slugResult.Error.ToValueResult<ReleaseDto>();
             }
 
             release.Name = request.Name;
@@ -185,7 +188,7 @@ public sealed class ReleaseService : IReleaseService
             {
                 return new InternalServerError(
                     $"Cannot update Release, ReleaseType with Slug = {{{request.ReleaseTypeSlug}}} is not found."
-                ).ToValueResult<Release>();
+                ).ToValueResult<ReleaseDto>();
             }
 
             release.ReleaseTypeId = releaseType.Id;
@@ -210,11 +213,11 @@ public sealed class ReleaseService : IReleaseService
             );
             if (updateArtistsResult.IsFailure)
             {
-                return updateArtistsResult.Error.ToValueResult<Release>();
+                return updateArtistsResult.Error.ToValueResult<ReleaseDto>();
             }
         }
 
-        return release.ToValueResult();
+        return ReleaseDto.FromRelease(release).ToValueResult();
     }
 
     public IQueryable<Release> GetQueryable()

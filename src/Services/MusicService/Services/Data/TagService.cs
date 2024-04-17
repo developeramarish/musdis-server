@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Extensions;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
@@ -32,7 +33,7 @@ public sealed class TagService : ITagService
         _updateRequestValidator = updateRequestValidator;
         _slugGenerator = slugGenerator;
     }
-    public async Task<Result<Tag>> CreateAsync(
+    public async Task<Result<TagDto>> CreateAsync(
         CreateTagRequest request,
         CancellationToken cancellationToken = default
     )
@@ -42,7 +43,7 @@ public sealed class TagService : ITagService
         {
             return validationResult.Errors.ToError(
                 "Cannot create an Tag, incorrect data."
-            ).ToValueResult<Tag>();
+            ).ToValueResult<TagDto>();
         }
 
         var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Tag>(
@@ -51,7 +52,7 @@ public sealed class TagService : ITagService
         );
         if (slugResult.IsFailure)
         {
-            return slugResult.Error.ToValueResult<Tag>();
+            return slugResult.Error.ToValueResult<TagDto>();
         }
 
         var tag = new Tag
@@ -62,9 +63,9 @@ public sealed class TagService : ITagService
         };
         await _dbContext.Tags.AddAsync(tag, cancellationToken);
 
-        return tag.ToValueResult();
+        return TagDto.FromTag(tag).ToValueResult();
     }
-    public async Task<Result<Tag>> UpdateAsync(
+    public async Task<Result<TagDto>> UpdateAsync(
         Guid id,
         UpdateTagRequest request,
         CancellationToken cancellationToken = default
@@ -76,7 +77,7 @@ public sealed class TagService : ITagService
         {
             return new NotFoundError(
                 $"Cannot update tag, Tag with Id = {{{id}}} not found."
-            ).ToValueResult<Tag>();
+            ).ToValueResult<TagDto>();
         }
 
         var validationResult = await _updateRequestValidator.ValidateAsync(request, cancellationToken);
@@ -85,7 +86,7 @@ public sealed class TagService : ITagService
             return new ValidationError(
                 "Could not update a Tag, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<Tag>();
+            ).ToValueResult<TagDto>();
         }
 
         var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Tag>(
@@ -94,13 +95,13 @@ public sealed class TagService : ITagService
         );
         if (slugResult.IsFailure)
         {
-            return slugResult.Error.ToValueResult<Tag>();
+            return slugResult.Error.ToValueResult<TagDto>();
         }
 
         tag.Name = request.Name;
         tag.Slug = slugResult.Value;
 
-        return tag.ToValueResult();
+        return TagDto.FromTag(tag).ToValueResult();
     }
     public async Task<Result> DeleteAsync(Guid tagId, CancellationToken cancellationToken = default)
     {

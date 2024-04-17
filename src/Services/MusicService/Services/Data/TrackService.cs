@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 using Musdis.MusicService.Data;
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.MusicService.Services.Utils;
@@ -41,7 +42,7 @@ public sealed class TrackService : ITrackService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Result<Track>> CreateForReleaseAsync(
+    public async Task<Result<TrackDto>> CreateForReleaseAsync(
         CreateReleaseRequest.TrackInfo trackInfo,
         Release release,
         CancellationToken cancellationToken
@@ -53,7 +54,7 @@ public sealed class TrackService : ITrackService
         {
             return new UnauthorizedError(
                 "Cannot create a Track without a valid User"
-            ).ToValueResult<Track>();
+            ).ToValueResult<TrackDto>();
         }
 
         var validationResult = await _trackInfoValidator.ValidateAsync(trackInfo, cancellationToken);
@@ -62,7 +63,7 @@ public sealed class TrackService : ITrackService
             return new ValidationError(
                 "Could not create a Track, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<Track>();
+            ).ToValueResult<TrackDto>();
         }
 
         var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Track>(
@@ -72,7 +73,7 @@ public sealed class TrackService : ITrackService
 
         if (slugResult.IsFailure)
         {
-            return slugResult.Error.ToValueResult<Track>();
+            return slugResult.Error.ToValueResult<TrackDto>();
         }
 
         var track = new Track
@@ -99,25 +100,23 @@ public sealed class TrackService : ITrackService
         var addArtistsResult = await AddTrackArtistsAsync(track, artistIds, cancellationToken);
         if (addArtistsResult.IsFailure)
         {
-            return addArtistsResult.Error.ToValueResult<Track>();
+            return addArtistsResult.Error.ToValueResult<TrackDto>();
         }
 
         var addTagsResult = await AddTrackTagsAsync(track, trackInfo.TagSlugs, cancellationToken);
         if (addTagsResult.IsFailure)
         {
-            return addTagsResult.Error.ToValueResult<Track>();
+            return addTagsResult.Error.ToValueResult<TrackDto>();
         }
 
         await _dbContext.Tracks.AddAsync(track, cancellationToken);
 
         await _dbContext.Entry(track).Reference(t => t.Release).LoadAsync(cancellationToken);
-        await _dbContext.Entry(track).Collection(t => t.Artists!).LoadAsync(cancellationToken);
-        await _dbContext.Entry(track).Collection(t => t.Tags!).LoadAsync(cancellationToken);
 
-        return track.ToValueResult();
+        return TrackDto.FromTrack(track).ToValueResult();
     }
 
-    public async Task<Result<Track>> CreateAsync(
+    public async Task<Result<TrackDto>> CreateAsync(
         CreateTrackRequest request,
         CancellationToken cancellationToken = default
     )
@@ -128,7 +127,7 @@ public sealed class TrackService : ITrackService
         {
             return new UnauthorizedError(
                 "Cannot create a Track without a valid User"
-            ).ToValueResult<Track>();
+            ).ToValueResult<TrackDto>();
         }
 
         var validationResult = await _createRequestValidator.ValidateAsync(request, cancellationToken);
@@ -137,7 +136,7 @@ public sealed class TrackService : ITrackService
             return new ValidationError(
                 "Could not create a Track, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<Track>();
+            ).ToValueResult<TrackDto>();
         }
 
         var slugResult = await _slugGenerator.GenerateUniqueSlugAsync<Track>(
@@ -146,7 +145,7 @@ public sealed class TrackService : ITrackService
         );
         if (slugResult.IsFailure)
         {
-            return slugResult.Error.ToValueResult<Track>();
+            return slugResult.Error.ToValueResult<TrackDto>();
         }
 
         var track = new Track
@@ -163,22 +162,20 @@ public sealed class TrackService : ITrackService
         var addArtistsResult = await AddTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
         if (addArtistsResult.IsFailure)
         {
-            return addArtistsResult.Error.ToValueResult<Track>();
+            return addArtistsResult.Error.ToValueResult<TrackDto>();
         }
 
         var addTagsResult = await AddTrackTagsAsync(track, request.TagSlugs, cancellationToken);
         if (addTagsResult.IsFailure)
         {
-            return addTagsResult.Error.ToValueResult<Track>();
+            return addTagsResult.Error.ToValueResult<TrackDto>();
         }
 
         await _dbContext.Tracks.AddAsync(track, cancellationToken);
 
         await _dbContext.Entry(track).Reference(t => t.Release).LoadAsync(cancellationToken);
-        await _dbContext.Entry(track).Collection(t => t.Artists!).LoadAsync(cancellationToken);
-        await _dbContext.Entry(track).Collection(t => t.Tags!).LoadAsync(cancellationToken);
 
-        return track.ToValueResult();
+        return TrackDto.FromTrack(track).ToValueResult();
     }
 
     private async Task<Result> AddTrackTagsAsync(
@@ -251,7 +248,7 @@ public sealed class TrackService : ITrackService
         return Result.Success();
     }
 
-    public async Task<Result<Track>> UpdateAsync(
+    public async Task<Result<TrackDto>> UpdateAsync(
         Guid id,
         UpdateTrackRequest request,
         CancellationToken cancellationToken = default
@@ -263,7 +260,7 @@ public sealed class TrackService : ITrackService
             return new ValidationError(
                 "Could not create a Track, incorrect data!",
                 validationResult.Errors.Select(f => f.ErrorMessage)
-            ).ToValueResult<Track>();
+            ).ToValueResult<TrackDto>();
         }
 
         var track = await _dbContext.Tracks
@@ -274,7 +271,7 @@ public sealed class TrackService : ITrackService
         {
             return new NotFoundError(
                 $"Cannot update track with Id = {{{id}}}, it is not found."
-            ).ToValueResult<Track>();
+            ).ToValueResult<TrackDto>();
         }
 
         if (request.Title is not null)
@@ -285,7 +282,7 @@ public sealed class TrackService : ITrackService
             );
             if (slugResult.IsFailure)
             {
-                return slugResult.Error.ToValueResult<Track>();
+                return slugResult.Error.ToValueResult<TrackDto>();
             }
 
             track.Title = request.Title;
@@ -297,7 +294,7 @@ public sealed class TrackService : ITrackService
             var result = await UpdateTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
             if (result.IsFailure)
             {
-                return result.Error.ToValueResult<Track>();
+                return result.Error.ToValueResult<TrackDto>();
             }
         }
 
@@ -306,11 +303,11 @@ public sealed class TrackService : ITrackService
             var result = await UpdateTrackTagsAsync(track, request.TagSlugs, cancellationToken);
             if (result.IsFailure)
             {
-                return result.Error.ToValueResult<Track>();
+                return result.Error.ToValueResult<TrackDto>();
             }
         }
 
-        return track.ToValueResult();
+        return TrackDto.FromTrack(track).ToValueResult();
     }
 
     public IQueryable<Track> GetQueryable()

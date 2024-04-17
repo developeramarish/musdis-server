@@ -1,3 +1,4 @@
+using Musdis.MusicService.Dtos;
 using Musdis.MusicService.Models;
 using Musdis.MusicService.Requests;
 using Musdis.OperationResults;
@@ -27,7 +28,7 @@ public interface IArtistService
     ///     A task representing asynchronous operation. The task result contains 
     ///     <see cref="Result{TValue}"/> of an operation with created <see cref="Artist"/> value.
     /// </returns>
-    Task<Result<Artist>> CreateAsync(
+    Task<Result<ArtistDto>> CreateAsync(
         CreateArtistRequest request,
         CancellationToken cancellationToken = default
     );
@@ -53,7 +54,7 @@ public interface IArtistService
     ///     A task representing asynchronous operation. The task result contains 
     ///     <see cref="Result{TValue}"/> of an operation with updated <see cref="Artist"/> value.
     /// </returns>
-    Task<Result<Artist>> UpdateAsync(
+    Task<Result<ArtistDto>> UpdateAsync(
         Guid id,
         UpdateArtistRequest request,
         CancellationToken cancellationToken = default
