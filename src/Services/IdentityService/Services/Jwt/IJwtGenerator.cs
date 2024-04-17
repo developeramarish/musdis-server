@@ -1,5 +1,6 @@
 ﻿using Musdis.IdentityService.Dtos;
 using Musdis.IdentityService.Requests;
+using Musdis.OperationResults;
 
 namespace Musdis.IdentityService.Services.Jwt;
 
@@ -16,6 +17,8 @@ public interface IJwtGenerator
     ///     The request used to create the JWT.
     /// </param>
     /// 
-    /// <returns>The generated JWT as a string.</returns>
-    string GenerateToken(GenerateJwtRequest request);
+    /// <returns>
+    ///     The result of the operation. The result contains the generated JWT.
+    /// </returns>
+    Result<string> GenerateToken(GenerateJwtRequest request);
 }

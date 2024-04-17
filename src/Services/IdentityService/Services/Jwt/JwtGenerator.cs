@@ -7,6 +7,8 @@ using Musdis.IdentityService.Requests;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Musdis.IdentityService.Options;
+using Musdis.OperationResults;
+using Musdis.OperationResults.Extensions;
 
 namespace Musdis.IdentityService.Services.Jwt;
 
@@ -27,21 +29,22 @@ public class JwtGenerator : IJwtGenerator
 
     /// <inheritdoc cref="IJwtGenerator.GenerateToken(GenerateJwtRequest)"/>
     /// <exception cref="ArgumentNullException"> </exception>
-    public string GenerateToken(GenerateJwtRequest request)
+    public Result<string> GenerateToken(GenerateJwtRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var credentials = new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = new List<Claim>
-        {
+        List<Claim> claims =
+        [
             new (JwtRegisteredClaimNames.Sub, request.UserReadDto.Id),
             new (JwtRegisteredClaimNames.Name, request.UserReadDto.UserName),
-        };
-        claims.AddRange(request.CustomClaims);
+            .. request.CustomClaims,
+        ];
 
+        // Get local time because UTC converts back to local when try add minutes
         var localExpires = _timeProvider.GetLocalNow().DateTime
-            .AddMinutes(_jwtConfigurationOptions.Settings.TokenLifetimeMinutes);
+            .AddMinutes(_jwtConfigurationOptions.Settings.TokenLifetimeMinutes); 
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -54,6 +57,6 @@ public class JwtGenerator : IJwtGenerator
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        return tokenHandler.WriteToken(token);
+        return tokenHandler.WriteToken(token).ToValueResult();
     }
 }
