@@ -21,6 +21,17 @@ using Slugify;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Exception handler
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddExceptionHandler<DeveloperExceptionHandler>();
+}
+else
+{
+    builder.Services.AddExceptionHandler<ExceptionHandler>();
+}
+builder.Services.AddProblemDetails();
+
 // Message broker
 builder.Services.AddMassTransit(busConfigurator =>
 {
@@ -28,11 +39,15 @@ builder.Services.AddMassTransit(busConfigurator =>
 
     busConfigurator.UsingRabbitMq((context, config) =>
     {
-        config.Host(builder.Configuration["MessageBroker:Host"], "/", h =>
-        {
-            h.Username("MessageBroker:Username");
-            h.Password("MessageBroker:Password");
-        });
+        config.Host(
+            builder.Configuration["MessageBroker:Host"],
+            builder.Configuration["MessageBroker:VirtualHost"],
+            h =>
+            {
+                h.Username(builder.Configuration["MessageBroker:Username"]);
+                h.Password(builder.Configuration["MessageBroker:Password"]);
+            }
+        );
 
         config.ConfigureEndpoints(context);
     });
@@ -66,7 +81,7 @@ builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationHandler>(
 builder.Services.AddSingleton<IAuthorizationHandler, ReleaseAuthorizationHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, TrackAuthorizationHandler>();
 
-
+// Other
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<ISlugHelper, SlugHelper>();
@@ -86,42 +101,10 @@ builder.Services.AddTransient<IIdentityUserService, IdentityUserService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "MyAPI", Version = "v1" });
+    options.SwaggerDoc("v1", new() { Title = "MusicService", Version = "v1" });
     options.CustomSchemaIds(type => type.ToString());
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Enter your JWT token.",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+    options.AddJwtAuthorization();
 });
-
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddExceptionHandler<DeveloperExceptionHandler>();
-}
-else
-{
-    builder.Services.AddExceptionHandler<ExceptionHandler>();
-}
-builder.Services.AddProblemDetails();
 
 
 var app = builder.Build();
