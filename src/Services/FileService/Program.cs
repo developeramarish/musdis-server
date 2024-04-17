@@ -1,23 +1,38 @@
-using Musdis.FileService.Options;
-using Musdis.FileService.Services.Storage;
-
-using Google.Cloud.Storage.V1;
-using Musdis.FileService.Data;
-using Microsoft.EntityFrameworkCore;
-using Musdis.FileService.Endpoints;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
-using Musdis.FileService.Swagger;
+using Microsoft.EntityFrameworkCore;
+
+using MassTransit;
+
+using Google.Cloud.Storage.V1;
+
+using FluentValidation;
+
 using Musdis.OperationResults;
 using Musdis.ResponseHelpers.Extensions;
 using Musdis.AuthHelpers.Extensions;
-using FluentValidation;
+using Musdis.FileService.Options;
+using Musdis.FileService.Data;
+using Musdis.FileService.Endpoints;
+using Musdis.FileService.Services.Storage;
+using Musdis.FileService.Services.Exceptions;
+using Musdis.FileService.Swagger;
 using Musdis.FileService.Validation;
-using MassTransit;
 using Musdis.FileService.MessageBroker.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Exception handler
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddExceptionHandler<DeveloperExceptionHandler>();
+}
+else
+{
+    builder.Services.AddExceptionHandler<ExceptionHandler>();
+}
+builder.Services.AddProblemDetails();
 
 // Message broker
 builder.Services.AddMassTransit(busConfigurator =>
@@ -32,11 +47,15 @@ builder.Services.AddMassTransit(busConfigurator =>
 
     busConfigurator.UsingRabbitMq((context, config) =>
     {
-        config.Host(builder.Configuration["MessageBroker:Host"], "/", h =>
-        {
-            h.Username("MessageBroker:Username");
-            h.Password("MessageBroker:Password");
-        });
+        config.Host(
+            builder.Configuration["MessageBroker:Host"],
+            builder.Configuration["MessageBroker:VirtualHost"],
+            h =>
+            {
+                h.Username(builder.Configuration["MessageBroker:Username"]);
+                h.Password(builder.Configuration["MessageBroker:Password"]);
+            }
+        );
 
         config.UseDelayedMessageScheduler();
 
@@ -76,6 +95,9 @@ builder.Services.AddScoped<IValidator<IFormFile>, FormFileValidator>();
 
 builder.Services.AddTransient(_ => StorageClient.Create());
 builder.Services.AddTransient<IStorageProvider, FirebaseStorageProvider>();
+builder.Services.AddTransient<IStorageService, StorageService>();
+
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
