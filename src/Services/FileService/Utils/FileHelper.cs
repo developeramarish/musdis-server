@@ -17,16 +17,16 @@ public static class FileHelper
     public static ImmutableDictionary<string, string> ExtensionMap { get; } =
         new Dictionary<string, string>()
         {
-            { "mp3", FileTypes.Audio },
-            { "wav", FileTypes.Audio },
-            { "ogg", FileTypes.Audio },
-            { "jpeg", FileTypes.Image },
-            { "jpg", FileTypes.Image },
-            { "gif", FileTypes.Image },
-            { "png", FileTypes.Image },
-            { "webp", FileTypes.Image },
-            { "bmp", FileTypes.Image },
-            { "svg", FileTypes.Image },
+            { ".mp3", FileTypes.Audio },
+            { ".wav", FileTypes.Audio },
+            { ".ogg", FileTypes.Audio },
+            { ".jpeg", FileTypes.Image },
+            { ".jpg", FileTypes.Image },
+            { ".gif", FileTypes.Image },
+            { ".png", FileTypes.Image },
+            { ".webp", FileTypes.Image },
+            { ".bmp", FileTypes.Image },
+            { ".svg", FileTypes.Image },
         }.ToImmutableDictionary();
 
     /// <summary>
