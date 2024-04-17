@@ -14,4 +14,16 @@ namespace Musdis.IdentityService.Data;
 /// </param>
 public class IdentityServiceDbContext(
     DbContextOptions<IdentityServiceDbContext> options
-) : IdentityDbContext<User>(options) { }
+) : IdentityDbContext<User>(options)
+{
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        
+        builder.Entity<User>(x =>
+        {
+            x.Property(u => u.AvatarFileId).IsRequired(false);
+            x.Property(u => u.AvatarUrl).IsRequired(false);
+        });
+    }
+}
