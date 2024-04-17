@@ -15,10 +15,14 @@ namespace Musdis.IdentityService.Requests;
 /// <param name="Password"> 
 ///     The password for the new user's account. 
 /// </param>
+/// <param name="AvatarFile"> 
+///     The file of the user's avatar.
+/// </param>
 public record SignUpRequest(
     string UserName,
     string Email,
-    string Password
+    string Password,
+    FileDetails AvatarFile
 )
 {
     /// <summary>
@@ -31,7 +35,9 @@ public record SignUpRequest(
         return new User
         {
             UserName = UserName,
-            Email = Email
+            Email = Email,
+            AvatarFileId = AvatarFile.Id,
+            AvatarUrl = AvatarFile.Url
         };
     }
 }
