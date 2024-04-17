@@ -243,9 +243,7 @@ public class StorageService : IStorageService
 
         try
         {
-            var path = Path.Combine(fileTypeResult.Value, fileName);
-
-            return path.ToValueResult();
+            return $"{fileTypeResult.Value}/{fileName}".ToValueResult();
         }
         catch (Exception ex)
         {
@@ -276,7 +274,7 @@ public class StorageService : IStorageService
             return fileTypeResult.Error.ToValueResult<FileMetadataDto>();
         }
 
-        var newName = Path.Combine(fileId.ToString(), extension);
+        var newName = fileId.ToString() + extension;
         var filePathResult = GenerateFilePath(newName);
         if (filePathResult.IsFailure)
         {
