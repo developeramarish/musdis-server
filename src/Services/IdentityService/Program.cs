@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Musdis.IdentityService.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,8 +36,33 @@ else
 }
 builder.Services.AddProblemDetails();
 
-// Options
+// Message broker
+builder.Services.AddMassTransit(busConfigurator =>
+{
+    busConfigurator.SetKebabCaseEndpointNameFormatter();
 
+    busConfigurator.AddDelayedMessageScheduler();
+
+    busConfigurator.UsingRabbitMq((context, config) =>
+    {
+        config.Host(
+            builder.Configuration["MessageBroker:Host"],
+            builder.Configuration["MessageBroker:VirtualHost"],
+            h =>
+            {
+                h.Username(builder.Configuration["MessageBroker:Username"]);
+                h.Password(builder.Configuration["MessageBroker:Password"]);
+            }
+        );
+
+        config.UseDelayedMessageScheduler();
+
+        config.ConfigureEndpoints(context);
+    });
+});
+
+
+// Options
 builder.Services.AddOptions<JwtConfigurationOptions>()
     .Bind(builder.Configuration.GetSection(JwtConfigurationOptions.Jwt))
     .ValidateOnStart();
