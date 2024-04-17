@@ -16,6 +16,8 @@ using Musdis.OperationResults;
 using Musdis.OperationResults.Extensions;
 using Musdis.ResponseHelpers.Errors;
 using Musdis.AuthHelpers.Authorization;
+using MassTransit;
+using Musdis.MessageBrokerHelpers.Events;
 
 namespace Musdis.IdentityService.Services.Authentication;
 
@@ -24,6 +26,7 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
+    private readonly IPublishEndpoint _publishEndpoint;
     private readonly IJwtGenerator _jwtGenerator;
     private readonly IValidator<SignUpRequest> _signUpValidator;
 
@@ -31,13 +34,15 @@ public class AuthenticationService : IAuthenticationService
         SignInManager<User> signInManager,
         UserManager<User> userManager,
         IJwtGenerator jwtGenerator,
-        IValidator<SignUpRequest> signUpValidator
+        IValidator<SignUpRequest> signUpValidator,
+        IPublishEndpoint publishEndpoint
     )
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _jwtGenerator = jwtGenerator;
         _signUpValidator = signUpValidator;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<Result<AuthenticatedUserDto>> SignInAsync(
@@ -93,6 +98,8 @@ public class AuthenticationService : IAuthenticationService
             ).ToValueResult<AuthenticatedUserDto>();
         }
 
+        await _publishEndpoint.Publish(new FileUsed(request.AvatarFile.Id));
+
         var signInResult = await GetAuthenticatedUserDtoAsync(user, request.Password, cancellationToken);
 
         return signInResult;
@@ -132,6 +139,8 @@ public class AuthenticationService : IAuthenticationService
                 "Could not add claim to user, try again later!"
             ).ToValueResult<AuthenticatedUserDto>();
         }
+
+        await _publishEndpoint.Publish(new FileUsed(request.AvatarFile.Id));
 
         var signInResult = await GetAuthenticatedUserDtoAsync(user, request.Password, cancellationToken);
 
@@ -177,7 +186,7 @@ public class AuthenticationService : IAuthenticationService
         }
 
         var claims = await _userManager.GetClaimsAsync(user);
-        var token = _jwtGenerator.GenerateToken(new GenerateJwtRequest(
+        var tokenResult = _jwtGenerator.GenerateToken(new GenerateJwtRequest(
             new UserReadDto(
                 user.Id,
                 user.UserName!,
@@ -185,6 +194,11 @@ public class AuthenticationService : IAuthenticationService
             ),
             claims
         ));
+
+        if (tokenResult.IsFailure)
+        {
+            return tokenResult.Error.ToValueResult<AuthenticatedUserDto>();
+        }
 
         if (cancellationToken.IsCancellationRequested)
         {
@@ -197,7 +211,7 @@ public class AuthenticationService : IAuthenticationService
             user.Id,
             user.UserName!,
             user.Email!,
-            token,
+            tokenResult.Value,
             claims.ToDictionary(c => c.Type, c => c.Value)
         ).ToValueResult();
     }
