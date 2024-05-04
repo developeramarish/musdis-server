@@ -7,7 +7,7 @@
             "options": [
                 "MusicService",
                 "IdentityService",
-                "FileService"
+                "FileService",
             ],
             "description": "Name of the service"
         }
@@ -134,5 +134,44 @@
             ],
             "problemMatcher": "$msCompile"
         },
+        // API Gateway
+        {
+            "label": "build-gateway",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Gateway/ApiGateway/ApiGateway.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-gateway",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/Gateway/ApiGateway/ApiGateway.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watch-gateway",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/Gateway/ApiGateway/ApiGateway.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        
+        
     ]
 }
