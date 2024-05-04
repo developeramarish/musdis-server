@@ -118,6 +118,9 @@ public sealed record ReleaseDto(
     /// <param name="AudioUrl">
     ///     The audio URL of the track.
     /// </param>
+    /// <param name="CoverUrl">
+    ///     The URL of the cover image of the track.
+    /// </param>
     /// <param name="Tags">
     ///     The collection of tags associated with the track.
     /// </param>
@@ -129,6 +132,7 @@ public sealed record ReleaseDto(
         string Title,
         string Slug,
         string AudioUrl,
+        string CoverUrl,
         IEnumerable<TagDto> Tags,
         IEnumerable<ArtistDto> Artists
     )
@@ -165,6 +169,7 @@ public sealed record ReleaseDto(
                 track.Title,
                 track.Slug,
                 track.AudioUrl,
+                track.CoverUrl,
                 TagDto.FromTags(track.Tags),
                 ArtistDto.FromArtists(track.Artists)
             );

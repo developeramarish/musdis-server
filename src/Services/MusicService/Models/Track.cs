@@ -36,6 +36,11 @@ public class Track
     public required Guid AudioFileId { get; set; }
 
     /// <summary>
+    ///     The URL of the cover image.
+    /// </summary>
+    public required string CoverUrl { get; set; }
+
+    /// <summary>
     ///     The foreign key to <see cref="Models.Release"/> table.
     /// </summary>
     public required Guid ReleaseId { get; set; }

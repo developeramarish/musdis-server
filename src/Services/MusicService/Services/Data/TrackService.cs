@@ -84,7 +84,8 @@ public sealed class TrackService : ITrackService
             ReleaseId = release.Id,
             CreatorId = userId,
             AudioUrl = trackInfo.AudioFile.Url,
-            AudioFileId = trackInfo.AudioFile.Id
+            AudioFileId = trackInfo.AudioFile.Id,
+            CoverUrl = release.CoverUrl
         };
 
         var artistIds = trackInfo.ArtistIds;
@@ -148,6 +149,15 @@ public sealed class TrackService : ITrackService
             return slugResult.Error.ToValueResult<TrackDto>();
         }
 
+        var release = await _dbContext.Releases
+            .FirstOrDefaultAsync(r => r.Id == request.ReleaseId, cancellationToken);
+        if (release is null)
+        {
+            return new ValidationError(
+                "Could not create a Track, invalid Release!"
+            ).ToValueResult<TrackDto>();
+        }
+
         var track = new Track
         {
             Id = Guid.NewGuid(),
@@ -156,7 +166,8 @@ public sealed class TrackService : ITrackService
             ReleaseId = request.ReleaseId,
             CreatorId = userId,
             AudioUrl = request.AudioFile.Url,
-            AudioFileId = request.AudioFile.Id
+            AudioFileId = request.AudioFile.Id,
+            CoverUrl = release.CoverUrl
         };
 
         var addArtistsResult = await AddTrackArtistsAsync(track, request.ArtistIds, cancellationToken);
