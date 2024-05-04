@@ -15,6 +15,6 @@ namespace Musdis.IdentityService.Requests;
 ///     A collection of custom claims to include in the JWT.
 /// </param>
 public record GenerateJwtRequest(
-    UserReadDto UserReadDto,
+    UserDto UserReadDto,
     IEnumerable<Claim> CustomClaims
 );

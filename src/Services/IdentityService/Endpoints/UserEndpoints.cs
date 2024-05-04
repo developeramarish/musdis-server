@@ -41,15 +41,11 @@ public static class UserEndpoints
 
             var users = await queryable.ToListAsync(cancellationToken);
 
-            var dataResult = UserReadDto.FromUsers(users);
-            if (dataResult.IsFailure)
-            {
-                return dataResult.Error.ToHttpResult(context.Request.Path);
-            }
+            var dtos = UserDto.FromUsers(users);
 
-            var pagedResponse = new PagedDataResponse<UserReadDto>
+            var pagedResponse = new PagedDataResponse<UserDto>
             {
-                Data = dataResult.Value,
+                Data = dtos,
                 PaginationInfo = new PaginationInfo
                 {
                     PageSize = limit,

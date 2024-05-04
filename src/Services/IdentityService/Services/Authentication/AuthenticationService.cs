@@ -185,13 +185,10 @@ public class AuthenticationService : IAuthenticationService
             ).ToValueResult<AuthenticatedUserDto>();
         }
 
+        var userDto = UserDto.FromUser(user);
         var claims = await _userManager.GetClaimsAsync(user);
         var tokenResult = _jwtGenerator.GenerateToken(new GenerateJwtRequest(
-            new UserReadDto(
-                user.Id,
-                user.UserName!,
-                user.Email!
-            ),
+            userDto,
             claims
         ));
 
@@ -208,9 +205,7 @@ public class AuthenticationService : IAuthenticationService
         }
 
         return new AuthenticatedUserDto(
-            user.Id,
-            user.UserName!,
-            user.Email!,
+            userDto,
             tokenResult.Value,
             claims.ToDictionary(c => c.Type, c => c.Value)
         ).ToValueResult();
