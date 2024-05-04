@@ -142,7 +142,7 @@ app.MapGet("antiforgery/token", (
     );
 
     return Results.Ok();
-}).RequireAuthorization();
+});
 
 app.MapGroup("files").MapFiles();
 

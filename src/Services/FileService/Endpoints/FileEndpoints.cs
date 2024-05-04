@@ -26,7 +26,7 @@ public static class FileEndpoints
         this RouteGroupBuilder groupBuilder
     )
     {
-        groupBuilder.MapPost("/", HandlePostFileAsync).RequireAuthorization();
+        groupBuilder.MapPost("/", HandlePostFileAsync);
 
         groupBuilder.MapGet("/", HandleGetFileUrlsAsync);
 
